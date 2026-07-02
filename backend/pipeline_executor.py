@@ -125,6 +125,10 @@ def _extract_from_duckdb(source_config: dict, table_name: str,
             pg_conn.commit()
             total_inserted += len(chunk)
             print(f"[DuckDB Extract] ✓ {total_inserted:,}/{len(df):,} rows loaded...")
+            if should_stop_fn and should_stop_fn():
+                print(f"[DuckDB Extract] 🛑 Abort requested -- halting after {total_inserted:,} rows")
+                cur.close(); pg_conn.close()
+                return {"success": True, "rows": total_inserted, "columns": list(df.columns), "stopped": True}
 
         cur.close(); pg_conn.close()
 
@@ -185,7 +189,8 @@ def extract_to_staging(source_tables: list, source_config: dict,
                     table_name     = table,
                     target_config  = target_config,
                     staging_schema = staging_schema,
-                    selected_columns = sel_cols
+                    selected_columns = sel_cols,
+                    should_stop_fn = should_stop_fn
                 )
             else:
                 result = extract_table_universal(
