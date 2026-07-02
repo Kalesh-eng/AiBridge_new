@@ -131,7 +131,7 @@ function LiveExecutionPanel({ runId, onFinished }) {
       <div
         ref={logBoxRef}
         onScroll={handleScroll}
-        style={{ background: '#1e1e1e', color: '#d4d4d4', padding: 10, borderRadius: 6,
+        style={{ background: '#f8fafc', color: '#1e293b', padding: 10, borderRadius: 6,
           fontFamily: 'monospace', fontSize: 10, lineHeight: 1.5, maxHeight: 260,
           overflowY: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
       >
@@ -139,11 +139,11 @@ function LiveExecutionPanel({ runId, onFinished }) {
           <div style={{ color: '#888' }}>Waiting for output…</div>
         ) : lines.map((line, i) => (
           <div key={i} style={{
-            color: line.includes('✗') || line.includes('ERROR') ? '#f87171'
-                 : line.includes('✓')   ? '#86efac'
-                 : line.includes('⚠')   ? '#fbbf24'
-                 : line.includes('🛑')  ? '#fb923c'
-                 : '#d4d4d4'
+            color: line.includes('✗') || line.includes('ERROR') ? '#dc2626'
+                 : line.includes('✓')   ? '#16a34a'
+                 : line.includes('⚠')   ? '#d97706'
+                 : line.includes('🛑')  ? '#ea580c'
+                 : '#374151'
           }}>
             {line}
           </div>
