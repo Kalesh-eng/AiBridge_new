@@ -494,7 +494,94 @@ def _check_duplicates_in_staging(config: dict, staging_schema: str,
         None
     )
     if not id_col:
-        return None, 0
+        # No natural key column found — fall back to checking for fully
+        # duplicate rows (every column identical) using ctid to distinguish them.
+        result.log(f"  No _id column in {stg_table} — checking for fully duplicate rows")
+        try:
+            conn2 = _pg_connect(config)
+            conn2.autocommit = False
+            cur2  = conn2.cursor()
+            # Cast all columns to TEXT to avoid NaN/float precision issues in GROUP BY
+            col_list = ", ".join(f'CAST("{c}" AS TEXT)' for c in col_names)
+            cur2.execute(f"""
+                SELECT COUNT(*) FROM (
+                    SELECT {col_list}, COUNT(*)
+                    FROM "{staging_schema}"."{stg_table}"
+                    GROUP BY {col_list}
+                    HAVING COUNT(*) > 1
+                ) dupes
+            """)
+            dup_groups = cur2.fetchone()[0]
+            cur2.execute(f'SELECT COUNT(*) FROM "{staging_schema}"."{stg_table}"')
+            total2 = cur2.fetchone()[0]
+            if dup_groups > 0:
+                # Fetch duplicate rows for audit (up to 1000)
+                cur2.execute(f"""
+                    SELECT row_to_json(t) FROM (
+                        SELECT * FROM "{staging_schema}"."{stg_table}"
+                        WHERE ({col_list}) IN (
+                            SELECT {col_list}
+                            FROM "{staging_schema}"."{stg_table}"
+                            GROUP BY {col_list}
+                            HAVING COUNT(*) > 1
+                        )
+                        LIMIT 1000
+                    ) t
+                """)
+                bad_rows = [r[0] for r in cur2.fetchall()]
+                _write_audit_records(config, warehouse_schema, [{
+                    "pipeline_id": pipeline_id,
+                    "run_id":      run_id,
+                    "table_name":  stg_table,
+                    "column_name": "all_columns",
+                    "issue_type":  "duplicate_key",
+                    "reason":      "Fully duplicate row (all columns identical)",
+                    "row_data":    row if isinstance(row, str) else json.dumps(row),
+                    "check_type":  "duplicate_check"
+                } for row in bad_rows])
+                # Delete duplicates — keep one copy per unique row
+                cur2.execute(f"""
+                    DELETE FROM "{staging_schema}"."{stg_table}"
+                    WHERE ctid NOT IN (
+                        SELECT MIN(ctid)
+                        FROM "{staging_schema}"."{stg_table}"
+                        GROUP BY {col_list}
+                    )
+                """)
+                deleted = cur2.rowcount
+                conn2.commit()
+                cur2.close(); conn2.close()
+                result.log(f"  🗑 {deleted} fully duplicate rows quarantined from {stg_table}")
+                pct = round(((total2 - deleted) / total2 * 100), 1) if total2 > 0 else 100.0
+                return {
+                    "check":      f"{stg_table}: fully duplicate rows",
+                    "table":      stg_table,
+                    "column":     "all_columns",
+                    "type":       "duplicate_check",
+                    "issue_type": "duplicate_key",
+                    "passed":     False,
+                    "violations": deleted,
+                    "total_rows": total2,
+                    "pass_rate":  pct,
+                    "message":    f"{deleted} fully duplicate rows quarantined"
+                }, deleted
+            cur2.close(); conn2.close()
+            return {
+                "check":      f"{stg_table}: fully duplicate rows",
+                "table":      stg_table,
+                "column":     "all_columns",
+                "type":       "duplicate_check",
+                "passed":     True,
+                "violations": 0,
+                "total_rows": total2,
+                "pass_rate":  100.0,
+                "message":    f"0 fully duplicate rows in {total2} rows"
+            }, 0
+        except Exception as e2:
+            import traceback
+            result.log(f"  Warning: full-row duplicate check failed: {e2}")
+            result.log(f"  Detail: {traceback.format_exc()[:300]}")
+            return None, 0
 
     try:
         conn = _pg_connect(config)
