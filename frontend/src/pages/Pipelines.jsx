@@ -27,7 +27,6 @@ function LiveExecutionPanel({ runId, onFinished }) {
   const [lines, setLines]   = useState([])
   const [status, setStatus] = useState('running')
   const [stopRequested, setStopRequested] = useState(false)
-  const [abortRequested, setAbortRequested] = useState(false)
   const logBoxRef  = useRef(null)
   const autoScroll = useRef(true)
 
@@ -36,10 +35,24 @@ function LiveExecutionPanel({ runId, onFinished }) {
     const base = api.defaults?.baseURL || ''
     const es = new EventSource(`${base}/pipeline/execute-async/${runId}/stream`, { withCredentials: true })
 
-    es.onmessage = (e) => {
-      setLines(prev => [...prev, e.data])
-    }
+    // Batch updates every 500ms to prevent flickering
+    const pendingLines = []
+    const flushTimer = setInterval(() => {
+      if (pendingLines.length > 0) {
+        const batch = [...pendingLines]
+        pendingLines.length = 0
+        setLines(prev => [...prev, ...batch])
+      }
+    }, 500)
+
+    es.onmessage = (e) => { pendingLines.push(e.data) }
+
     es.addEventListener('done', (e) => {
+      clearInterval(flushTimer)
+      if (pendingLines.length > 0) {
+        setLines(prev => [...prev, ...pendingLines])
+        pendingLines.length = 0
+      }
       try {
         const payload = JSON.parse(e.data)
         setStatus(payload.status)
@@ -50,18 +63,22 @@ function LiveExecutionPanel({ runId, onFinished }) {
       es.close()
     })
     es.onerror = () => {
-      setLines(prev => [...prev, '⚠ Log stream disconnected.'])
+      clearInterval(flushTimer)
+      if (pendingLines.length > 0) {
+        setLines(prev => [...prev, ...pendingLines])
+        pendingLines.length = 0
+      }
       es.close()
     }
 
-    return () => es.close()
+    return () => { clearInterval(flushTimer); es.close() }
   }, [runId])
 
   useEffect(() => {
     if (autoScroll.current && logBoxRef.current) {
       logBoxRef.current.scrollTop = logBoxRef.current.scrollHeight
     }
-  }, [lines])
+  })
 
   const handleScroll = () => {
     const el = logBoxRef.current
@@ -71,7 +88,7 @@ function LiveExecutionPanel({ runId, onFinished }) {
   }
 
   const requestStop = async () => {
-    if (!runId || stopRequested || abortRequested) return
+    if (!runId || stopRequested) return
     setStopRequested(true)
     try {
       await api.post(`/pipeline/execute-async/${runId}/stop`)
@@ -81,28 +98,13 @@ function LiveExecutionPanel({ runId, onFinished }) {
     }
   }
 
-  const requestAbort = async () => {
-    if (!runId || abortRequested) return
-    if (!window.confirm('Abort will immediately kill the pipeline and rollback any warehouse data written this run. Continue?')) return
-    setAbortRequested(true)
-    setStopRequested(true)
-    try {
-      await api.post(`/pipeline/execute-async/${runId}/abort`)
-      setStatus('aborting')
-    } catch (e) {
-      setAbortRequested(false)
-    }
-  }
-
-  const isRunning = status === 'running' || status === 'stopping' || status === 'aborting'
+  const isRunning = status === 'running' || status === 'stopping'
   const statusChipMap = {
     running:  { label: '⚙️ Running',  bg: '#E6F1FB', fg: '#185FA5' },
-    stopping: { label: '🛑 Stopping…',  bg: '#FAEEDA', fg: '#854F0B' },
-    aborting: { label: '⛔ Aborting…',  bg: '#FCEBEB', fg: '#A32D2D' },
-    success:  { label: '✓ Completed',  bg: '#EAF3DE', fg: '#3B6D11' },
-    failed:   { label: '✗ Failed',     bg: '#FCEBEB', fg: '#A32D2D' },
-    stopped:  { label: '⏹ Stopped',    bg: '#FAEEDA', fg: '#854F0B' },
-    aborted:  { label: '⛔ Aborted',   bg: '#FCEBEB', fg: '#A32D2D' },
+    stopping: { label: '🛑 Stopping…', bg: '#FAEEDA', fg: '#854F0B' },
+    success:  { label: '✓ Completed', bg: '#EAF3DE', fg: '#3B6D11' },
+    failed:   { label: '✗ Failed',    bg: '#FCEBEB', fg: '#A32D2D' },
+    stopped:  { label: '⏹ Stopped',   bg: '#FAEEDA', fg: '#854F0B' },
   }
   const chipInfo = statusChipMap[status] || { label: status, bg: '#f3f4f6', fg: '#555' }
 
@@ -118,27 +120,10 @@ function LiveExecutionPanel({ runId, onFinished }) {
             {chipInfo.label}
           </span>
           {isRunning && (
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button
-                style={{ ...btnGhostSmall, color: '#854F0B', borderColor: '#854F0B', opacity: stopRequested ? 0.5 : 1 }}
-                onClick={requestStop} disabled={stopRequested || abortRequested}
-                title="Finish current step, then stop cleanly">
-                {stopRequested && !abortRequested ? 'Stopping…' : '⏹ Stop'}
-              </button>
-              <button
-                style={{ ...btnGhostSmall, color: '#A32D2D', borderColor: '#A32D2D', opacity: abortRequested ? 0.5 : 1 }}
-                onClick={requestAbort} disabled={abortRequested}
-                title="Kill immediately and rollback warehouse writes">
-                {abortRequested ? 'Aborting…' : '⛔ Abort'}
-              </button>
-            </div>
-          )}
-          {!isRunning && (status === 'success' || status === 'failed' || status === 'stopped' || status === 'aborted') && onFinished && (
             <button
-              style={{ ...btnGhostSmall, color: '#185FA5', borderColor: '#185FA5' }}
-              onClick={() => onFinished({ restart: true })}
-              title="Run the pipeline again from scratch">
-              🔄 Restart
+              style={{ ...btnGhostSmall, color: '#A32D2D', borderColor: '#A32D2D', opacity: stopRequested ? 0.5 : 1 }}
+              onClick={requestStop} disabled={stopRequested}>
+              {stopRequested ? 'Stopping…' : '⏹ Stop'}
             </button>
           )}
         </div>
@@ -358,25 +343,16 @@ export default function Pipelines() {
   }
 
   const handleExecutionFinished = async (pipelineId, runId, payload) => {
-    // Restart button clicked — re-execute from scratch
-    if (payload?.restart) {
-      setActiveRuns(prev => { const next = { ...prev }; delete next[pipelineId]; return next })
-      setTimeout(() => executePipeline(pipelineId), 300)
-      return
-    }
     try {
       const r = await api.get(`/pipeline/execute-async/${runId}/status`)
       const result = r.data.result || {}
       setExecMsg(prev => ({ ...prev, [pipelineId]:
-        result.message || (payload.status === 'success'  ? '✓ Executed successfully'
-                          : payload.status === 'stopped'  ? '⏹ Stopped by user'
-                          : payload.status === 'aborted'  ? '⛔ Aborted and rolled back'
+        result.message || (payload.status === 'success' ? '✓ Executed successfully'
+                          : payload.status === 'stopped' ? '⏹ Stopped by user'
                           : '✗ Execution failed') }))
     } catch {
       setExecMsg(prev => ({ ...prev, [pipelineId]:
-        payload.status === 'success' ? '✓ Executed successfully'
-        : payload.status === 'aborted' ? '⛔ Aborted and rolled back'
-        : '✗ Execution finished with an issue' }))
+        payload.status === 'success' ? '✓ Executed successfully' : '✗ Execution finished with an issue' }))
     }
     // Clear the active run so the live panel is replaced by the result
     // message, then auto-clear the message after a while like before.
