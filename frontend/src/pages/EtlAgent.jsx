@@ -280,7 +280,7 @@ export function EditPipelineSQL({ pipeline, onClose, onSaved }) {
               </div>
               <textarea
                 style={{ width: '100%', minHeight: 350, fontFamily: 'monospace', fontSize: 11,
-                  background: '#1e1e1e', color: '#d4d4d4', padding: 12, borderRadius: 6,
+                  background: '#f8fafc', color: '#1e293b', padding: 12, borderRadius: 6,
                   border: '1px solid #555', boxSizing: 'border-box', resize: 'vertical' }}
                 value={active.sql || ''}
                 onChange={e => updateScript(activeIdx, e.target.value)}
@@ -317,10 +317,24 @@ function LiveExecutionPanel({ runId, onFinished }) {
     const base = api.defaults?.baseURL || ''
     const es = new EventSource(`${base}/pipeline/execute-async/${runId}/stream`, { withCredentials: true })
 
-    es.onmessage = (e) => {
-      setLines(prev => [...prev, e.data])
-    }
+    // Batch updates every 500ms to prevent flickering
+    const pendingLines = []
+    const flushTimer = setInterval(() => {
+      if (pendingLines.length > 0) {
+        const batch = [...pendingLines]
+        pendingLines.length = 0
+        setLines(prev => [...prev, ...batch])
+      }
+    }, 500)
+
+    es.onmessage = (e) => { pendingLines.push(e.data) }
+
     es.addEventListener('done', (e) => {
+      clearInterval(flushTimer)
+      if (pendingLines.length > 0) {
+        setLines(prev => [...prev, ...pendingLines])
+        pendingLines.length = 0
+      }
       try {
         const payload = JSON.parse(e.data)
         setStatus(payload.status)
@@ -331,11 +345,15 @@ function LiveExecutionPanel({ runId, onFinished }) {
       es.close()
     })
     es.onerror = () => {
-      setLines(prev => [...prev, '⚠ Log stream disconnected.'])
+      clearInterval(flushTimer)
+      if (pendingLines.length > 0) {
+        setLines(prev => [...prev, ...pendingLines])
+        pendingLines.length = 0
+      }
       es.close()
     }
 
-    return () => es.close()
+    return () => { clearInterval(flushTimer); es.close() }
   }, [runId])
 
   useEffect(() => {
@@ -391,7 +409,7 @@ function LiveExecutionPanel({ runId, onFinished }) {
       <div
         ref={logBoxRef}
         onScroll={handleScroll}
-        style={{ background: '#1e1e1e', color: '#d4d4d4', padding: 12, borderRadius: 6,
+        style={{ background: '#f8fafc', color: '#1e293b', padding: 12, borderRadius: 6,
           fontFamily: 'monospace', fontSize: 11, lineHeight: 1.6, maxHeight: 360,
           overflowY: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
       >
@@ -399,11 +417,11 @@ function LiveExecutionPanel({ runId, onFinished }) {
           <div style={{ color: '#888' }}>Waiting for output…</div>
         ) : lines.map((line, i) => (
           <div key={i} style={{
-            color: line.includes('✗') || line.includes('ERROR') ? '#f87171'
-                 : line.includes('✓')   ? '#86efac'
-                 : line.includes('⚠')   ? '#fbbf24'
-                 : line.includes('🛑')  ? '#fb923c'
-                 : '#d4d4d4'
+            color: line.includes('✗') || line.includes('ERROR') ? '#dc2626'
+                 : line.includes('✓')   ? '#16a34a'
+                 : line.includes('⚠')   ? '#d97706'
+                 : line.includes('🛑')  ? '#ea580c'
+                 : '#374151'
           }}>
             {line}
           </div>
@@ -1212,11 +1230,11 @@ function SqlReview({ data, onApprove, onReject, editedScripts, setEditedScripts,
             {isDangerous(active.sql) && <div style={{ ...warnBox, marginBottom: 6 }}>⚠ Dangerous SQL — review carefully.</div>}
             {editingIdx === activeIdx ? (
               <textarea style={{ width: '100%', minHeight: 250, fontFamily: 'monospace', fontSize: 11,
-                background: '#1e1e1e', color: '#d4d4d4', padding: 12, borderRadius: 6,
+                background: '#f8fafc', color: '#1e293b', padding: 12, borderRadius: 6,
                 border: '1px solid #555' }}
                 value={active.sql || ''} onChange={e => updateScript(activeIdx, e.target.value)} />
             ) : (
-              <pre style={{ background: '#1e1e1e', color: '#d4d4d4', padding: 12, borderRadius: 6,
+              <pre style={{ background: '#f8fafc', color: '#1e293b', padding: 12, borderRadius: 6,
                 fontSize: 10, overflowX: 'auto', lineHeight: 1.6, maxHeight: 400, overflow: 'auto' }}>
                 {String(active.sql || '')}
               </pre>

@@ -4,6 +4,7 @@
  * Shows all pipeline runs with status, timestamps, duration.
  * Click any run to see full log lines + recovery agent activity.
  * Auto-refreshes every 5 seconds.
+ * Features: white log, maximize, download as text
  */
 
 import { useState, useEffect, useMemo } from 'react'
@@ -19,6 +20,7 @@ export default function Logs() {
   const [filter,        setFilter]        = useState('all')
   const [searchTerm,    setSearchTerm]    = useState('')
   const [autoRefresh,   setAutoRefresh]   = useState(true)
+  const [maximized,     setMaximized]     = useState(false)
 
   const loadRuns = async () => {
     try {
@@ -43,7 +45,6 @@ export default function Logs() {
     setLoadingDetail(false)
   }
 
-  // Initial + auto-refresh
   useEffect(() => {
     loadRuns()
     if (!autoRefresh) return
@@ -51,13 +52,11 @@ export default function Logs() {
     return () => clearInterval(t)
   }, [autoRefresh])
 
-  // Load detail when a run is selected
   useEffect(() => {
     if (selectedRun) loadDetail(selectedRun)
     else setRunDetail(null)
   }, [selectedRun])
 
-  // Auto-refresh selected run if it's still in progress
   useEffect(() => {
     if (!selectedRun || !autoRefresh) return
     const status = runDetail?.run?.status
@@ -104,13 +103,47 @@ export default function Logs() {
   }
 
   const lineColor = (line) => {
-    if (line.includes('✗') || line.includes('FAILED') || line.includes('Error')) return '#A32D2D'
-    if (line.includes('✓')) return '#27500A'
-    if (line.includes('⚠') || line.includes('WARNING')) return '#854F0B'
+    if (line.includes('✗') || line.includes('FAILED') || line.includes('Error')) return '#dc2626'
+    if (line.includes('✓')) return '#16a34a'
+    if (line.includes('⚠') || line.includes('WARNING')) return '#d97706'
     if (line.includes('🤖')) return '#534AB7'
     if (line.includes('━━━')) return '#185FA5'
-    return '#555'
+    return '#374151'
   }
+
+  const downloadLog = () => {
+    if (!runDetail) return
+    const text = runDetail.run.log_lines.join('\n')
+    const blob = new Blob([text], { type: 'text/plain' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `pipeline_log_${runDetail.run.run_id}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const LogPanel = ({ maxHeight = 500 }) => (
+    <div style={{
+      background: '#f8fafc', color: '#374151', borderRadius: 6,
+      padding: '12px 14px', fontFamily: 'monospace', fontSize: 11,
+      maxHeight, overflowY: 'auto', lineHeight: 1.7,
+      border: '1px solid #e5e7eb'
+    }}>
+      {runDetail.run.log_lines.length === 0 ? (
+        <div style={{ color: '#aaa' }}>(no log captured)</div>
+      ) : (
+        runDetail.run.log_lines.map((line, i) => (
+          <div key={i} style={{ color: lineColor(line) }}>
+            <span style={{ color: '#aaa', marginRight: 8, userSelect: 'none' }}>
+              {String(i+1).padStart(3, '0')}
+            </span>
+            {line || ' '}
+          </div>
+        ))
+      )}
+    </div>
+  )
 
   return (
     <>
@@ -221,7 +254,7 @@ export default function Logs() {
                     </div>
                   </div>
 
-                  {/* Recovery summary (if any) */}
+                  {/* Recovery summary */}
                   {runDetail.recoveries.length > 0 && (
                     <div style={card}>
                       <div style={sectionTitle}>🤖 Recovery Agent activity ({runDetail.recoveries.length})</div>
@@ -251,30 +284,25 @@ export default function Logs() {
 
                   {/* Full log */}
                   <div style={card}>
-                    <div style={sectionTitle}>📜 Full log</div>
-                    <div style={{
-                      background: '#1e1e1e', color: '#d4d4d4', borderRadius: 6,
-                      padding: '12px 14px', fontFamily: 'monospace', fontSize: 11,
-                      maxHeight: 500, overflowY: 'auto', lineHeight: 1.7
-                    }}>
-                      {runDetail.run.log_lines.length === 0 ? (
-                        <div style={{ color: '#777' }}>(no log captured)</div>
-                      ) : (
-                        runDetail.run.log_lines.map((line, i) => (
-                          <div key={i} style={{ color: lineColor(line) }}>
-                            <span style={{ color: '#555', marginRight: 8 }}>{String(i+1).padStart(3, '0')}</span>
-                            {line || ' '}
-                          </div>
-                        ))
-                      )}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <div style={sectionTitle}>📜 Full log ({runDetail.run.log_lines.length} lines)</div>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button style={btnGhostSmall} onClick={downloadLog} title="Download as text file">
+                          ⬇ Download
+                        </button>
+                        <button style={btnGhostSmall} onClick={() => setMaximized(true)} title="Maximize log">
+                          ⛶ Maximize
+                        </button>
+                        <button style={btnGhostSmall}
+                          onClick={() => {
+                            navigator.clipboard?.writeText(runDetail.run.log || '')
+                            alert('Log copied to clipboard')
+                          }}>
+                          📋 Copy
+                        </button>
+                      </div>
                     </div>
-                    <button style={{ ...btnGhostSmall, marginTop: 8 }}
-                      onClick={() => {
-                        navigator.clipboard?.writeText(runDetail.run.log || '')
-                        alert('Log copied to clipboard')
-                      }}>
-                      📋 Copy log
-                    </button>
+                    <LogPanel maxHeight={500} />
                   </div>
                 </>
               ) : (
@@ -283,6 +311,27 @@ export default function Logs() {
             </div>
           )}
         </div>
+
+        {/* Maximized log modal */}
+        {maximized && runDetail && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <div style={{ background: '#fff', borderRadius: 10, width: '100%', maxWidth: 1100, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>{runDetail.run.pipeline_name}</div>
+                  <div style={{ fontSize: 11, color: '#888', fontFamily: 'monospace' }}>{runDetail.run.run_id}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button style={btnGhostSmall} onClick={downloadLog}>⬇ Download</button>
+                  <button style={{ ...btnGhostSmall, color: '#A32D2D', borderColor: '#A32D2D' }} onClick={() => setMaximized(false)}>✕ Close</button>
+                </div>
+              </div>
+              <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
+                <LogPanel maxHeight={99999} />
+              </div>
+            </div>
+          </div>
+        )}
 
       </PageBody>
     </>
@@ -302,7 +351,7 @@ const inp = { padding: '7px 10px', fontSize: 12, border: '1px solid #d1d5db', bo
 const card = { border: '1px solid #e5e7eb', borderRadius: 8, padding: '12px 14px', marginBottom: 10 }
 const runCard = { border: '1px solid #e5e7eb', borderRadius: 6, padding: '10px 12px', transition: 'all .15s' }
 const emptyBox = { border: '1px dashed #e5e7eb', borderRadius: 8, padding: 30, textAlign: 'center', fontSize: 13, color: '#888' }
-const sectionTitle = { fontSize: 11, fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 8 }
+const sectionTitle = { fontSize: 11, fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 0 }
 const statusChip = { padding: '2px 8px', borderRadius: 20, fontSize: 10, fontWeight: 500 }
 const btnFilter = { padding: '5px 10px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 20, fontSize: 11, cursor: 'pointer' }
 const btnFilterActive = { padding: '5px 10px', background: '#185FA5', color: '#fff', border: 'none', borderRadius: 20, fontSize: 11, cursor: 'pointer' }
