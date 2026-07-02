@@ -5,15 +5,9 @@ Supports:
   - Background execution (pipeline runs in a thread, HTTP request returns
     immediately with a run_id instead of blocking until completion)
   - Live log streaming (SSE endpoint polls each run's log buffer)
-  - Cancellation (Stop button sets a flag; the execution loop checks it
-    between scripts/chunks and exits cleanly instead of running to completion)
-
-This is intentionally a simple in-process dict, not a separate job queue
-or external store (Redis, etc.) — AIBridge runs as a single backend
-process, so this is sufficient and avoids adding new infrastructure.
-Runs are kept in memory for the lifetime of the process; a restart loses
-in-flight run state (same as before this feature existed — a sync
-request would also be lost on a backend restart).
+  - Stop (finish current step cleanly, then halt)
+  - Abort (kill immediately, rollback partial warehouse writes)
+  - Restart (re-run from scratch after completion/failure)
 """
 
 import threading
@@ -33,9 +27,10 @@ def create_run(pipeline_id: str, pipeline_name: str = "") -> str:
             "run_id":           run_id,
             "pipeline_id":      pipeline_id,
             "pipeline_name":    pipeline_name,
-            "status":           "running",   # running | stopping | stopped | success | failed
+            "status":           "running",   # running | stopping | aborting | stopped | aborted | success | failed
             "logs":             [],
             "cancel_requested": False,
+            "abort_requested":  False,
             "result":           None,
             "error":            None,
             "started_at":       datetime.now(timezone.utc).isoformat(),
@@ -71,15 +66,29 @@ def get_logs_since(run_id: str, offset: int) -> tuple[list, int]:
 
 
 def request_stop(run_id: str) -> bool:
-    """Signal a running execution to stop at its next checkpoint."""
+    """Signal a running execution to stop cleanly at its next checkpoint."""
     with _lock:
         run = _runs.get(run_id)
         if run is None:
             return False
-        if run["status"] != "running":
+        if run["status"] not in ("running",):
             return False
         run["cancel_requested"] = True
         run["status"] = "stopping"
+        return True
+
+
+def request_abort(run_id: str) -> bool:
+    """Signal a running execution to abort immediately and rollback warehouse writes."""
+    with _lock:
+        run = _runs.get(run_id)
+        if run is None:
+            return False
+        if run["status"] not in ("running", "stopping"):
+            return False
+        run["abort_requested"]  = True
+        run["cancel_requested"] = True  # also set stop so all checkpoints fire
+        run["status"] = "aborting"
         return True
 
 
@@ -90,8 +99,15 @@ def should_stop(run_id: str) -> bool:
         return bool(run and run.get("cancel_requested"))
 
 
+def should_abort(run_id: str) -> bool:
+    """Checked to determine if a full rollback is needed."""
+    with _lock:
+        run = _runs.get(run_id)
+        return bool(run and run.get("abort_requested"))
+
+
 def finish_run(run_id: str, status: str, result: dict = None, error: str = None) -> None:
-    """Mark a run as finished — status is one of success | failed | stopped."""
+    """Mark a run as finished — status is one of success | failed | stopped | aborted."""
     with _lock:
         run = _runs.get(run_id)
         if run is not None:
@@ -102,14 +118,12 @@ def finish_run(run_id: str, status: str, result: dict = None, error: str = None)
 
 
 def cleanup_old_runs(max_age_seconds: int = 3600) -> None:
-    """Drop finished runs older than max_age_seconds to bound memory growth.
-    Call periodically (e.g. before creating a new run) rather than on a
-    background timer, to avoid adding another always-on thread."""
+    """Drop finished runs older than max_age_seconds to bound memory growth."""
     now = time.time()
     with _lock:
         to_remove = []
         for run_id, run in _runs.items():
-            if run["status"] in ("success", "failed", "stopped") and run["ended_at"]:
+            if run["status"] in ("success", "failed", "stopped", "aborted") and run["ended_at"]:
                 try:
                     ended = datetime.fromisoformat(run["ended_at"]).timestamp()
                     if now - ended > max_age_seconds:

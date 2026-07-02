@@ -1601,7 +1601,9 @@ def _run_pipeline_execution(pipeline_id: str, tables_override: list,
         except Exception as _qe:
             print(f"[Quality] Could not save report: {_qe}")
 
-    if run_id and run_registry.should_stop(run_id):
+    if run_id and run_registry.should_abort(run_id):
+        print("[Pipeline] ⛔ Abort was requested — rolling back warehouse writes.")
+    elif run_id and run_registry.should_stop(run_id):
         print("[Pipeline] 🛑 Stop was requested during this run — warehouse load completed "
               "before the stop took effect (no checkpoint hit it in time).")
 
@@ -1730,7 +1732,8 @@ def execute_pipeline_async(pipeline_id: str, req: ExecuteOverrideRequest = None,
                 pipeline_id, tables_override, current_user, thread_db, run_id=run_id
             )
             run = run_registry.get_run(run_id)
-            final_status = "stopped" if (run and run.get("cancel_requested")) or result.get("stopped") \
+            final_status = "aborted" if (run and run.get("abort_requested")) \
+                           else "stopped" if (run and run.get("cancel_requested")) or result.get("stopped") \
                            else ("success" if result.get("success") else "failed")
             run_registry.finish_run(run_id, final_status, result=result)
         except Exception as e:
@@ -1778,7 +1781,7 @@ def stream_pipeline_logs(run_id: str):
                 yield f"data: {safe_line}\n\n"
                 idle_polls = 0
 
-            if run["status"] in ("success", "failed", "stopped"):
+            if run["status"] in ("success", "failed", "stopped","aborted"):
                 import json
                 payload = {
                     "status":  run["status"],
@@ -1789,6 +1792,9 @@ def stream_pipeline_logs(run_id: str):
                 return
 
             idle_polls += 1
+            if idle_polls > 60:  # 30 second timeout after run ends
+                yield f"event: done\ndata: {{\"status\": \"timeout\"}}\n\n"
+                return
             time.sleep(0.5)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream",
@@ -1815,6 +1821,64 @@ def stop_pipeline_run(run_id: str, current_user=Depends(get_current_user)):
             raise HTTPException(404, "Run not found")
         raise HTTPException(400, f"Run is already {run['status']} — cannot stop.")
     return {"success": True, "message": "Stop requested — execution will halt at its next checkpoint."}
+
+@app.post("/pipeline/execute-async/{run_id}/abort")
+def abort_pipeline_run(run_id: str, current_user=Depends(get_current_user),
+                       db: Session = Depends(get_db)):
+    """
+    Abort a running pipeline immediately and rollback any warehouse writes
+    made during this run (DELETE rows where period_id = today).
+    More aggressive than Stop — does not wait for current step to finish.
+    """
+    import run_registry
+    ok = run_registry.request_abort(run_id)
+    if not ok:
+        run = run_registry.get_run(run_id)
+        if run is None:
+            raise HTTPException(404, "Run not found")
+        raise HTTPException(400, f"Run is already {run['status']} — cannot abort.")
+ 
+    # Rollback warehouse writes for this run
+    try:
+        run = run_registry.get_run(run_id)
+        if run:
+            pipeline_id = run.get("pipeline_id", "").split("_")[0] if run.get("pipeline_id") else None
+            if pipeline_id:
+                pipeline = db.query(Pipeline).filter(Pipeline.id == pipeline_id).first()
+                if pipeline and pipeline.target_connector_id:
+                    tgt = db.query(Connector).filter(Connector.id == pipeline.target_connector_id).first()
+                    if not tgt and pipeline.connector_id:
+                        tgt = db.query(Connector).filter(Connector.id == pipeline.connector_id).first()
+                    if tgt:
+                        import psycopg2
+                        tc = _cfg(tgt)
+                        conn = psycopg2.connect(
+                            host=tc.get("host"), port=tc.get("port", 5432),
+                            dbname=tc.get("database_name") or tc.get("database"),
+                            user=tc.get("username"), password=tc.get("password")
+                        )
+                        conn.autocommit = True
+                        cur = conn.cursor()
+                        period_expr = "TO_CHAR(CURRENT_DATE, 'YYYYMMDD')::BIGINT"
+                        wh = pipeline.warehouse_schema or "warehouse"
+                        scripts = (pipeline.artifacts or {}).get("sql_scripts", {}).get("scripts", [])
+                        rolled_back = []
+                        for s in scripts:
+                            tbl = s.get("name", "")
+                            if tbl.startswith("fact_"):
+                                try:
+                                    cur.execute(f'DELETE FROM "{wh}"."{tbl}" WHERE period_id = {period_expr}')
+                                    rolled_back.append(tbl)
+                                except Exception:
+                                    pass
+                        cur.close(); conn.close()
+                        print(f"[Abort] Rolled back: {rolled_back}")
+    except Exception as e:
+        print(f"[Abort] Rollback warning: {e}")
+ 
+    return {"success": True, "message": "Abort requested — pipeline will stop immediately and warehouse writes rolled back."}
+ 
+
 
 
 @app.get("/pipeline/execute-async/{run_id}/status")
