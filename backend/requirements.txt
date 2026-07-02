@@ -1,0 +1,38 @@
+# AI providers
+anthropic
+openai
+google-generativeai
+requests
+
+# Web framework
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Database drivers
+psycopg2-binary
+sqlalchemy
+
+# Uncomment as needed:
+# mysql-connector-python
+# pyodbc
+# snowflake-connector-python
+# google-cloud-bigquery
+
+# Warehouse
+duckdb
+
+# Data processing
+pandas
+openpyxl
+
+# Scheduling
+apscheduler
+
+# Auth + Security
+python-dotenv
+pydantic
+pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
