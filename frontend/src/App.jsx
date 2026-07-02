@@ -27,6 +27,9 @@ import DataQuality     from './pages/DataQuality'
 import Scheduler       from './pages/Scheduler'
 import Logs            from './pages/Logs'
 import Cost            from './pages/Cost'
+// import ExportImport    from './pages/ExportImport'
+// import AiBridgeChat    from './pages/AiBridgeChat'
+import Help            from './pages/Help'
 
 const Stub = ({ name }) => (
   <div style={{ padding: 40, fontFamily: 'system-ui' }}>
@@ -88,6 +91,7 @@ function AppRoutes() {
       <Route path="/logs"           element={<PrivateRoute><Logs /></PrivateRoute>} />
       <Route path="/recovery-logs"  element={<PrivateRoute><RecoveryLogs /></PrivateRoute>} />
       <Route path="/cost"           element={<PrivateRoute><Cost /></PrivateRoute>} />
+      <Route path="/help"           element={<PrivateRoute><Help /></PrivateRoute>} />
       <Route path="/connectors"     element={<PrivateRoute><Connectors /></PrivateRoute>} />
       <Route path="/team"           element={<PrivateRoute><Team /></PrivateRoute>} />
       <Route path="/settings"       element={<PrivateRoute><Stub name="AI provider settings" /></PrivateRoute>} />
