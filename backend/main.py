@@ -1567,6 +1567,39 @@ def _run_pipeline_execution(pipeline_id: str, tables_override: list,
     exec_result["total_rows"] = this_run_rows
 
     AnalyticsAgent().run(ctx)
+    
+
+    # Persist quality report to pipeline artifacts with real audit_rows count
+    if ctx.quality_result:
+        try:
+            pipe_obj = db.query(Pipeline).filter(Pipeline.id == pipeline_id).first()
+            if pipe_obj:
+                quality_to_save = dict(ctx.quality_result)
+                # Fetch actual audit log count
+                try:
+                    import psycopg2 as _pg2
+                    _tc = target_config
+                    _conn = _pg2.connect(
+                        host=_tc.get("host"), port=_tc.get("port", 5432),
+                        dbname=_tc.get("database_name") or _tc.get("database"),
+                        user=_tc.get("username"), password=_tc.get("password")
+                    )
+                    _cur = _conn.cursor()
+                    _cur.execute(
+                        'SELECT COUNT(*) FROM warehouse.dq_audit_log WHERE pipeline_id = %s',
+                        (pipeline_id,)
+                    )
+                    quality_to_save["audit_rows"] = _cur.fetchone()[0]
+                    _cur.close(); _conn.close()
+                except Exception as _ae:
+                    print(f"[Quality] Could not fetch audit count: {_ae}")
+                arts = dict(pipe_obj.artifacts or {})
+                arts["quality_report"] = quality_to_save
+                pipe_obj.artifacts = arts
+                db.commit()
+                print(f"[Quality] Report saved to pipeline artifacts")
+        except Exception as _qe:
+            print(f"[Quality] Could not save report: {_qe}")
 
     if run_id and run_registry.should_stop(run_id):
         print("[Pipeline] 🛑 Stop was requested during this run — warehouse load completed "
@@ -2670,6 +2703,32 @@ def run_quality_check(pipeline_id: str, current_user=Depends(get_current_user),
 
     QualityAgent().run(ctx)
     quality = ctx.quality_result or {}
+
+    # Fetch actual audit log count from warehouse.dq_audit_log
+    try:
+        tgt = db.query(Connector).filter(
+            Connector.id == pipeline.target_connector_id
+        ).first() or db.query(Connector).filter(
+            Connector.id == pipeline.connector_id
+        ).first()
+        if tgt:
+            import psycopg2
+            tc = _cfg(tgt)
+            conn_pg = psycopg2.connect(
+                host=tc.get("host"), port=tc.get("port", 5432),
+                dbname=tc.get("database_name") or tc.get("database"),
+                user=tc.get("username"), password=tc.get("password")
+            )
+            cur_pg = conn_pg.cursor()
+            cur_pg.execute(
+                'SELECT COUNT(*) FROM warehouse.dq_audit_log WHERE pipeline_id = %s',
+                (pipeline_id,)
+            )
+            total_audit = cur_pg.fetchone()[0]
+            cur_pg.close(); conn_pg.close()
+            quality["audit_rows"] = total_audit
+    except Exception as _ae:
+        print(f"[Quality] Could not fetch audit count: {_ae}")
 
     # Save report to pipeline artifacts
     try:
