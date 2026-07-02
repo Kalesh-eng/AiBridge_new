@@ -2807,6 +2807,51 @@ def run_quality_check(pipeline_id: str, current_user=Depends(get_current_user),
             "pipeline_name": pipeline.name, "report": quality}
 
 
+@app.get("/quality/audit/{pipeline_id}")
+def get_quality_audit(pipeline_id: str, limit: int = 500,
+                      current_user=Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    """Fetch audit records directly from warehouse.dq_audit_log for a pipeline."""
+    pipeline = db.query(Pipeline).filter(Pipeline.id == pipeline_id).first()
+    if not pipeline: raise HTTPException(404, "Pipeline not found")
+
+    try:
+        tgt = None
+        if pipeline.target_connector_id:
+            tgt = db.query(Connector).filter(Connector.id == pipeline.target_connector_id).first()
+        if not tgt:
+            tgt = db.query(Connector).filter(Connector.id == pipeline.connector_id).first()
+        if not tgt:
+            return {"success": True, "pipeline_id": pipeline_id, "records": [], "total": 0}
+
+        import psycopg2, psycopg2.extras
+        tc = _cfg(tgt)
+        conn = psycopg2.connect(
+            host=tc.get("host"), port=tc.get("port", 5432),
+            dbname=tc.get("database_name") or tc.get("database"),
+            user=tc.get("username"), password=tc.get("password")
+        )
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("""
+            SELECT audit_id, pipeline_id, run_id, table_name, column_name,
+                   issue_type, reason, check_type, check_date, created_at
+            FROM warehouse.dq_audit_log
+            WHERE pipeline_id = %s
+            ORDER BY check_date DESC
+            LIMIT %s
+        """, (pipeline_id, limit))
+        rows = [dict(r) for r in cur.fetchall()]
+        cur.execute("SELECT COUNT(*) FROM warehouse.dq_audit_log WHERE pipeline_id = %s", (pipeline_id,))
+        total = cur.fetchone()["count"]
+        cur.close(); conn.close()
+        return {"success": True, "pipeline_id": pipeline_id,
+                "records": rows, "total": total}
+    except Exception as e:
+        print(f"[Quality] Could not fetch audit records: {e}")
+        return {"success": True, "pipeline_id": pipeline_id, "records": [], "total": 0,
+                "error": str(e)}
+
+
 # ── Recovery Agent ────────────────────────────────────────────────────────────
 
 @app.get("/recovery/logs")
