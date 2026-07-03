@@ -1481,6 +1481,14 @@ def _run_pipeline_execution(pipeline_id: str, tables_override: list,
                                                "but warehouse tables were not built this run."}
 
     # ── QualityAgent — PRE-LOAD (scan staging, quarantine bad rows) ───────────
+    # Pass business-defined required columns to quality agent
+    try:
+        db.refresh(pipeline)
+    except Exception as _re:
+        print(f"[Pipeline] Could not refresh pipeline: {_re}")
+    req_cols = (pipeline.artifacts or {}).get("required_columns", {})
+    print(f"[Pipeline] Required columns loaded: {req_cols}")
+    ctx.required_columns = req_cols
     print(f"[Pipeline] Running QualityAgent (pre-load)...")
     QualityAgent().run(ctx)
     quality_data   = ctx.quality_result or {}
@@ -2850,6 +2858,24 @@ def get_quality_audit(pipeline_id: str, limit: int = 500,
         print(f"[Quality] Could not fetch audit records: {e}")
         return {"success": True, "pipeline_id": pipeline_id, "records": [], "total": 0,
                 "error": str(e)}
+
+
+@app.post("/pipeline/{pipeline_id}/required-columns")
+def save_required_columns(pipeline_id: str, payload: dict,
+                          current_user=Depends(get_current_user),
+                          db: Session = Depends(get_db)):
+    """Save business-defined required (NOT NULL) columns for quality checks."""
+    pipeline = db.query(Pipeline).filter(Pipeline.id == pipeline_id).first()
+    if not pipeline:
+        raise HTTPException(404, "Pipeline not found")
+    try:
+        artifacts = dict(pipeline.artifacts or {})
+        artifacts["required_columns"] = payload.get("required_columns", {})
+        pipeline.artifacts = artifacts
+        db.commit()
+        return {"success": True, "required_columns": artifacts["required_columns"]}
+    except Exception as e:
+        raise HTTPException(500, str(e))
 
 
 # ── Recovery Agent ────────────────────────────────────────────────────────────
