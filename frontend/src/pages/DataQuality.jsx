@@ -332,7 +332,7 @@ export default function DataQuality() {
                             <tr>{['Table', 'Column', 'Nulls', 'Total', 'Status', 'Issue Type'].map(h => <th key={h} style={th}>{h}</th>)}</tr>
                           </thead>
                           <tbody>
-                            {(report.null_checks || []).map((c, i) => (
+                            {(report.null_checks || []).filter(c => !c.passed).map((c, i) => (
                               <tr key={i} style={{ background: c.passed ? '#fff' : '#FEF2F2' }}>
                                 <td style={td}><code style={code}>{c.table}</code></td>
                                 <td style={td}><code style={code}>{c.column}</code></td>

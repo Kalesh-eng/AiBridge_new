@@ -110,14 +110,18 @@ def _extract_from_duckdb(source_config: dict, table_name: str,
 
         # Chunked insert — handles 1M+ rows without timeout or memory issues
         CHUNK_SIZE     = 50_000
+        # Convert float NaN to None for all columns before PostgreSQL insert
+        import numpy as np
         df             = df.where(pd.notna(df), None)
+        df             = df.where(df != "NaN", None)
         placeholders   = ", ".join(["%s"] * len(df.columns))
         total_inserted = 0
 
         pg_conn.autocommit = False
         for start in range(0, len(df), CHUNK_SIZE):
             chunk = df.iloc[start:start + CHUNK_SIZE]
-            rows  = [tuple(row) for row in chunk.itertuples(index=False, name=None)]
+            import math
+            rows  = [tuple(None if (isinstance(v, float) and math.isnan(v)) else v for v in row) for row in chunk.itertuples(index=False, name=None)]
             cur.executemany(
                 f'INSERT INTO "{staging_schema}"."{stg_table}" VALUES ({placeholders})',
                 rows
