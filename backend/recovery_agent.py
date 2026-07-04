@@ -309,6 +309,55 @@ END $$;
                                     "remove_scd_column",
                                     f"Removed SCD Type 2 column {scd_col} from INSERT/SELECT/JOIN")
 
+
+    # Pattern 10: dim_date JOIN on non-existent date column
+    # AI invents listing_date, transaction_date etc that don't exist in flat files
+    # Fix: use year-based JOIN + fix column case issues
+    if "does not exist" in error_lower and "date" in error_lower:
+        date_join = re.search(
+            r'JOIN\s+warehouse\.dim_date\s+(\w+)\s+ON\s+[^\n;]+',
+            script_sql, re.IGNORECASE
+        )
+        if date_join:
+            alias = date_join.group(1)
+            new_join = (
+                f'JOIN warehouse.dim_date {alias} ON '
+                f'{alias}.year = src."Year" '
+                f'AND {alias}.month = 1 AND {alias}.day = 1'
+            )
+            fixed_sql = re.sub(
+                r'JOIN\s+warehouse\.dim_date\s+\w+\s+ON\s+[^\n;]+',
+                new_join, script_sql, flags=re.IGNORECASE
+            )
+            if fixed_sql != script_sql:
+                # Fix column case issues in the patched SQL
+                try:
+                    conn_fix = _connect(conn_config)
+                    conn_fix.autocommit = True
+                    cur_fix = conn_fix.cursor()
+                    stg_match = re.search(r'FROM\s+staging\.(stg_\w+)', fixed_sql, re.IGNORECASE)
+                    if stg_match:
+                        stg_tbl = stg_match.group(1)
+                        cur_fix.execute(
+                            "SELECT column_name FROM information_schema.columns WHERE table_schema='staging' AND table_name=%s",
+                            (stg_tbl,)
+                        )
+                        actual_cols = {r[0].lower(): r[0] for r in cur_fix.fetchall()}
+                        def fix_col_case(m):
+                            col = m.group(1)
+                            actual = actual_cols.get(col.lower())
+                            if actual and actual != col:
+                                return f'src."{actual}"'
+                            return m.group(0)
+                        fixed_sql = re.sub(r'src\."(\w+)"', fix_col_case, fixed_sql)
+                    cur_fix.close(); conn_fix.close()
+                except Exception as _ce:
+                    print(f"[RecoveryAgent {recovery_id}] Column case fix warning: {_ce}")
+                print(f"[RecoveryAgent {recovery_id}] Pattern fix: dim_date join → year join on Year")
+                return _try_execute(recovery_id, fixed_sql, conn_config,
+                                    "fix_date_join",
+                                    "Fixed dim_date JOIN: invented date col → year join on Year + column case fixes")
+
     return {"recovered": False, "fix_method": "no_pattern_match",
             "action_taken": "none", "summary": "No pattern matched"}
 

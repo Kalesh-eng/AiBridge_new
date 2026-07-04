@@ -1489,6 +1489,7 @@ def _run_pipeline_execution(pipeline_id: str, tables_override: list,
     req_cols = (pipeline.artifacts or {}).get("required_columns", {})
     print(f"[Pipeline] Required columns loaded: {req_cols}")
     ctx.required_columns = req_cols
+    ctx.source_connector_type = source_config.get("connector_type", "postgres")
     print(f"[Pipeline] Running QualityAgent (pre-load)...")
     QualityAgent().run(ctx)
     quality_data   = ctx.quality_result or {}
