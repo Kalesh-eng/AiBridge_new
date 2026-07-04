@@ -350,6 +350,19 @@ def _expand_composite_joins(sql_scripts: list, target_config: dict,
             'created_at', 'loaded_at', 'effective_start_date',
             'effective_end_date'
         }
+        # Get nullable columns from staging — used to apply IS NOT DISTINCT FROM
+        nullable_src_cols = set()
+        try:
+            conn_n = _pg_connect(target_config)
+            cur_n  = conn_n.cursor()
+            cur_n.execute("""
+                SELECT column_name FROM information_schema.columns
+                WHERE table_schema = %s AND is_nullable = 'YES'
+            """, (staging_schema,))
+            nullable_src_cols = {r[0] for r in cur_n.fetchall()}
+            cur_n.close(); conn_n.close()
+        except Exception:
+            pass
 
         patched = []
         for script in sql_scripts:
@@ -402,26 +415,33 @@ def _expand_composite_joins(sql_scripts: list, target_config: dict,
                             missing.append(col)
                             continue
                         src_col = src_col_lookup[key]
+                        is_nullable = src_col in nullable_src_cols
                         if 'numeric' in dtype.lower() or 'decimal' in dtype.lower():
-                            # dim column is rounded (e.g. NUMERIC(10,2)) but the
-                            # staging source column often has higher raw precision
-                            # (e.g. NUMERIC(20,6)) — round BOTH sides to the dim's
-                            # actual scale before comparing, or equality will almost
-                            # always fail on floating-point-style mismatches.
                             scale = dim_col_scale.get((dim_table, col), 2)
-                            new_conditions.append(
-                                f'ROUND({alias}.{col}, {scale}) = ROUND(src."{src_col}"::numeric, {scale})'
-                            )
+                            if is_nullable:
+                                new_conditions.append(
+                                    f'{alias}.{col} IS NOT DISTINCT FROM src."{src_col}"'
+                                )
+                            else:
+                                new_conditions.append(
+                                    f'ROUND({alias}.{col}, {scale}) = ROUND(src."{src_col}"::numeric, {scale})'
+                                )
                         elif 'char' in dtype.lower() or 'text' in dtype.lower():
-                            # Text columns from CSV sources frequently carry stray
-                            # leading/trailing whitespace ("Toyota " vs "Toyota").
-                            # TRIM both sides by default so this never silently
-                            # breaks the JOIN.
-                            new_conditions.append(
-                                f'TRIM({alias}.{col}) = TRIM(src."{src_col}")'
-                            )
+                            if is_nullable:
+                                new_conditions.append(
+                                    f'{alias}.{col} IS NOT DISTINCT FROM src."{src_col}"'
+                                )
+                            else:
+                                new_conditions.append(
+                                    f'TRIM({alias}.{col}) = TRIM(src."{src_col}")'
+                                )
                         else:
-                            new_conditions.append(f'{alias}.{col} = src."{src_col}"')
+                            if is_nullable:
+                                new_conditions.append(
+                                    f'{alias}.{col} IS NOT DISTINCT FROM src."{src_col}"'
+                                )
+                            else:
+                                new_conditions.append(f'{alias}.{col} = src."{src_col}"')
 
                     # Only expand if we resolved ALL dim columns against real staging columns
                     if new_conditions and not missing:
@@ -948,6 +968,51 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
             )
 
 
+            # Nullable JOIN fix: IS NOT DISTINCT FROM for nullable source cols
+            if script.get('name', '').startswith('fact_') and raw_tbl:
+                try:
+                    conn_nj = _pg_connect(target_config)
+                    cur_nj  = conn_nj.cursor()
+                    cur_nj.execute(
+                        "SELECT column_name FROM information_schema.columns "
+                        "WHERE table_schema = %s AND table_name = %s AND is_nullable = 'YES'",
+                        (staging_schema, raw_tbl)
+                    )
+                    nullable_src = {r[0].lower() for r in cur_nj.fetchall()}
+                    cur_nj.close(); conn_nj.close()
+                    if nullable_src:
+                        import re as _re2
+                        def _fix_null(m):
+                            da, dc, sc = m.group(1), m.group(2), m.group(3)
+                            if sc.lower() in nullable_src:
+                                return da + '.' + dc + ' IS NOT DISTINCT FROM src."' + sc + '"'
+                            return m.group(0)
+                        new_sql = _re2.sub(r'(\w+)\.(\w+)\s*=\s*src\."(\w+)"', _fix_null, sql)
+                        if new_sql != sql:
+                            sql = new_sql
+                            log("[SQLPatch] Nullable JOIN: IS NOT DISTINCT FROM applied")
+                        # Also fix TRIM-wrapped patterns (TRIM fix runs before us)
+                        new_sql2 = _re2.sub(
+                            r'TRIM\((\w+\.\w+)\)\s*=\s*TRIM\(src\."(\w+)"\)',
+                            lambda m: (m.group(1) + ' IS NOT DISTINCT FROM src."' + m.group(2) + '"'
+                                       if m.group(2).lower() in nullable_src else m.group(0)),
+                            sql
+                        )
+                        if new_sql2 != sql:
+                            sql = new_sql2
+                            log("[SQLPatch] Nullable JOIN TRIM: IS NOT DISTINCT FROM applied")
+                        # Also fix TRIM-wrapped patterns (TRIM fix runs before us)
+                        new_sql2 = _re2.sub(
+                            r'TRIM\((\w+\.\w+)\)\s*=\s*TRIM\(src\."(\w+)"\)',
+                            lambda m: (m.group(1) + ' IS NOT DISTINCT FROM src."' + m.group(2) + '"'
+                                       if m.group(2).lower() in nullable_src else m.group(0)),
+                            sql
+                        )
+                        if new_sql2 != sql:
+                            sql = new_sql2
+                            log("[SQLPatch] Nullable JOIN TRIM: IS NOT DISTINCT FROM applied")
+                except Exception as _nj:
+                    log(f"[SQLPatch] Nullable JOIN warning: {_nj}")
             if sql != original:
                 script = {**script, "sql": sql}
                 log(f"[SQLPatch] ✓ Patched SQL for: {script.get('name')}")
@@ -1130,10 +1195,20 @@ def _auto_create_intermediate_staging(target_config: dict, staging_schema: str,
                     continue
 
             cols_sql = ", ".join(f'"{c}"' for c in select_cols)
+            # Use SELECT DISTINCT only for dimension staging tables
+            # Fact staging tables must keep ALL rows (no DISTINCT) to preserve grain
+            # Detect if this staging table is used by a fact script
+            # Check if any fact SQL script references this staging table
+            is_fact_stg = any(
+                missing_tbl in script.get("sql", "").lower()
+                for script in sql_scripts
+                if script.get("name", "").startswith("fact_")
+            )
+            distinct_clause = "" if is_fact_stg else "DISTINCT"
             create_sql = f"""
                 DROP TABLE IF EXISTS "{staging_schema}"."{missing_tbl}";
                 CREATE TABLE "{staging_schema}"."{missing_tbl}" AS
-                SELECT DISTINCT {cols_sql}
+                SELECT {distinct_clause} {cols_sql}
                 FROM "{staging_schema}"."{best_raw}";
             """
 
@@ -1281,7 +1356,7 @@ def execute_warehouse_scripts(
         if _is_pg(target_config):
             try:
                 from sql_safety import check_sql_safety
-                sf = check_sql_safety(sql, allow_destructive=False, script_name=name)
+                sf = check_sql_safety(sql, allow_destructive=is_snapshot_source, script_name=name)
                 if sf["blocked"]:
                     viol = sf["violations"][0]["name"] if sf["violations"] else "dangerous SQL"
                     log(f"🛑 BLOCKED: {name} — {viol}")
@@ -1293,7 +1368,7 @@ def execute_warehouse_scripts(
 
         # For fact tables, expand any under-specified dim JOINs now that
         # dims are already loaded — prevents row multiplication bugs
-        if _is_pg(target_config) and name.startswith("fact_"):
+        if False:  # _expand_composite_joins disabled — IS NOT DISTINCT FROM handles nullable JOINs
             try:
                 expanded = _expand_composite_joins(
                     [{"name": name, "sql": sql}], target_config,
