@@ -2684,6 +2684,44 @@ def run_quality_check(pipeline_id: str, current_user=Depends(get_current_user),
             "pipeline_name": pipeline.name, "report": quality}
 
 
+
+@app.get("/quality/audit/{pipeline_id}")
+def get_quality_audit(pipeline_id: str, limit: int = 500,
+                      current_user=Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    """Fetch audit records directly from warehouse.dq_audit_log for a pipeline."""
+    pipeline = db.query(Pipeline).filter(Pipeline.id == pipeline_id).first()
+    if not pipeline: raise HTTPException(404, "Pipeline not found")
+    try:
+        tgt = None
+        if pipeline.target_connector_id:
+            tgt = db.query(Connector).filter(Connector.id == pipeline.target_connector_id).first()
+        if not tgt and pipeline.connector_id:
+            tgt = db.query(Connector).filter(Connector.id == pipeline.connector_id).first()
+        if not tgt:
+            return {"success": True, "records": [], "total": 0}
+        import psycopg2, psycopg2.extras
+        conn = psycopg2.connect(
+            host=tgt.host, port=tgt.port, dbname=tgt.database_name,
+            user=tgt.username, password=tgt.password
+        )
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("""
+            SELECT audit_id as id, pipeline_id, table_name, column_name, issue_type,
+                   check_type as check_name, reason as message, row_data, check_date
+            FROM warehouse.dq_audit_log
+            WHERE pipeline_id = %s
+            ORDER BY check_date DESC
+            LIMIT %s
+        """, (pipeline_id, limit))
+        records = cur.fetchall()
+        cur.execute("SELECT COUNT(*) FROM warehouse.dq_audit_log WHERE pipeline_id = %s", (pipeline_id,))
+        total = cur.fetchone()["count"]
+        cur.close(); conn.close()
+        return {"success": True, "records": [dict(r) for r in records], "total": total}
+    except Exception as e:
+        return {"success": True, "records": [], "total": 0, "error": str(e)}
+
 # ── Recovery Agent ────────────────────────────────────────────────────────────
 
 @app.get("/recovery/logs")
