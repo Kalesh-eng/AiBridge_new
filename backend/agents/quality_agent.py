@@ -78,8 +78,7 @@ class QualityAgent(BaseAgent):
         for stg_table in stg_tables:
             checks, removed = _check_nulls_in_staging(
                 target_config, staging_schema, warehouse_schema,
-                stg_table, pipeline_id, run_id, result,
-                required_columns=getattr(ctx, 'required_columns', {})
+                stg_table, pipeline_id, run_id, result
             )
             null_checks.extend(checks)
             total_removed += removed
@@ -334,8 +333,7 @@ def _pg_connect(config: dict):
 def _check_nulls_in_staging(config: dict, staging_schema: str,
                               warehouse_schema: str, stg_table: str,
                               pipeline_id: str, run_id: str,
-                              result: AgentResult,
-                              required_columns: dict = None) -> tuple:
+                              result: AgentResult) -> tuple:
     """
     Check staging table for null values in key columns.
     Bad rows → dq_audit_log + deleted from staging.
@@ -347,34 +345,19 @@ def _check_nulls_in_staging(config: dict, staging_schema: str,
     if not columns:
         return checks, rows_removed
 
-    # Determine which columns to check for nulls:
-    # 1. If business defined required_columns — use those for this table
-    # 2. Else fall back to _id/_key columns only
+    # Key columns: _id suffix, _key suffix, common fact measures
     col_names = [c["name"] for c in columns]
-    required_columns = required_columns or {}
-
-    # Find required cols for this staging table
-    # required_columns keys are "target_table.target_column" — map to staging col names
-    # Case-insensitive match — required cols may be lowercase, staging cols may be mixed case
-    col_names_lower = {c.lower(): c for c in col_names}
-    business_required = [
-        col_names_lower[col.split(".")[-1].lower()]
-        for col, is_req in required_columns.items()
-        if is_req and col.split(".")[-1].lower() in col_names_lower
+    key_cols  = [
+        c["name"] for c in columns
+        if c["name"].endswith("_id")
+        or c["name"].endswith("_key")
+        or c["name"] in ("amount", "balance", "bill_amount", "loan_amount",
+                          "transaction_date", "visit_date", "enrollment_date",
+                          "opened_date", "disbursed_date")
     ]
 
-    if business_required:
-        key_cols = business_required
-        result.log(f"  Using {len(key_cols)} business-defined required columns for null checks")
-    else:
-        # Fall back to _id/_key columns
-        key_cols = [
-            c["name"] for c in columns
-            if c["name"].endswith("_id") or c["name"].endswith("_key")
-        ]
-        if not key_cols:
-            key_cols = []  # No key cols found — skip null checks
-            result.log(f"  No required columns defined and no _id/_key columns — skipping null checks for {stg_table}")
+    if not key_cols:
+        key_cols = [c["name"] for c in columns]  # Check ALL columns for nulls
 
     try:
         conn = _pg_connect(config)
@@ -398,13 +381,9 @@ def _check_nulls_in_staging(config: dict, staging_schema: str,
             passed    = (null_count == 0)
             null_rate = (null_count / total) if total > 0 else 0
 
-            # Critical columns: _id, _key suffix → delete rows with nulls
-            # Non-critical columns: flag only → write to audit but keep rows
-            is_critical = (col.endswith("_id") or col.endswith("_key"))
-
             if not passed:
                 if null_rate == 1.0:
-                    # Load failure — all rows null in this column
+                    # Load failure — all rows bad
                     issue_type = "load_failure"
                     reason     = (f"All {total} rows have NULL {col} — "
                                   f"staging table {stg_table} failed to load correctly")
@@ -420,45 +399,49 @@ def _check_nulls_in_staging(config: dict, staging_schema: str,
                                         "null_rate":  "100%"},
                         "check_type":  "null_check"
                     }])
-                    if is_critical:
-                        cur.execute(f'TRUNCATE TABLE "{staging_schema}"."{stg_table}"')
-                        conn.commit()
-                        rows_removed += total
-                        print(f"[QualityAgent] 🗑 {total} rows removed from "
-                              f"{stg_table} (load_failure — all NULL {col})")
-                    else:
-                        print(f"[QualityAgent] ⚠ {null_count} nulls in {stg_table}.{col} — flagged only (non-critical column)")
+                    # Truncate the staging table — all rows are bad
+                    cur.execute(f'TRUNCATE TABLE "{staging_schema}"."{stg_table}"')
+                    conn.commit()
+                    rows_removed += total
+                    print(f"[QualityAgent] 🗑 {total} rows removed from "
+                          f"{stg_table} (load_failure — all NULL {col})")
 
                 else:
-                    # Partial nulls
-                    issue_type = "null_value"
+                    # Partial nulls — quarantine only bad rows
+                    issue_type = "data_quality"
 
-                    # Write summary record to audit (not per-row for non-critical)
+                    # Fetch bad rows
+                    cur.execute(f"""
+                        SELECT row_to_json(t) FROM (
+                            SELECT * FROM "{staging_schema}"."{stg_table}"
+                            WHERE "{col}" IS NULL
+                            LIMIT 1000
+                        ) t
+                    """)
+                    bad_rows = [r[0] for r in cur.fetchall()]
+
+                    # Write to audit
                     _write_audit_records(config, warehouse_schema, [{
                         "pipeline_id": pipeline_id,
                         "run_id":      run_id,
                         "table_name":  stg_table,
                         "column_name": col,
-                        "issue_type":  "null_value",
-                        "reason":      f"{null_count}/{total} rows have NULL {col} ({round(null_rate*100,1)}%)",
-                        "row_data":    {"null_count": null_count, "total_rows": total,
-                                        "null_rate": f"{round(null_rate*100,1)}%"},
+                        "issue_type":  "data_quality",
+                        "reason":      f"NULL value in key column {col}",
+                        "row_data":    row,
                         "check_type":  "null_check"
-                    }])
+                    } for row in bad_rows])
 
-                    if is_critical:
-                        # Delete rows only for critical columns
-                        cur.execute(f"""
-                            DELETE FROM "{staging_schema}"."{stg_table}"
-                            WHERE "{col}" IS NULL
-                        """)
-                        deleted = cur.rowcount
-                        conn.commit()
-                        rows_removed += deleted
-                        print(f"[QualityAgent] 🗑 {deleted} rows removed from "
-                              f"{stg_table} (NULL {col} — critical column → audit log)")
-                    else:
-                        print(f"[QualityAgent] ⚠ {null_count} nulls in {stg_table}.{col} — flagged only (non-critical column)")
+                    # Delete bad rows from staging
+                    cur.execute(f"""
+                        DELETE FROM "{staging_schema}"."{stg_table}"
+                        WHERE "{col}" IS NULL
+                    """)
+                    deleted = cur.rowcount
+                    conn.commit()
+                    rows_removed += deleted
+                    print(f"[QualityAgent] 🗑 {deleted} rows removed from "
+                          f"{stg_table} (NULL {col} → audit log)")
 
             checks.append({
                 "check":      f"{stg_table}.{col} — null check",
@@ -511,13 +494,14 @@ def _check_duplicates_in_staging(config: dict, staging_schema: str,
         None
     )
     if not id_col:
-        # No natural key column found — check for fully duplicate rows (all columns identical)
+        # No natural key column found — fall back to checking for fully
+        # duplicate rows (every column identical) using ctid to distinguish them.
         result.log(f"  No _id column in {stg_table} — checking for fully duplicate rows")
         try:
-            import json
             conn2 = _pg_connect(config)
             conn2.autocommit = False
             cur2  = conn2.cursor()
+            # Cast all columns to TEXT to avoid NaN/float precision issues in GROUP BY
             col_list = ", ".join(f'CAST("{c}" AS TEXT)' for c in col_names)
             cur2.execute(f"""
                 SELECT COUNT(*) FROM (
@@ -531,6 +515,7 @@ def _check_duplicates_in_staging(config: dict, staging_schema: str,
             cur2.execute(f'SELECT COUNT(*) FROM "{staging_schema}"."{stg_table}"')
             total2 = cur2.fetchone()[0]
             if dup_groups > 0:
+                # Fetch duplicate rows for audit (up to 1000)
                 cur2.execute(f"""
                     SELECT row_to_json(t) FROM (
                         SELECT * FROM "{staging_schema}"."{stg_table}"
@@ -554,6 +539,7 @@ def _check_duplicates_in_staging(config: dict, staging_schema: str,
                     "row_data":    row if isinstance(row, str) else json.dumps(row),
                     "check_type":  "duplicate_check"
                 } for row in bad_rows])
+                # Delete duplicates — keep one copy per unique row
                 cur2.execute(f"""
                     DELETE FROM "{staging_schema}"."{stg_table}"
                     WHERE ctid NOT IN (
@@ -592,7 +578,9 @@ def _check_duplicates_in_staging(config: dict, staging_schema: str,
                 "message":    f"0 fully duplicate rows in {total2} rows"
             }, 0
         except Exception as e2:
+            import traceback
             result.log(f"  Warning: full-row duplicate check failed: {e2}")
+            result.log(f"  Detail: {traceback.format_exc()[:300]}")
             return None, 0
 
     try:

@@ -4,15 +4,6 @@ conn = psycopg2.connect(host='localhost', port=5433, dbname='postgres',
 cur = conn.cursor()
 
 cur.execute("""
-    SELECT column_name, 
-           COUNT(*) FILTER (WHERE column_name IS NOT NULL) as has_nulls
-    FROM information_schema.columns
-    WHERE table_schema = 'staging' AND table_name = 'stg_raw_used_car_10k_sample'
-    ORDER BY ordinal_position
-""")
-
-# Get actual null counts per column
-cur.execute("""
     SELECT 
         COUNT(*) FILTER (WHERE "Brand" IS NULL) as brand_nulls,
         COUNT(*) FILTER (WHERE "Fuel_Type" IS NULL) as fuel_nulls,
@@ -22,15 +13,15 @@ cur.execute("""
         COUNT(*) FILTER (WHERE "City" IS NULL) as city_nulls,
         COUNT(*) FILTER (WHERE "Price" IS NULL) as price_nulls,
         COUNT(*) FILTER (WHERE "Color" IS NULL) as color_nulls,
-        COUNT(*) FILTER (WHERE "Owner_Type" IS NULL) as owner_nulls
+        COUNT(*) FILTER (WHERE "Owner_Type" IS NULL) as owner_nulls,
+        COUNT(*) as total
     FROM staging.stg_raw_used_car_10k_sample
 """)
 row = cur.fetchone()
-cols = ['Brand', 'Fuel_Type', 'Engine_CC', 'Horsepower', 'Transmission', 
-        'City', 'Price', 'Color', 'Owner_Type']
+cols = ['Brand', 'Fuel_Type', 'Engine_CC', 'Horsepower', 'Transmission',
+        'City', 'Price', 'Color', 'Owner_Type', 'TOTAL']
 for col, val in zip(cols, row):
-    if val > 0:
-        print(f"{col}: {val} nulls")
+    print(f"{col}: {val} nulls")
 
 cur.close()
 conn.close()
