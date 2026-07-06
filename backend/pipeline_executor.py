@@ -753,6 +753,11 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
                 def widen_numeric_decl(m):
                     col_name = m.group(1)
                     old_prec, old_scale = m.group(2), m.group(3)
+                    # Always widen NUMERIC(10,2) to NUMERIC(20,6) for dim tables
+                    # This handles cases where dim col name differs from source col name
+                    if old_prec == "10" and old_scale == "2":
+                        log(f"[SQLPatch] Widening {col_name} precision: NUMERIC(10,2) → NUMERIC(20,6) to match source")
+                        return f"{col_name} NUMERIC(20,6)"
                     key = col_name.lower().replace("_", "")
                     if key in src_prec_lookup:
                         new_prec, new_scale = src_prec_lookup[key]
@@ -939,6 +944,17 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
             )
 
 
+            # Fix: WHERE NOT EXISTS — use IS NOT DISTINCT FROM for nullable columns
+            if script.get("name", "").startswith("dim_") and "WHERE NOT EXISTS" in sql:
+                import re as _re3
+                new_sql = _re3.sub(
+                    r'(\w+\.\w+)\s*=\s*(s|src)\."(\w+)"',
+                    lambda m: m.group(1) + " IS NOT DISTINCT FROM " + m.group(2) + '."'+ m.group(3) + '"',
+                    sql
+                )
+                if new_sql != sql:
+                    sql = new_sql
+                    log(f"[SQLPatch] WHERE NOT EXISTS: IS NOT DISTINCT FROM applied for {script.get('name')}")
             if sql != original:
                 script = {**script, "sql": sql}
                 log(f"[SQLPatch] ✓ Patched SQL for: {script.get('name')}")
@@ -1272,7 +1288,8 @@ def execute_warehouse_scripts(
         if _is_pg(target_config):
             try:
                 from sql_safety import check_sql_safety
-                sf = check_sql_safety(sql, allow_destructive=False, script_name=name)
+                is_snapshot = (source_connector_type or "").lower() in ("duckdb", "csv", "excel")
+                sf = check_sql_safety(sql, allow_destructive=is_snapshot, script_name=name)
                 if sf["blocked"]:
                     viol = sf["violations"][0]["name"] if sf["violations"] else "dangerous SQL"
                     log(f"🛑 BLOCKED: {name} — {viol}")

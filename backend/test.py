@@ -1,36 +1,37 @@
-import psycopg2
-conn = psycopg2.connect(host='localhost', port=5433, dbname='postgres', 
-                        user='postgres', password='postgres123')
-cur = conn.cursor()
+with open('E:/AIBRIDGE_Claude/backend/pipeline_executor.py', encoding='utf-8') as f:
+    lines = f.readlines()
 
-cur.execute("""
-    SELECT column_name, 
-           COUNT(*) FILTER (WHERE column_name IS NOT NULL) as has_nulls
-    FROM information_schema.columns
-    WHERE table_schema = 'staging' AND table_name = 'stg_raw_used_car_10k_sample'
-    ORDER BY ordinal_position
-""")
+# Find the widen_numeric_decl function and add fuzzy matching
+for i, line in enumerate(lines):
+    if 'def widen_numeric_decl(m):' in line:
+        print(f"Found widen_numeric_decl at line {i+1}")
+        # Find the key = col_name.lower().replace("_", "") line
+        for j in range(i, min(len(lines), i+10)):
+            if 'key = col_name.lower().replace' in lines[j]:
+                # Add fuzzy lookup after the key line
+                insert_at = j + 1
+                new_lines = [
+                    '                    # Also check fuzzy match — dim col name may differ from source\n',
+                    '                    # e.g. max_power in dim maps to Horsepower in source\n',
+                    '                    if key not in src_prec_lookup:\n',
+                    '                        for src_col_key in src_prec_lookup:\n',
+                    '                            if (key in src_col_key or src_col_key in key) and len(key) > 4:\n',
+                    '                                key = src_col_key\n',
+                    '                                break\n',
+                ]
+                lines[insert_at:insert_at] = new_lines
+                print(f"Inserted fuzzy lookup at line {insert_at+1}")
+                break
+        break
 
-# Get actual null counts per column
-cur.execute("""
-    SELECT 
-        COUNT(*) FILTER (WHERE "Brand" IS NULL) as brand_nulls,
-        COUNT(*) FILTER (WHERE "Fuel_Type" IS NULL) as fuel_nulls,
-        COUNT(*) FILTER (WHERE "Engine_CC" IS NULL) as engine_nulls,
-        COUNT(*) FILTER (WHERE "Horsepower" IS NULL) as hp_nulls,
-        COUNT(*) FILTER (WHERE "Transmission" IS NULL) as trans_nulls,
-        COUNT(*) FILTER (WHERE "City" IS NULL) as city_nulls,
-        COUNT(*) FILTER (WHERE "Price" IS NULL) as price_nulls,
-        COUNT(*) FILTER (WHERE "Color" IS NULL) as color_nulls,
-        COUNT(*) FILTER (WHERE "Owner_Type" IS NULL) as owner_nulls
-    FROM staging.stg_raw_used_car_10k_sample
-""")
-row = cur.fetchone()
-cols = ['Brand', 'Fuel_Type', 'Engine_CC', 'Horsepower', 'Transmission', 
-        'City', 'Price', 'Color', 'Owner_Type']
-for col, val in zip(cols, row):
-    if val > 0:
-        print(f"{col}: {val} nulls")
+with open('E:/AIBRIDGE_Claude/backend/pipeline_executor.py', 'w', encoding='utf-8') as f:
+    f.writelines(lines)
 
-cur.close()
-conn.close()
+import ast
+with open('E:/AIBRIDGE_Claude/backend/pipeline_executor.py', encoding='utf-8') as f:
+    src = f.read()
+try:
+    ast.parse(src)
+    print(f"Syntax OK - {len(src.splitlines())} lines")
+except SyntaxError as e:
+    print(f"ERROR at line {e.lineno}: {e.msg}")
