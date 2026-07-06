@@ -9,6 +9,7 @@ import { useAuth } from './AuthContext'
 const NAV = [
   { path: '/',               label: 'Dashboard',          color: '#185FA5', section: 'Main',      tip: 'Overview of your pipelines, recent runs, and system status' },
   { path: '/agent',          label: 'ETL Agent',          color: '#534AB7',                        tip: 'AI-powered pipeline designer — describe your data, get a full star schema and SQL automatically' },
+  { path: '/migration',      label: '🔄 Migration Agent',  color: '#534AB7',                        tip: 'Reverse engineer, extend or migrate an existing data warehouse' },
   { path: '/source-target',  label: 'Source → Target',    color: '#185FA5',                        tip: 'Configure which connector is the data source and which is the warehouse target' },
   { path: '/model',          label: 'Data model',         color: '#854F0B',                        tip: 'View and edit the AI-generated star schema (fact tables + dimension tables)' },
   { path: '/mapping',        label: 'ETL mapping',        color: '#0F6E56',                        tip: 'Column-level mappings showing how source fields map to warehouse columns' },
