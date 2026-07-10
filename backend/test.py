@@ -1,99 +1,116 @@
-with open('E:/AIBRIDGE_Claude/backend/pipeline_executor.py', encoding='utf-8') as f:
+with open('E:/AIBRIDGE_Claude/backend/universal_connector.py', encoding='utf-8') as f:
     lines = f.readlines()
 
-changes = 0
-
-# Fix 1: _patch_sql_column_names — lines 463-464 (0-indexed: 462-463)
-# Find "if not _is_pg(target_config):" after line 461
+# Find the line with "Write to PostgreSQL staging" comment
 for i, line in enumerate(lines):
-    if i > 458 and i < 475 and 'if not _is_pg(target_config):' in line:
-        next_line = lines[i+1] if i+1 < len(lines) else ''
-        if 'return sql_scripts' in next_line:
-            print(f"Found Fix 1 at line {i+1}")
-            # Remove the if not _is_pg guard (2 lines)
-            lines[i]   = '    # universal: runs for all target DB types\n'
-            lines[i+1] = '    # (connection handled per-DB below)\n'
-            changes += 1
-            print("✓ Fix 1: removed _is_pg guard from _patch_sql_column_names")
-            break
-
-# Fix the _pg_connect call right after (now around line 466)
-for i, line in enumerate(lines):
-    if i > 460 and i < 480 and 'conn = _pg_connect(target_config)' in line:
-        # Check it's in _patch_sql_column_names context
-        print(f"Found _pg_connect in patch function at line {i+1}")
-        lines[i] = '''        ct = target_config.get("connector_type", "postgres").lower()
-        if ct in ("postgres", "postgresql", "redshift"):
-            conn = _pg_connect(target_config)
-        elif ct == "snowflake":
-            from universal_connector import _snowflake_connect
-            conn = _snowflake_connect(target_config)
-        elif ct in ("mysql", "mariadb"):
-            from universal_connector import _mysql_connect
-            conn = _mysql_connect(target_config)
-        elif ct in ("sqlserver", "mssql", "azuresql"):
-            from universal_connector import _sqlserver_connect
-            conn = _sqlserver_connect(target_config)
-        else:
-            conn = _pg_connect(target_config)
+    if 'Write to PostgreSQL staging' in line:
+        print(f"Found at line {i+1}: {line.rstrip()}")
+        # Find the block — from this comment to engine.dispose()
+        start = i
+        end = None
+        for j in range(i, min(len(lines), i+15)):
+            if 'engine.dispose()' in lines[j]:
+                end = j
+                break
+        if end:
+            print(f"Block runs from line {start+1} to {end+1}")
+            # Replace the block
+            new_block = '''            # Write to target staging DB (any supported DB type)
+            tgt_ct_stg = target_config.get("connector_type", "postgres").lower()
+            if tgt_ct_stg in ("postgres", "postgresql", "redshift"):
+                from sqlalchemy import create_engine as _ce
+                port = target_config.get("port", 5432)
+                tgt_url = (
+                    f"postgresql+psycopg2://{target_config['username']}:{target_config['password']}"
+                    f"@{target_config['host']}:{port}/{target_config['database']}"
+                )
+                engine = _ce(tgt_url)
+                df.to_sql(stg, engine, schema=staging_schema,
+                          if_exists="replace", index=False,
+                          chunksize=10000, method="multi")
+                engine.dispose()
+            elif tgt_ct_stg == "mysql":
+                from sqlalchemy import create_engine as _ce
+                port = target_config.get("port", 3306)
+                tgt_url = (
+                    f"mysql+pymysql://{target_config['username']}:{target_config['password']}"
+                    f"@{target_config['host']}:{port}/{target_config['database']}"
+                )
+                engine = _ce(tgt_url)
+                df.to_sql(stg, engine, schema=None,
+                          if_exists="replace", index=False,
+                          chunksize=10000, method="multi")
+                engine.dispose()
+            elif tgt_ct_stg in ("sqlserver", "mssql", "azuresql"):
+                from sqlalchemy import create_engine as _ce
+                import urllib
+                port = target_config.get("port", 1433)
+                params = urllib.parse.quote_plus(
+                    f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+                    f"SERVER={target_config['host']},{port};"
+                    f"DATABASE={target_config['database']};"
+                    f"UID={target_config['username']};"
+                    f"PWD={target_config['password']}"
+                )
+                tgt_url = f"mssql+pyodbc:///?odbc_connect={params}"
+                engine = _ce(tgt_url)
+                df.to_sql(stg, engine, schema=staging_schema,
+                          if_exists="replace", index=False,
+                          chunksize=10000, method="multi")
+                engine.dispose()
+            elif tgt_ct_stg == "snowflake":
+                from sqlalchemy import create_engine as _ce
+                account  = target_config.get("account", "")
+                tgt_url  = (
+                    f"snowflake://{target_config['username']}:{target_config['password']}"
+                    f"@{account}/{target_config['database']}/{staging_schema}"
+                )
+                engine = _ce(tgt_url)
+                df.to_sql(stg, engine, schema=staging_schema,
+                          if_exists="replace", index=False,
+                          chunksize=10000, method="multi")
+                engine.dispose()
+            elif tgt_ct_stg == "bigquery":
+                # BigQuery uses pandas-gbq or bigquery storage API
+                project = target_config.get("project_id", target_config.get("database", ""))
+                dataset = staging_schema
+                df.to_gbq(
+                    f"{dataset}.{stg}",
+                    project_id=project,
+                    if_exists="replace",
+                    credentials=None  # uses ADC or service account from target_config
+                )
+            else:
+                # Fallback to PostgreSQL
+                from sqlalchemy import create_engine as _ce
+                port = target_config.get("port", 5432)
+                tgt_url = (
+                    f"postgresql+psycopg2://{target_config['username']}:{target_config['password']}"
+                    f"@{target_config['host']}:{port}/{target_config['database']}"
+                )
+                engine = _ce(tgt_url)
+                df.to_sql(stg, engine, schema=staging_schema,
+                          if_exists="replace", index=False,
+                          chunksize=10000, method="multi")
+                engine.dispose()
 '''
-        changes += 1
-        print("✓ Fix 1b: _patch_sql_column_names uses universal connection")
+            # Replace lines from start to end+1
+            lines[start:end+1] = [new_block]
+            print("✓ Replaced staging write block with universal version")
         break
 
-# Fix 2: _auto_create_intermediate_staging — around line 981-986
+# Also update the docstring
 for i, line in enumerate(lines):
-    if i > 978 and i < 990 and 'if not _is_pg(target_config):' in line:
-        next_line = lines[i+1] if i+1 < len(lines) else ''
-        if 'return' in next_line and 'sql_scripts' not in next_line:
-            print(f"Found Fix 2 at line {i+1}")
-            lines[i]   = '    # universal: runs for all target DB types\n'
-            lines[i+1] = '    ct_stg = target_config.get("connector_type", "postgres").lower()\n'
-            changes += 1
-            print("✓ Fix 2: removed _is_pg guard from _auto_create_intermediate_staging")
-            break
-
-# Fix the _pg_connect in _auto_create_intermediate_staging
-for i, line in enumerate(lines):
-    if i > 983 and i < 996 and 'conn = _pg_connect(target_config)' in line:
-        print(f"Found _pg_connect in staging function at line {i+1}")
-        lines[i] = '''    if ct_stg in ("postgres", "postgresql", "redshift"):
-        conn = _pg_connect(target_config)
-    elif ct_stg == "snowflake":
-        from universal_connector import _snowflake_connect
-        conn = _snowflake_connect(target_config)
-    elif ct_stg in ("mysql", "mariadb"):
-        from universal_connector import _mysql_connect
-        conn = _mysql_connect(target_config)
-    elif ct_stg in ("sqlserver", "mssql", "azuresql"):
-        from universal_connector import _sqlserver_connect
-        conn = _sqlserver_connect(target_config)
-    else:
-        conn = _pg_connect(target_config)
-'''
-        changes += 1
-        print("✓ Fix 2b: _auto_create_intermediate_staging uses universal connection")
+    if 'Target (staging) is always PostgreSQL.' in line:
+        lines[i] = '    Target (staging) is any supported DB — client choice.\n'
+        print("✓ Updated docstring")
         break
 
-# Fix 4: _expand_composite_joins — around line 291
-for i, line in enumerate(lines):
-    if i > 287 and i < 298 and 'if not _is_pg(target_config):' in line:
-        next_line = lines[i+1] if i+1 < len(lines) else ''
-        if 'return sql_scripts' in next_line:
-            print(f"Found Fix 4 at line {i+1}")
-            lines[i]   = '    # universal: runs for all target DB types\n'
-            lines[i+1] = '    # (expand composite joins for any target)\n'
-            changes += 1
-            print("✓ Fix 4: removed _is_pg guard from _expand_composite_joins")
-            break
-
-with open('E:/AIBRIDGE_Claude/backend/pipeline_executor.py', 'w', encoding='utf-8') as f:
+with open('E:/AIBRIDGE_Claude/backend/universal_connector.py', 'w', encoding='utf-8') as f:
     f.writelines(lines)
 
-print(f"\n{changes} fixes applied")
-
 import ast
-with open('E:/AIBRIDGE_Claude/backend/pipeline_executor.py', encoding='utf-8') as f:
+with open('E:/AIBRIDGE_Claude/backend/universal_connector.py', encoding='utf-8') as f:
     src = f.read()
 try:
     ast.parse(src)
