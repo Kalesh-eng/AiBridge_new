@@ -289,8 +289,8 @@ def _expand_composite_joins(sql_scripts: list, target_config: dict,
 
     Fully generic — works for ANY domain, ANY dim/fact names.
     """
-    if not _is_pg(target_config):
-        return sql_scripts
+    # universal: runs for all target DB types
+    # (expand composite joins for any target)
 
     import re
     try:
@@ -462,11 +462,24 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
     import re  # ← import at top of function, not inside loop!
     import difflib
 
-    if not _is_pg(target_config):
-        return sql_scripts
+    # universal: runs for all target DB types
+    # (connection handled per-DB below)
 
     try:
-        conn = _pg_connect(target_config)
+        ct = target_config.get("connector_type", "postgres").lower()
+        if ct in ("postgres", "postgresql", "redshift"):
+            conn = _pg_connect(target_config)
+        elif ct == "snowflake":
+            from universal_connector import _snowflake_connect
+            conn = _snowflake_connect(target_config)
+        elif ct in ("mysql", "mariadb"):
+            from universal_connector import _mysql_connect
+            conn = _mysql_connect(target_config)
+        elif ct in ("sqlserver", "mssql", "azuresql"):
+            from universal_connector import _sqlserver_connect
+            conn = _sqlserver_connect(target_config)
+        else:
+            conn = _pg_connect(target_config)
         cur  = conn.cursor()
 
         # Get all staging table columns
@@ -980,11 +993,23 @@ def _auto_create_intermediate_staging(target_config: dict, staging_schema: str,
 
     Fully generic — works for ANY domain, ANY file, zero hardcoding.
     """
-    if not _is_pg(target_config):
-        return
+    # universal: runs for all target DB types
+    ct_stg = target_config.get("connector_type", "postgres").lower()
 
     import re
-    conn = _pg_connect(target_config)
+    if ct_stg in ("postgres", "postgresql", "redshift"):
+        conn = _pg_connect(target_config)
+    elif ct_stg == "snowflake":
+        from universal_connector import _snowflake_connect
+        conn = _snowflake_connect(target_config)
+    elif ct_stg in ("mysql", "mariadb"):
+        from universal_connector import _mysql_connect
+        conn = _mysql_connect(target_config)
+    elif ct_stg in ("sqlserver", "mssql", "azuresql"):
+        from universal_connector import _sqlserver_connect
+        conn = _sqlserver_connect(target_config)
+    else:
+        conn = _pg_connect(target_config)
     conn.autocommit = True
     cur  = conn.cursor()
 
@@ -1284,18 +1309,17 @@ def execute_warehouse_scripts(
             log(f"⊘ Skipping {name} — empty SQL")
             continue
 
-        # Safety check (PostgreSQL only for now)
-        if _is_pg(target_config):
-            try:
-                from sql_safety import check_sql_safety
-                is_snapshot = (source_connector_type or "").lower() in ("duckdb", "csv", "excel")
-                sf = check_sql_safety(sql, allow_destructive=is_snapshot, script_name=name)
-                if sf["blocked"]:
-                    viol = sf["violations"][0]["name"] if sf["violations"] else "dangerous SQL"
-                    log(f"🛑 BLOCKED: {name} — {viol}")
-                    continue
-            except Exception:
-                pass
+        # Safety check (all targets)
+        try:
+            from sql_safety import check_sql_safety
+            is_snapshot = (source_connector_type or "").lower() in ("duckdb", "csv", "excel")
+            sf = check_sql_safety(sql, allow_destructive=is_snapshot, script_name=name)
+            if sf["blocked"]:
+                viol = sf["violations"][0]["name"] if sf["violations"] else "dangerous SQL"
+                log(f"🛑 BLOCKED: {name} — {viol}")
+                continue
+        except Exception:
+            pass
 
         log(f"Running: {name} ({label})")
 

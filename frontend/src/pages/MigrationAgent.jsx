@@ -25,6 +25,22 @@ export default function MigrationAgent() {
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [scanResult, setScanResult]   = useState(null)
   const [resolvedGaps, setResolvedGaps] = useState({})
+  const [sqlScripts, setSqlScripts]   = useState(null)
+  const [sqlLoading, setSqlLoading]   = useState(false)
+  const [sqlError, setSqlError]       = useState(null)
+  const [expandedScript, setExpandedScript] = useState(null)
+  const [approvalId, setApprovalId]         = useState(null)
+  const [approvalStatus, setApprovalStatus] = useState(null) // null | 'pending' | 'approved' | 'rejected' | 'blocked'
+  const [approvalRiskLevel, setApprovalRiskLevel] = useState(null)
+  const [approvalLoading, setApprovalLoading] = useState(false)
+  const [approvalError, setApprovalError]     = useState(null)
+  const [safetyBlock, setSafetyBlock]         = useState(null) // {violations, warnings, message} when blocked
+  const [understandDestructive, setUnderstandDestructive] = useState(false)
+  const [deploySourceConnector, setDeploySourceConnector] = useState('')
+  const [deploySourceSchema, setDeploySourceSchema]       = useState('raw')
+  const [deployLoading, setDeployLoading] = useState(false)
+  const [deployError, setDeployError]     = useState(null)
+  const [deployResult, setDeployResult]   = useState(null)
   const fileRef = useRef(null)
 
   const [connectors, setConnectors]       = useState([])
@@ -77,6 +93,117 @@ export default function MigrationAgent() {
       setError(e.response?.data?.detail || e.message || 'Scan failed')
     }
     setLoading(false)
+  }
+
+  const handleGenerateSql = async () => {
+    setSqlLoading(true); setSqlError(null)
+    try {
+      const resolutions = {}
+      Object.entries(resolvedGaps).forEach(([idx, text]) => {
+        const gapColumn = scanResult?.gaps?.[idx]?.column
+        if (gapColumn) resolutions[gapColumn] = text
+        resolutions[idx] = text
+      })
+      const r = await api.post('/migration/generate-sql', {
+        tables:      scanResult.tables || [],
+        mappings:    scanResult.mappings || [],
+        gaps:        scanResult.gaps || [],
+        resolutions,
+        domain:      scanResult.domain || ''
+      })
+      setSqlScripts(r.data.sql_scripts?.scripts || [])
+      setApprovalId(r.data.approval_id)
+      setApprovalStatus('pending')
+      setApprovalRiskLevel(r.data.risk_level)
+      setSafetyBlock(null)
+      setDeployResult(null)
+      goTo(3)
+    } catch (e) {
+      setSqlError(e.response?.data?.detail || e.message || 'SQL generation failed')
+    }
+    setSqlLoading(false)
+  }
+
+  // Reuses the SAME /pipeline/approve-sql endpoint native pipelines use for
+  // their Gate 2 SQL review — no migration-specific approval endpoint needed.
+  const handleApprove = async () => {
+    if (!approvalId) return
+    setApprovalLoading(true); setApprovalError(null)
+    try {
+      const r = await api.post('/pipeline/approve-sql', {
+        approval_id: approvalId,
+        i_understand_destructive: understandDestructive
+      })
+      if (r.data.blocked) {
+        setSafetyBlock({
+          violations: r.data.violations || [],
+          warnings:   r.data.warnings || [],
+          message:    r.data.message || 'This SQL contains destructive operations that need explicit confirmation.'
+        })
+        setApprovalStatus('blocked')
+      } else {
+        setApprovalStatus('approved')
+        setSafetyBlock(null)
+      }
+    } catch (e) {
+      setApprovalError(e.response?.data?.detail || e.message || 'Approval failed')
+    }
+    setApprovalLoading(false)
+  }
+
+  const handleReject = async () => {
+    if (!approvalId) return
+    setApprovalLoading(true); setApprovalError(null)
+    try {
+      await api.post('/pipeline/reject', { approval_id: approvalId, comments: 'Rejected from Migration Agent review', regenerate: true })
+      setApprovalStatus('rejected')
+    } catch (e) {
+      setApprovalError(e.response?.data?.detail || e.message || 'Rejection failed')
+    }
+    setApprovalLoading(false)
+  }
+
+  // Source tables to extract are derived from the parsed mappings'
+  // source_table field (e.g. "SRC_CAR") — deduplicated, in first-seen order,
+  // excluding anything flagged needs_review (not a real extractable table).
+  const derivedSourceTables = Array.from(new Set(
+    (scanResult?.mappings || [])
+      .filter(m => !m.needs_review)
+      .map(m => m.source_table)
+      .filter(Boolean)
+  ))
+
+  const handleDeploy = async () => {
+    if (approvalStatus !== 'approved') {
+      setDeployError('These SQL scripts must be approved before deploying — use the Approve button above.')
+      return
+    }
+    if (!deploySourceConnector) {
+      setDeployError('Select the source system connector first — this is where the legacy data actually lives.')
+      return
+    }
+    if (!selectedConnector) {
+      setDeployError('No target warehouse connector selected — go back to Step 1 and pick one.')
+      return
+    }
+    setDeployLoading(true); setDeployError(null); setDeployResult(null)
+    try {
+      const r = await api.post('/migration/deploy', {
+        approval_id:          approvalId,
+        project_name:         `Migration: ${scanResult?.domain || 'warehouse'} — ${new Date().toLocaleDateString()}`,
+        source_connector_id:  deploySourceConnector,
+        target_connector_id:  selectedConnector,
+        source_schema:        deploySourceSchema,
+        staging_schema:       conn.staging_schema || 'staging',
+        warehouse_schema:     conn.warehouse_schema || 'warehouse',
+        source_tables:        derivedSourceTables,
+        data_model:           { domain: scanResult?.domain, tables: scanResult?.tables }
+      })
+      setDeployResult(r.data)
+    } catch (e) {
+      setDeployError(e.response?.data?.detail || e.message || 'Deployment failed')
+    }
+    setDeployLoading(false)
   }
 
   const fileTypeIcon = (type) => ({
@@ -458,10 +585,21 @@ export default function MigrationAgent() {
                       ))}
                     </div>
                   </div>
+                  {sqlError && (
+                    <div style={{ ...errBox, marginTop: 12 }}>
+                      {sqlError}
+                      <button style={{ float: 'right', background: 'none', border: 'none', cursor: 'pointer', color: '#991b1b' }} onClick={() => setSqlError(null)}>✕</button>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                    <button style={{ ...btnPrimary, background: '#534AB7' }} onClick={() => goTo(3)}>Generate SQL scripts →</button>
-                    {(scanResult.gaps || []).length > 0 && (
-                      <button style={btnGhost} onClick={() => setActiveTab('gaps')}>Resolve {scanResult.gaps.length} gaps first</button>
+                    <button style={{ ...btnPrimary, background: '#534AB7', opacity: sqlLoading ? 0.6 : 1 }}
+                      onClick={handleGenerateSql} disabled={sqlLoading}>
+                      {sqlLoading ? '⏳ Generating SQL...' : 'Generate SQL scripts →'}
+                    </button>
+                    {(scanResult.gaps || []).length > Object.keys(resolvedGaps).length && (
+                      <button style={btnGhost} onClick={() => setActiveTab('gaps')}>
+                        {(scanResult.gaps || []).length - Object.keys(resolvedGaps).length} gaps still unresolved
+                      </button>
                     )}
                   </div>
                 </div>
@@ -556,29 +694,205 @@ export default function MigrationAgent() {
           </div>
         )}
 
-        {/* ── Step 3: Generate & deploy ── */}
+        {/* ── Step 3: Generated SQL & deploy ── */}
         {step === 3 && (
-          <div style={{ maxWidth: 520, margin: '0 auto', textAlign: 'center' }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>✅</div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: '#111', marginBottom: 8 }}>Migration complete</div>
-            <div style={{ fontSize: 13, color: '#888', marginBottom: 24 }}>
-              SQL scripts generated and ready to deploy. Your existing warehouse is untouched.
+          <div style={{ maxWidth: 760, margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <div style={{ fontSize: 32, marginBottom: 12 }}>✅</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: '#111', marginBottom: 8 }}>SQL scripts generated</div>
+              <div style={{ fontSize: 13, color: '#888' }}>
+                Review each script below. Nothing has been run yet — your existing warehouse is untouched.
+              </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 24 }}>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
               {[
-                { label: 'Scripts generated', val: (scanResult?.tables || []).length },
-                { label: 'Tables mapped',     val: (scanResult?.tables || []).length },
+                { label: 'Scripts generated', val: (sqlScripts || []).length },
+                { label: 'Tables covered',    val: (scanResult?.tables || []).filter(t => t.type === 'dim' || t.type === 'fact').length },
                 { label: 'Gaps resolved',     val: `${Object.keys(resolvedGaps).length}/${(scanResult?.gaps || []).length}` },
               ].map(m => (
-                <div key={m.label} style={{ background: '#f9fafb', borderRadius: 8, padding: 12 }}>
+                <div key={m.label} style={{ background: '#f9fafb', borderRadius: 8, padding: 12, textAlign: 'center' }}>
                   <div style={{ fontSize: 11, color: '#888' }}>{m.label}</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: '#111' }}>{m.val}</div>
                 </div>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-              <button style={{ ...btnPrimary, background: '#534AB7' }}>▶ Deploy to warehouse</button>
-              <button style={btnGhost}>View SQL scripts</button>
+
+            {(sqlScripts || []).length === 0 ? (
+              <div style={{ ...card, textAlign: 'center', color: '#888', fontSize: 12 }}>
+                No scripts to show. Go back and click "Generate SQL scripts" from the Data model tab.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {sqlScripts.map((s, i) => {
+                  const badgeType = s.name?.startsWith('fact_') ? 'fact' : 'dim'
+                  return (
+                    <div key={i} style={card}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
+                        onClick={() => setExpandedScript(expandedScript === i ? null : i)}>
+                        <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 20, background: badgeType === 'dim' ? '#EEEDFE' : '#FAEEDA', color: badgeType === 'dim' ? '#534AB7' : '#854F0B' }}>{badgeType}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#374151', fontFamily: 'monospace' }}>{s.schema}.{s.name}</span>
+                        <span style={{ fontSize: 11, color: '#aaa' }}>{s.label}</span>
+                        {s.columns_mapped != null && (
+                          <span style={{ fontSize: 11, color: '#888', marginLeft: 'auto' }}>{s.columns_mapped}/{s.columns_total} columns mapped</span>
+                        )}
+                        <i className={`ti ${expandedScript === i ? 'ti-chevron-up' : 'ti-chevron-down'}`} style={{ color: '#aaa' }} />
+                      </div>
+                      {expandedScript === i && (
+                        <pre style={{
+                          marginTop: 10, padding: 12, background: '#0f172a', color: '#e2e8f0',
+                          borderRadius: 6, fontSize: 11, overflowX: 'auto', whiteSpace: 'pre-wrap'
+                        }}>{s.sql}</pre>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {(sqlScripts || []).length > 0 && !deployResult && (
+              <div style={{ ...card, marginTop: 16, borderColor: approvalStatus === 'approved' ? '#86efac' : '#fde68a' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <div style={sectionLabel}>Human review</div>
+                  {approvalRiskLevel && (
+                    <span style={{
+                      fontSize: 9, padding: '1px 6px', borderRadius: 20,
+                      background: approvalRiskLevel === 'high' ? '#fee2e2' : approvalRiskLevel === 'medium' ? '#fef3c7' : '#dcfce7',
+                      color: approvalRiskLevel === 'high' ? '#991b1b' : approvalRiskLevel === 'medium' ? '#92400e' : '#166534'
+                    }}>{approvalRiskLevel} risk</span>
+                  )}
+                </div>
+
+                {approvalStatus === 'pending' && (
+                  <>
+                    <div style={{ fontSize: 12, color: '#888', marginBottom: 10 }}>
+                      Review the generated scripts above before approving. Nothing runs against your
+                      warehouse until you approve — same review gate native AIBridge pipelines use.
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button style={{ ...btnPrimary, background: '#16a34a', opacity: approvalLoading ? 0.6 : 1 }}
+                        onClick={handleApprove} disabled={approvalLoading}>
+                        {approvalLoading ? '⏳ Checking...' : '✓ Approve SQL'}
+                      </button>
+                      <button style={btnGhost} onClick={handleReject} disabled={approvalLoading}>✕ Reject</button>
+                    </div>
+                  </>
+                )}
+
+                {approvalStatus === 'blocked' && safetyBlock && (
+                  <div>
+                    <div style={{ ...errBox, marginBottom: 10 }}>
+                      {safetyBlock.message}
+                      {safetyBlock.violations.length > 0 && (
+                        <ul style={{ margin: '6px 0 0 16px', padding: 0 }}>
+                          {safetyBlock.violations.map((v, i) => <li key={i} style={{ fontSize: 11 }}>{typeof v === 'string' ? v : JSON.stringify(v)}</li>)}
+                        </ul>
+                      )}
+                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, marginBottom: 10, cursor: 'pointer' }}>
+                      <input type="checkbox" checked={understandDestructive}
+                        onChange={e => setUnderstandDestructive(e.target.checked)} />
+                      I understand this contains destructive operations and want to proceed anyway
+                    </label>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button style={{ ...btnPrimary, background: understandDestructive ? '#dc2626' : '#d1d5db', cursor: understandDestructive ? 'pointer' : 'not-allowed' }}
+                        onClick={handleApprove} disabled={!understandDestructive || approvalLoading}>
+                        {approvalLoading ? '⏳ Checking...' : '⚠ Override & Approve'}
+                      </button>
+                      <button style={btnGhost} onClick={handleReject} disabled={approvalLoading}>✕ Reject instead</button>
+                    </div>
+                  </div>
+                )}
+
+                {approvalStatus === 'approved' && (
+                  <div style={{ fontSize: 12, color: '#166534', fontWeight: 600 }}>✓ Approved — ready to deploy below.</div>
+                )}
+
+                {approvalStatus === 'rejected' && (
+                  <div style={{ fontSize: 12, color: '#991b1b' }}>
+                    ✕ Rejected. Go back to the Data model tab and regenerate, adjusting gap resolutions if needed.
+                  </div>
+                )}
+
+                {approvalError && (
+                  <div style={{ ...errBox, marginTop: 10 }}>{approvalError}</div>
+                )}
+              </div>
+            )}
+
+            {(sqlScripts || []).length > 0 && !deployResult && approvalStatus === 'approved' && (
+              <div style={{ ...card, marginTop: 16 }}>
+                <div style={sectionLabel}>Deploy configuration</div>
+                <div style={{ fontSize: 12, color: '#888', marginBottom: 10 }}>
+                  These scripts read from staging tables. Pick the source system connector so
+                  AIBridge knows where to extract the underlying data from before loading the warehouse.
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                  <div>
+                    <label style={labelStyle}>Source system connector</label>
+                    <select style={inp} value={deploySourceConnector}
+                      onChange={e => setDeploySourceConnector(e.target.value)}>
+                      <option value="">— Select connector —</option>
+                      {connectors.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} — {c.connector_type} / {c.host}/{c.database_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Source schema</label>
+                    <input style={inp} value={deploySourceSchema}
+                      onChange={e => setDeploySourceSchema(e.target.value)} placeholder="raw" />
+                  </div>
+                </div>
+                {derivedSourceTables.length > 0 && (
+                  <div style={{ fontSize: 11, color: '#888' }}>
+                    Tables to extract: <span style={{ fontFamily: 'monospace' }}>{derivedSourceTables.join(', ')}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {deployError && (
+              <div style={{ ...errBox, marginTop: 12 }}>
+                {deployError}
+                <button style={{ float: 'right', background: 'none', border: 'none', cursor: 'pointer', color: '#991b1b' }} onClick={() => setDeployError(null)}>✕</button>
+              </div>
+            )}
+
+            {deployResult && (
+              <div style={{ ...card, marginTop: 16, background: deployResult.success ? '#f0fdf4' : '#fef2f2' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: deployResult.success ? '#166534' : '#991b1b', marginBottom: 6 }}>
+                  {deployResult.success ? '✅ Deployment succeeded' : `✗ Deployment failed at: ${deployResult.stage || 'unknown stage'}`}
+                </div>
+                {deployResult.error && <div style={{ fontSize: 12, color: '#991b1b', marginBottom: 6 }}>{deployResult.error}</div>}
+                {deployResult.quality && (
+                  <div style={{ fontSize: 12, color: '#555' }}>
+                    Quality: {deployResult.quality.status} ({deployResult.quality.score}%)
+                  </div>
+                )}
+                {deployResult.warehouse && (
+                  <div style={{ fontSize: 12, color: '#555' }}>
+                    Rows loaded: {deployResult.warehouse.total_rows ?? 'n/a'}
+                  </div>
+                )}
+                {deployResult.pipeline_id && (
+                  <div style={{ fontSize: 11, color: '#888', marginTop: 6 }}>Pipeline ID: {deployResult.pipeline_id}</div>
+                )}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 20 }}>
+              {!deployResult ? (
+                <button style={{ ...btnPrimary, background: '#534AB7', opacity: deployLoading ? 0.6 : 1 }}
+                  onClick={handleDeploy} disabled={(sqlScripts || []).length === 0 || deployLoading || approvalStatus !== 'approved'}>
+                  {deployLoading ? '⏳ Deploying...' : '▶ Deploy to warehouse'}
+                </button>
+              ) : (
+                <button style={btnGhost} onClick={() => setDeployResult(null)}>Deploy again</button>
+              )}
+              <button style={btnGhost} onClick={() => goTo(2)}>← Back to data model</button>
               <button style={btnGhost}>Export docs</button>
             </div>
           </div>
