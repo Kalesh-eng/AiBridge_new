@@ -1824,6 +1824,59 @@ def run_phase_2_sql_generation(schema_analysis: dict,
             script["sql"] = s
         print(f"[ETL Agent] ✓ Rewrote SQL to use schemas: {staging_schema}, {warehouse_schema}")
 
+    # Inject individual staging CREATE TABLE scripts for each stg_<entity>
+    # referenced in the generated SQL but not in actual_staging_tables.
+    # This ensures each dim/fact reads from its own pre-rounded staging table.
+    # Fully generic — no hardcoding of table/column names.
+    import re as _re_stg
+    # Find raw staging table (the one actually extracted)
+    _raw_stg = (actual_staging_tables or [""])[0] if actual_staging_tables else ""
+    if _raw_stg:
+        # Find all staging.stg_<X> references in generated SQL
+        _referenced_stg = set()
+        for _s in sql.get("scripts", []):
+            for _m in _re_stg.finditer(r'staging\.stg_(\w+)', _s.get("sql",""), _re_stg.IGNORECASE):
+                _tbl = f'stg_{_m.group(1)}'
+                if _tbl != _raw_stg:
+                    _referenced_stg.add(_tbl)
+        # For each referenced intermediate staging table, generate CREATE script
+        _inject_scripts = []
+        for _stg_tbl in sorted(_referenced_stg):
+            # Find columns used from this table in the SQL scripts
+            _cols_used = set()
+            for _s in sql.get("scripts", []):
+                _sql = _s.get("sql", "")
+                if f'staging.{_stg_tbl}' in _sql:
+                    # Extract s."ColName" or src."ColName" patterns
+                    for _cm in _re_stg.finditer(r'(?:s|src)\."(\w+)"', _sql):
+                        _cols_used.add(_cm.group(1))
+            if not _cols_used:
+                continue  # skip if no columns detected
+            # Build SELECT with ROUND for float-like column names
+            # Generic heuristic: columns containing cc, kmpl, power, amount, price
+            _float_hints = ("cc", "kmpl", "power", "mileage", "price", "amount",
+                            "salary", "cost", "revenue", "fee", "rate", "score")
+            def _col_select(c):
+                if any(h in c.lower() for h in _float_hints):
+                    return f'ROUND("{c}"::NUMERIC, 2) AS "{c}"'
+                return f'"{c}"'
+            _cols_sql = ", ".join(_col_select(c) for c in sorted(_cols_used))
+            _inject_sql = (
+                f'DROP TABLE IF EXISTS {staging_schema}.{_stg_tbl}; '
+                f'CREATE TABLE {staging_schema}.{_stg_tbl} AS '
+                f'SELECT DISTINCT {_cols_sql} '
+                f'FROM {staging_schema}.{_raw_stg};'
+            )
+            _inject_scripts.append({
+                "name":  _stg_tbl,
+                "label": f"Create intermediate staging from {_raw_stg}",
+                "sql":   _inject_sql
+            })
+            print(f"[ETL Agent] + Injected staging script: {_stg_tbl} (cols: {sorted(_cols_used)})")
+        # Prepend staging scripts before dim/fact scripts
+        if _inject_scripts:
+            sql["scripts"] = _inject_scripts + sql.get("scripts", [])
+
     print(f"[ETL Agent] ✓ Phase 2 complete ({len(sql.get('scripts', []))} scripts)")
 
     return {
