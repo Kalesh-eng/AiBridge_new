@@ -372,14 +372,18 @@ The staging tables are always named stg_<original_table_name>.
 ║ Example: if stg_term is NOT in the list → do NOT create dim_term     ║
 ║ Example: if stg_product is NOT in the list → do NOT create dim_product║
 ║                                                                      ║
-║ COLUMNS ARE NOT TABLES:                                              ║
-║ If you see "term", "semester", "quarter", "status", "type",          ║
-║ "category" as a COLUMN inside a table, do NOT create a dimension     ║
-║ for it. Only create dims for tables that exist in the list above.    ║
-║ Example: enrollments.term column → NOT a reason to create dim_term   ║
-║ Example: orders.status column   → NOT a reason to create dim_status  ║
-║                                                                      ║
-║ dim_date is always allowed (generated from date series, no staging)  ║
+║ COLUMN GROUPING RULE — for single staging table sources:          ║
+║ When only ONE staging table exists, you MAY create multiple    ║
+║ dimension tables by grouping related columns into entities.    ║
+║ Example: Brand+Model+Year → dim_car (vehicle attributes)        ║
+║         City → dim_location, Owner_Type → dim_seller           ║
+║                                                                ║
+║ When MULTIPLE staging tables exist:                            ║
+║ Do NOT create dims from column values that are not entities.   ║
+║ Example: enrollments.term → NOT dim_term (just a column value) ║
+║ Example: orders.status   → NOT dim_status (just a column value)║
+║                                                                ║
+║ dim_date is always allowed (generated from date series)        ║
 ╚══════════════════════════════════════════════════════════════════════╝"""
     return ask_ai(prompt)
 
@@ -1071,6 +1075,18 @@ WRONG (✗):
 ║ include EVERY attribute column of that dimension in the ON clause.   ║
 ║ Never join on a subset — verify row count after design:              ║
 ║   fact row count MUST equal source row count (for 1:1 grain facts)   ║
+║                                                                ║
+║ FLOAT/NUMERIC COLUMN EXCEPTION — CRITICAL:                    ║
+║ NEVER join on float or decimal columns (NUMERIC, FLOAT,        ║
+║ DOUBLE, REAL, DECIMAL) — float precision mismatches cause     ║
+║ 0 rows to match even when values look identical.               ║
+║                                                                ║
+║ ✓ JOIN on: text, varchar, integer, boolean columns            ║
+║ ✗ NEVER JOIN on: engine_cc (float), mileage_kmpl (float),    ║
+║                    price (decimal), amount (numeric)           ║
+║                                                                ║
+║ If removing float columns makes the join non-unique, add more  ║
+║ TEXT columns to the JOIN until each combination is unique.     ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
 ╔══════════════════════════════════════════════════════════════════════╗

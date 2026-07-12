@@ -2898,18 +2898,27 @@ def migration_deploy(
     db: Session = Depends(get_db)
 ):
     """
-    Deploy an APPROVED migration SQL set: requires approval_id from
-    /migration/generate-sql, and that approval must be "approved" or
-    "edited" (via the existing /pipeline/approve-sql) before anything runs.
-    Creates a Pipeline + PipelineVersion row, then RUNS it immediately via
-    the dedicated migration execution flow in agents/migration_agent.py
-    (ETLAgent -> QualityAgent -> ExecutionAgent -> RecoveryAgent ->
-    AnalyticsAgent) — a separate path from /pipeline/execute-async.
+    Deploy an APPROVED migration SQL set — as ONE INDEPENDENT PIPELINE PER
+    INFORMATICA MAPPING (typically one per target table), not a single
+    monolithic pipeline for the whole repository. This gives each table
+    its own Pipeline row, its own PipelineRun history, and failure
+    isolation: if fact_car_listings' extraction fails, dim_car's pipeline
+    (already run separately) is completely unaffected.
+
+    Requires approval_id from /migration/generate-sql, and that approval
+    must be "approved" or "edited" (via the existing /pipeline/approve-sql)
+    before anything runs — this check happens ONCE, up front, covering the
+    whole approved SQL set; only the actual creation/execution is split
+    per-table afterward.
 
     Expects in `req`:
       approval_id (REQUIRED), source_connector_id (REQUIRED),
-      target_connector_id, project_name, source_schema, source_tables
-      (optional — derived from mappings if omitted).
+      target_connector_id (REQUIRED), project_name, source_schema.
+
+    Returns:
+      {"success": bool (true if ALL sub-pipelines succeeded),
+       "pipelines": [{"pipeline_id", "table", "mapping_name", "success",
+                       "stage", "error", "staging", "warehouse", "quality"}, ...]}
     """
     from agents.migration_agent import run_migration_deployment
 
@@ -2928,24 +2937,18 @@ def migration_deploy(
                                       f"Approve it via /pipeline/approve-sql before deploying.")
 
         approved_data = approval.edited_data if approval.status == "edited" and approval.edited_data else approval.proposed_data
-        sql_scripts   = approved_data.get("sql_scripts", {})
-        domain        = approved_data.get("domain", "migrated")
-        mappings      = approved_data.get("mappings", [])
-        tables        = approved_data.get("tables", [])
+        all_scripts  = approved_data.get("sql_scripts", {}).get("scripts", [])
+        domain       = approved_data.get("domain", "migrated")
+        all_mappings = approved_data.get("mappings", [])
+        all_tables   = approved_data.get("tables", [])
+
+        if not all_scripts:
+            raise HTTPException(400, "No SQL scripts found in this approval.")
 
         source_schema    = req.get("source_schema", "raw")
         staging_schema   = req.get("staging_schema") or approved_data.get("staging_schema", "staging")
         warehouse_schema = req.get("warehouse_schema") or approved_data.get("warehouse_schema", "warehouse")
-        project_name     = req.get("project_name", f"Migration - {domain}")
-
-        artifacts = {
-            "sql_scripts": sql_scripts,
-            "data_model":  req.get("data_model", {}),
-            "etl_mappings": {"mappings": mappings},
-            "migration": {
-                "domain": domain, "approval_id": approval_id,
-            }
-        }
+        project_prefix   = req.get("project_name", f"Migration - {domain}")
 
         source_connector_id = req.get("source_connector_id")
         if not source_connector_id:
@@ -2962,92 +2965,107 @@ def migration_deploy(
         if not tgt_connector:
             raise HTTPException(404, "Target connector not found")
 
-        source_tables = req.get("source_tables") or list(dict.fromkeys(
-            m.get("source_table") for m in mappings
-            if m.get("source_table") and not m.get("needs_review")
-        ))
-
-        pipeline = Pipeline(
-            workspace_id      = workspace.get("id"),
-            name              = project_name,
-            source_desc       = f"Migration project - {domain} domain",
-            biz_requirements  = f"Migrated from existing warehouse. Domain: {domain}",
-            schedule          = "manual",
-            artifacts         = artifacts,
-            connector_id      = src_connector.id,
-            source_schema     = "migration",
-            source_columns    = {},
-            source_tables     = [t.get("name") for t in tables],
-            target_connector_id = target_connector_id,
-            staging_schema    = staging_schema,
-            warehouse_schema  = warehouse_schema
-        )
-        db.add(pipeline); db.commit(); db.refresh(pipeline)
-
-        try:
-            version = PipelineVersion(
-                pipeline_id    = pipeline.id,
-                workspace_id   = workspace.get("id"),
-                created_by     = current_user.id,
-                version        = 1,
-                version_label  = "v1",
-                is_active      = True,
-                data_model     = artifacts.get("data_model", {}),
-                sql_scripts    = sql_scripts,
-                etl_mappings   = artifacts.get("etl_mappings", {}),
-                schema_hash    = "",
-                change_summary = f"Migration deployment (approval {approval_id})"
-            )
-            db.add(version); db.commit()
-        except Exception as e:
-            print(f"[Migration] Could not save version: {e}")
-
         source_config = _cfg(src_connector)
         target_config = _cfg(tgt_connector)
 
-        result = run_migration_deployment(
-            source_connector_config=source_config,
-            target_connector_config=target_config,
-            source_schema=source_schema,
-            staging_schema=staging_schema,
-            warehouse_schema=warehouse_schema,
-            source_tables=source_tables,
-            sql_scripts=sql_scripts,
-            data_model=req.get("data_model", {}),
-            pipeline_id=pipeline.id,
-            workspace_id=workspace.get("id"),
-        )
-
-        # Link this run back to the approval that authorized it
-        try:
-            approval.pipeline_id = pipeline.id
-            db.commit()
-        except Exception as e:
-            print(f"[Migration] Could not link approval to pipeline: {e}")
-
-        try:
-            run = PipelineRun(
-                run_id=f"{pipeline.id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}",
-                pipeline_id=pipeline.id, workspace_id=workspace.get("id"),
-                status="success" if result.get("success") else "failed",
-                started_at=datetime.utcnow(), ended_at=datetime.utcnow(),
-                rows_loaded=result.get("warehouse", {}).get("total_rows", 0),
-                log="\n".join(result.get("pipeline_log", []) or result.get("log", []))
+        results = []
+        for script in all_scripts:
+            tname = script.get("name", "")
+            table_mappings = [m for m in all_mappings if m.get("target", "").split(".")[0] == tname]
+            mapping_names = sorted(set(m.get("mapping_name") for m in table_mappings if m.get("mapping_name")))
+            pipeline_label = mapping_names[0] if len(mapping_names) == 1 else (
+                f"{tname} (multiple mappings)" if mapping_names else tname
             )
-            db.add(run); db.commit()
-        except Exception as e:
-            print(f"[Migration] Could not save run record: {e}")
+            source_tables = list(dict.fromkeys(
+                m.get("source_table") for m in table_mappings
+                if m.get("source_table") and not m.get("needs_review")
+            ))
+            table_def = next((t for t in all_tables if t.get("name") == tname), {})
+
+            artifacts = {
+                "sql_scripts":  {"scripts": [script]},
+                "data_model":   {"domain": domain, "tables": [table_def] if table_def else []},
+                "etl_mappings": {"mappings": table_mappings},
+                "migration":    {"domain": domain, "approval_id": approval_id, "mapping_name": pipeline_label},
+            }
+
+            pipeline = Pipeline(
+                workspace_id      = workspace.get("id"),
+                name              = f"{project_prefix} — {pipeline_label}",
+                source_desc       = f"Migration project - {domain} domain ({pipeline_label})",
+                biz_requirements  = f"Migrated from existing warehouse. Domain: {domain}. Mapping: {pipeline_label}.",
+                schedule          = "manual",
+                artifacts         = artifacts,
+                connector_id      = src_connector.id,
+                source_schema     = "migration",
+                source_columns    = {},
+                source_tables     = [tname],
+                target_connector_id = target_connector_id,
+                staging_schema    = staging_schema,
+                warehouse_schema  = warehouse_schema
+            )
+            db.add(pipeline); db.commit(); db.refresh(pipeline)
+
+            try:
+                version = PipelineVersion(
+                    pipeline_id    = pipeline.id,
+                    workspace_id   = workspace.get("id"),
+                    created_by     = current_user.id,
+                    version        = 1,
+                    version_label  = "v1",
+                    is_active      = True,
+                    data_model     = artifacts.get("data_model", {}),
+                    sql_scripts    = {"scripts": [script]},
+                    etl_mappings   = artifacts.get("etl_mappings", {}),
+                    schema_hash    = "",
+                    change_summary = f"Migration deployment (approval {approval_id}, mapping {pipeline_label})"
+                )
+                db.add(version); db.commit()
+            except Exception as e:
+                print(f"[Migration] Could not save version for {tname}: {e}")
+
+            result = run_migration_deployment(
+                source_connector_config=source_config,
+                target_connector_config=target_config,
+                source_schema=source_schema,
+                staging_schema=staging_schema,
+                warehouse_schema=warehouse_schema,
+                source_tables=source_tables,
+                sql_scripts={"scripts": [script]},
+                data_model=artifacts["data_model"],
+                pipeline_id=pipeline.id,
+                workspace_id=workspace.get("id"),
+            )
+
+            try:
+                run = PipelineRun(
+                    run_id=f"{pipeline.id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}",
+                    pipeline_id=pipeline.id, workspace_id=workspace.get("id"),
+                    status="success" if result.get("success") else "failed",
+                    started_at=datetime.utcnow(), ended_at=datetime.utcnow(),
+                    rows_loaded=result.get("warehouse", {}).get("total_rows", 0),
+                    log="\n".join(result.get("pipeline_log", []) or result.get("log", []))
+                )
+                db.add(run); db.commit()
+            except Exception as e:
+                print(f"[Migration] Could not save run record for {tname}: {e}")
+
+            results.append({
+                "pipeline_id":   pipeline.id,
+                "pipeline_name": pipeline.name,
+                "table":         tname,
+                "mapping_name":  pipeline_label,
+                "success":       result.get("success", False),
+                "stage":         result.get("stage"),
+                "error":         result.get("error"),
+                "staging":       result.get("staging"),
+                "warehouse":     result.get("warehouse"),
+                "quality":       result.get("quality"),
+            })
 
         return {
-            "success":       result.get("success", False),
-            "pipeline_id":   pipeline.id,
-            "pipeline_name": pipeline.name,
-            "stage":         result.get("stage"),
-            "error":         result.get("error"),
-            "staging":       result.get("staging"),
-            "warehouse":     result.get("warehouse"),
-            "quality":       result.get("quality"),
-            "log":           result.get("log", []),
+            "success":   all(r["success"] for r in results),
+            "pipelines": results,
         }
     except HTTPException:
         raise

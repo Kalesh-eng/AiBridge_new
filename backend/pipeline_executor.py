@@ -947,7 +947,7 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
                         f"{src_alias}.\"{col_name}\" (text) — casting source to numeric")
                     return f'{alias_col} = CAST({src_alias}."{col_name}" AS NUMERIC)'
                 if is_src_text:
-                    # Default: TRIM text comparisons to avoid whitespace mismatches
+                    return f'{alias_col} IS NOT DISTINCT FROM {src_alias}."{col_name}"'
                     return f'TRIM({alias_col}) = TRIM({src_alias}."{col_name}")'
                 return m.group(0)
 
@@ -960,10 +960,16 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
             # Fix: WHERE NOT EXISTS — use IS NOT DISTINCT FROM for nullable columns
             if script.get("name", "").startswith("dim_") and "WHERE NOT EXISTS" in sql:
                 import re as _re3
+                import re as _re3
+                def _apply_not_distinct(m):
+                    # Skip if already using IS NOT DISTINCT FROM or ROUND
+                    full = m.group(0)
+                    if "ROUND(" in full or "IS NOT DISTINCT" in full:
+                        return full
+                    return m.group(1) + " IS NOT DISTINCT FROM " + m.group(2) + '."'+ m.group(3) + '"'
                 new_sql = _re3.sub(
                     r'(\w+\.\w+)\s*=\s*(s|src)\."(\w+)"',
-                    lambda m: m.group(1) + " IS NOT DISTINCT FROM " + m.group(2) + '."'+ m.group(3) + '"',
-                    sql
+                    _apply_not_distinct, sql
                 )
                 if new_sql != sql:
                     sql = new_sql

@@ -166,5 +166,18 @@
       </MAPPING>
 
     </FOLDER>
+
+    <!-- Workflow definitions — each SESSION's MAPPINGNAME links back to the
+         mapping it runs, giving each mapping a workflow_name for
+         documentation/traceability purposes. -->
+    <WORKFLOW NAME="wf_load_dim_car">
+      <SESSION NAME="s_m_load_dim_car" MAPPINGNAME="m_load_dim_car"/>
+    </WORKFLOW>
+    <WORKFLOW NAME="wf_load_dim_seller">
+      <SESSION NAME="s_m_load_dim_seller" MAPPINGNAME="m_load_dim_seller"/>
+    </WORKFLOW>
+    <WORKFLOW NAME="wf_load_fact_car_listings">
+      <SESSION NAME="s_m_load_fact_car_listings" MAPPINGNAME="m_load_fact_car_listings"/>
+    </WORKFLOW>
   </REPOSITORY>
 </POWERMART>

@@ -442,6 +442,7 @@ export default function EtlAgent() {
   const [connectors,   setConnectors]   = useState([])
   const [connectorId,  setConnectorId]  = useState('')
   const [targetId,     setTargetId]     = useState('')
+  const [stagingId,    setStagingId]    = useState('')   // '' = same as target
   const [stagingSchema,   setStagingSchema]   = useState('staging')
   const [warehouseSchema, setWarehouseSchema] = useState('warehouse')
   const [targetSchemas,   setTargetSchemas]   = useState([])
@@ -741,7 +742,8 @@ products: product_id, name, category, cost_price`,
         connector_id: connectorId,
         source_tables: sourceTables,
         source_columns: sourceColumns,
-        target_connector_id: targetId || '',
+        target_connector_id: targetId,
+          staging_connector_id: stagingId || targetId || '',
         staging_schema: stagingSchema,
         warehouse_schema: warehouseSchema
       })
@@ -820,6 +822,19 @@ products: product_id, name, category, cost_price`,
               </Field>
             )}
 
+            {connectors.length > 0 && (
+              <Field label="Staging connection (temporary area before warehouse load)">
+                <select style={inp} value={stagingId} onChange={e => setStagingId(e.target.value)}>
+                  <option value="">&#8627; Same as target/warehouse (recommended)</option>
+                  {connectors.map(c => (
+                    <option key={c.id} value={c.id}>{c.name} &mdash; {c.host}/{c.database_name}</option>
+                  ))}
+                </select>
+                <div style={{ fontSize: 10, color: '#888', marginTop: 4 }}>
+                  💡 Leave as default unless you need staging in a separate database
+                </div>
+              </Field>
+            )}
             <Field label="Source system description">
               <textarea style={ta} rows={2} value={form.source_description}
                 placeholder="e.g. School management DB / Banking transactions / Hospital records"

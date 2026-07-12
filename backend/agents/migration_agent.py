@@ -635,7 +635,7 @@ def _informatica_trace_backward(iname, fname, instances, transforms, incoming, d
     return iname, fname, ([expr] if expr and expr != fname else [])
 
 
-def parse_informatica_xml(xml_content: str) -> list:
+def parse_informatica_xml(xml_content: str, source_file: str = None) -> list:
     """
     Parse an Informatica PowerCenter repository/mapping export.
 
@@ -672,6 +672,25 @@ def parse_informatica_xml(xml_content: str) -> list:
     except Exception as e:
         print(f"[MigrationAgent] Informatica XML parse error (invalid XML): {e}")
         return mappings
+
+    # Workflow-level context: PowerCenter wraps mappings inside
+    # WORKFLOW > SESSION elements, where SESSION typically carries a
+    # MAPPINGNAME attribute linking back to the mapping it runs. This gives
+    # each mapping a workflow_name for documentation/traceability purposes
+    # (it isn't used for SQL generation). NOTE: exact SESSION/MAPPINGNAME
+    # attribute naming can vary slightly across PowerCenter versions/export
+    # tools — this hasn't been verified against a real repository export, so
+    # if a mapping's workflow can't be found, it's left as None rather than
+    # guessed.
+    mapping_to_workflow = {}
+    for wf in root.iter("WORKFLOW"):
+        wf_name = wf.get("NAME", "")
+        if not wf_name:
+            continue
+        for session in wf.iter("SESSION"):
+            mn = session.get("MAPPINGNAME", "")
+            if mn:
+                mapping_to_workflow[mn] = wf_name
 
     folders = list(root.iter("FOLDER")) or [root]
     found_structured = False
@@ -753,6 +772,37 @@ def parse_informatica_xml(xml_content: str) -> list:
             def is_target_instance(iname):
                 return "Target" in instance_type(iname) or iname in target_defs
 
+            # For Lookup transformations we resolved a real table for (via
+            # TABLEATTRIBUTE), also trace their INPUT port back to find what
+            # feeds the lookup condition. This is a HINT, not a confirmed
+            # join key — PowerCenter's actual LOOKUPCONDITION isn't reliably
+            # parseable without a real sample export to verify the schema
+            # against, so we surface it as a hint for the AI/human to verify
+            # rather than asserting it as ground truth (same reasoning as
+            # the Informatica parser's other tracing: don't guess silently).
+            lookup_join_hints_by_table = {}
+            for tr_name, tmeta in transforms.items():
+                lk_table = tmeta.get("lookup_table")
+                if not lk_table:
+                    continue
+                inst_name = next(
+                    (iname for iname, imeta in instances.items() if imeta.get("transformation") == tr_name),
+                    tr_name
+                )
+                input_ports = [
+                    f for f, meta in tmeta.get("fields", {}).items()
+                    if meta.get("porttype", "").upper().startswith("INPUT")
+                ]
+                if input_ports:
+                    key_port = input_ports[0]
+                    fed_instance, fed_field, _ = _informatica_trace_backward(
+                        inst_name, key_port, instances, transforms, incoming
+                    )
+                    if fed_instance != inst_name or fed_field != key_port:  # only if it actually traced somewhere
+                        lookup_join_hints_by_table[lk_table] = {
+                            "fed_by_table": fed_instance, "fed_by_column": fed_field
+                        }
+
             for c in connectors:
                 if not is_target_instance(c["to_instance"]):
                     continue
@@ -778,8 +828,13 @@ def parse_informatica_xml(xml_content: str) -> list:
                     "target":         f"{target_table}.{target_field}".lower(),
                     "transformation": transformation,
                     "mapping_name":   mapping_name,
+                    "workflow_name":  mapping_to_workflow.get(mapping_name),
+                    "source_file":    source_file,
                     "mapped":         True
                 }
+                join_hint = lookup_join_hints_by_table.get(origin_instance)
+                if join_hint:
+                    mapping_entry["lookup_join_hint"] = join_hint
                 if needs_review:
                     mapping_entry["needs_review"] = True
                     mapping_entry["review_reason"] = (
@@ -802,6 +857,9 @@ def parse_informatica_xml(xml_content: str) -> list:
             "source_table":   connector.get("FROMINSTANCE", ""),
             "target":         target,
             "transformation": connector.get("TRANSFORMATION", "direct"),
+            "mapping_name":   None,
+            "workflow_name":  None,
+            "source_file":    source_file,
             "mapped":         True
         })
     return mappings
@@ -866,6 +924,77 @@ def _staging_table_name(source_table: str) -> str:
     return f"stg_{source_table}"
 
 
+# Best-effort cross-database type name -> PostgreSQL type mapping. A table
+# can be reverse-engineered from any of the 7 supported warehouse types
+# (scan_warehouse), but the actual deploy target is always PostgreSQL (per
+# universal_connector.py: "Target (staging) is always PostgreSQL"). NOT
+# exhaustive — covers common cases per DB. Anything unrecognized passes
+# through as-is with a flag for the AI/human to verify rather than being
+# silently trusted.
+_TYPE_TRANSLATION = {
+    # Oracle
+    "varchar2": "VARCHAR", "nvarchar2": "VARCHAR", "number": "NUMERIC",
+    "clob": "TEXT", "nclob": "TEXT", "long": "TEXT", "raw": "BYTEA",
+    "binary_float": "REAL", "binary_double": "DOUBLE PRECISION",
+    # MySQL / MariaDB
+    "tinyint": "SMALLINT", "mediumint": "INTEGER", "int": "INTEGER",
+    "datetime": "TIMESTAMP", "longtext": "TEXT", "mediumtext": "TEXT",
+    "tinytext": "TEXT", "double": "DOUBLE PRECISION", "enum": "VARCHAR",
+    # SQL Server
+    "nvarchar": "VARCHAR", "ntext": "TEXT", "money": "NUMERIC",
+    "smallmoney": "NUMERIC", "datetime2": "TIMESTAMP", "bit": "BOOLEAN",
+    "uniqueidentifier": "UUID", "image": "BYTEA", "varbinary": "BYTEA",
+    # Snowflake / BigQuery
+    "variant": "JSONB", "object": "JSONB", "array": "JSONB",
+    "string": "TEXT", "int64": "BIGINT", "float64": "DOUBLE PRECISION",
+    "bool": "BOOLEAN", "bytes": "BYTEA", "timestamp_ntz": "TIMESTAMP",
+    "timestamp_tz": "TIMESTAMPTZ",
+}
+
+_ALREADY_VALID_PG_TYPES = {
+    "character varying", "varchar", "integer", "bigint", "smallint",
+    "numeric", "decimal", "boolean", "timestamp", "timestamp without time zone",
+    "timestamp with time zone", "date", "text", "real", "double precision",
+    "uuid", "jsonb", "json", "bytea"
+}
+
+
+def _format_column_type(col: dict) -> str:
+    """
+    Format a scanned column's REAL data type (from scan_warehouse's
+    information_schema introspection) as a PostgreSQL-valid type string, for
+    use in generated CREATE TABLE statements — instead of leaving the AI to
+    guess a type purely from the column name, which is what happened before
+    this existed.
+
+    Translates common non-Postgres type names to Postgres equivalents, since
+    a table can be reverse-engineered from Oracle/MySQL/SQL
+    Server/Snowflake/BigQuery/Redshift but the deploy target is always
+    PostgreSQL. This mapping is best-effort, not exhaustive — an
+    unrecognized type name is passed through as-is and flagged for
+    verification rather than trusted blindly.
+    """
+    raw_type = (col.get("data_type") or "").strip()
+    if not raw_type:
+        return "unknown type — infer from context"
+
+    key = raw_type.lower()
+    base = _TYPE_TRANSLATION.get(key, raw_type)
+    unrecognized = key not in _TYPE_TRANSLATION and key not in _ALREADY_VALID_PG_TYPES
+
+    precision = col.get("numeric_precision")
+    scale = col.get("numeric_scale")
+    max_len = col.get("character_maximum_length")
+
+    if base.upper() in ("NUMERIC", "DECIMAL") and precision:
+        base = f"{base}({precision},{scale or 0})"
+    elif base.upper() in ("VARCHAR", "CHARACTER VARYING") and max_len:
+        base = f"VARCHAR({max_len})"
+
+    suffix = " [UNRECOGNIZED SOURCE TYPE — verify before trusting]" if unrecognized else ""
+    return f"{base}{suffix}"
+
+
 def _quoted_staging_ref(schema: str, stg_table: str) -> str:
     """Build a schema.table reference safe to paste directly into generated
     SQL. Because universal_connector.py creates staging tables with quoted
@@ -928,6 +1057,13 @@ def generate_sql_scripts(tables: list, mappings: list, gaps: list, resolutions: 
             resolution = resolutions.get(str(i)) or resolutions.get(g.get("column", ""))
             if resolution:
                 gap_lookup[g["column"]] = resolution
+        # Also honor resolutions keyed directly by "table.column" for
+        # needs_review mappings — these aren't in `gaps` at all (detect_gaps
+        # only flags columns with NO mapping; needs_review is a mapped-but-
+        # unresolvable case), so they'd otherwise never be picked up here.
+        for key, resolution in resolutions.items():
+            if isinstance(key, str) and "." in key and resolution:
+                gap_lookup.setdefault(key.lower(), resolution)
 
         scripts = []
         for table in tables:
@@ -955,14 +1091,25 @@ def generate_sql_scripts(tables: list, mappings: list, gaps: list, resolutions: 
             for col in table.get("columns", []):
                 cname = col["column_name"]
                 full = f"{tname}.{cname}".lower()
+                real_type = _format_column_type(col)
                 match = table_mappings.get(full)
                 if match and match.get("needs_review"):
-                    # Traced to an unresolvable transformation (e.g. a Lookup
-                    # with no discoverable table) — don't treat this as mapped;
-                    # surface it plainly rather than referencing a fake table.
-                    col_lines.append(
-                        f"  {cname} <- UNRESOLVED: {match.get('review_reason', 'source could not be traced to a real table')}"
-                    )
+                    if full in gap_lookup:
+                        # User resolved this via the Gaps tab — honor it,
+                        # don't force UNRESOLVED just because the automatic
+                        # trace couldn't find a real table on its own.
+                        mapped_count += 1
+                        col_lines.append(
+                            f"  {cname} [{real_type}] <- {gap_lookup[full]}  (user-resolved — was flagged: {match.get('review_reason', 'needed manual review')})"
+                        )
+                    else:
+                        # Traced to an unresolvable transformation (e.g. a
+                        # Lookup with no discoverable table) and no user
+                        # resolution given — don't treat this as mapped;
+                        # surface it plainly rather than referencing a fake table.
+                        col_lines.append(
+                            f"  {cname} [{real_type}] <- UNRESOLVED: {match.get('review_reason', 'source could not be traced to a real table')}"
+                        )
                 elif match:
                     mapped_count += 1
                     expr = match["source"] if match.get("transformation") == "direct" else match["transformation"]
@@ -970,23 +1117,50 @@ def generate_sql_scripts(tables: list, mappings: list, gaps: list, resolutions: 
                     if match.get("source_table"):
                         stg_ref = _quoted_staging_ref(staging_schema, _staging_table_name(match['source_table']))
                         stg_note = f" (from {stg_ref})"
-                    col_lines.append(f"  {cname} <- {expr}{stg_note}")
+                    col_lines.append(f"  {cname} [{real_type}] <- {expr}{stg_note}")
                 elif full in gap_lookup:
                     mapped_count += 1
-                    col_lines.append(f"  {cname} <- {gap_lookup[full]}  (user-resolved)")
+                    col_lines.append(f"  {cname} [{real_type}] <- {gap_lookup[full]}  (user-resolved)")
                 else:
-                    col_lines.append(f"  {cname} <- (unmapped — leave NULL / apply default)")
+                    col_lines.append(f"  {cname} [{real_type}] <- (unmapped — leave NULL / apply default)")
+
+            # Collect any join hints for the staging tables actually in play,
+            # so the AI has a concrete lead instead of guessing a join key
+            # (e.g. it previously invented "ON src.CAR_ID = mk.CAR_ID" out of
+            # thin air, which is silently wrong — worse than flagging it).
+            join_hints_text = []
+            for match in table_mappings.values():
+                hint = match.get("lookup_join_hint")
+                if hint and match.get("source_table") and not match.get("needs_review"):
+                    stg_ref = _quoted_staging_ref(staging_schema, _staging_table_name(match["source_table"]))
+                    fed_ref = f"{hint['fed_by_table']}.{hint['fed_by_column']}"
+                    join_hints_text.append(f"  {stg_ref} is looked up using {fed_ref} as the key (UNCONFIRMED — the exact matching column name inside {stg_ref} could not be determined from the mapping file; verify before relying on this in production)")
 
             if staging_tables_used:
                 quoted_refs = [_quoted_staging_ref(staging_schema, t) for t in staging_tables_used]
                 staging_list_text = ", ".join(quoted_refs)
+                if len(staging_tables_used) > 1:
+                    if join_hints_text:
+                        join_guidance = (
+                            f"JOIN key hints (unconfirmed, verify manually):\n" + "\n".join(join_hints_text) + "\n"
+                            f"Use these hints to write the JOIN, but add a \"-- REVIEW: unconfirmed join key\" "
+                            f"comment on that JOIN line so a human verifies it before this runs in production."
+                        )
+                    else:
+                        join_guidance = (
+                            "No join key could be determined between these staging tables. Do NOT guess one. "
+                            "Instead: SELECT only from the primary staging table, leave any column that would "
+                            "have come from the other staging table(s) as NULL, and add a "
+                            "\"-- REVIEW: could not determine join key with <table>\" comment for each such column."
+                        )
+                else:
+                    join_guidance = ""
                 staging_instruction = (
                     f"Source staging table(s) — use these EXACT references, quotes included, "
                     f"in your FROM/JOIN clauses (they are case-sensitive; do not lowercase or "
                     f"re-derive them): {staging_list_text}\n"
-                    f"If more than one staging table is listed, JOIN them on whatever key "
-                    f"relates them (commonly a shared code/id column) — each column derivation "
-                    f"below notes which staging table it actually comes from."
+                    f"{join_guidance}\n"
+                    f"Each column derivation below notes which staging table it actually comes from."
                 )
             else:
                 staging_list_text = "(none identified — every column is unmapped or user-resolved)"
@@ -1002,19 +1176,44 @@ def generate_sql_scripts(tables: list, mappings: list, gaps: list, resolutions: 
 Target table: {warehouse_schema}.{tname} ({ttype})
 {staging_instruction}
 Domain: {domain or 'unknown'}
-Column derivations (each notes which staging table it comes from, unless marked user-resolved):
+Column derivations — format is "column_name [REAL existing column type] <- derivation".
+The [type] shown is the ACTUAL type of this column in the real, already-existing
+target table (from live database introspection, not a guess) — use it AS-IS
+in your CREATE TABLE statement rather than inferring a different type from
+the column name or expression. A type marked "[UNRECOGNIZED SOURCE TYPE —
+verify before trusting]" means it came from a non-PostgreSQL source system
+and couldn't be confidently translated — use your best judgment but flag it
+with a "-- REVIEW: verify type" comment rather than asserting confidence you
+don't have. Each derivation also notes which staging table it comes from,
+unless marked user-resolved:
 {chr(10).join(col_lines)}
+
+IMPORTANT — the column derivations above may contain Informatica PowerCenter
+expression syntax (e.g. TO_INTEGER(x), TO_CHAR(x), IIF(cond, a, b), DECODE(x,
+v1, r1, v2, r2, default), INSTR(...), SUBSTR(...)). These are NOT valid
+PostgreSQL. You MUST translate them to PostgreSQL equivalents, for example:
+  TO_INTEGER(x)        -> x::INTEGER  or  CAST(x AS INTEGER)
+  TO_CHAR(x)            -> x::TEXT  (PostgreSQL's own TO_CHAR takes a format
+                            string as a 2nd arg — only use it that way, not
+                            as a bare cast)
+  IIF(cond, a, b)        -> CASE WHEN cond THEN a ELSE b END
+  DECODE(x,v1,r1,...,d)  -> CASE WHEN x = v1 THEN r1 ... ELSE d END
+  INSTR(str, sub)        -> POSITION(sub IN str)
+Never emit an Informatica function name verbatim into the generated SQL —
+translate it, or if you cannot confidently translate a specific expression,
+leave that column NULL with a "-- REVIEW: could not translate expression:
+<original expression>" comment instead of guessing.
 
 Write ONE complete, runnable PostgreSQL script for this table containing:
 1. CREATE TABLE IF NOT EXISTS {warehouse_schema}.{tname} (...) with appropriate
    column types inferred from the derivations above.
 2. INSERT INTO {warehouse_schema}.{tname} (...) SELECT ... FROM the staging table(s)
-   listed above (joined together if more than one), using the EXACT quoted
-   references given — do not strip the quotes or change the case, since
-   Postgres treats quoted identifiers as case-sensitive and an unquoted or
-   re-cased reference will silently point at a different, nonexistent table.
-   Apply the column derivations exactly as given (use provided
-   expressions/resolutions verbatim where present).
+   listed above (joined together if more than one, per the join guidance above),
+   using the EXACT quoted references given — do not strip the quotes or change
+   the case, since Postgres treats quoted identifiers as case-sensitive and an
+   unquoted or re-cased reference will silently point at a different,
+   nonexistent table. Apply the column derivations exactly as given, translated
+   to valid PostgreSQL syntax per the rules above.
 3. Use INSERT ... ON CONFLICT DO NOTHING (or an equivalent NOT EXISTS guard)
    so the script is idempotent on re-run.
 4. Add a short "-- REVIEW:" comment above any column marked "unmapped" or
@@ -1175,3 +1374,299 @@ def run_migration_deployment(
         "log":           log,
         "pipeline_log":  ctx.pipeline_log,
     }
+def generate_migration_document(scan_result: dict, resolutions: dict = None, domain_override: str = None) -> bytes:
+    """
+    Generate a business-readable Migration Requirements & Data Lineage
+    document (.docx) from a Migration Agent scan — available as soon as
+    scanning completes (doesn't require SQL to have been generated yet).
+
+    Structure (matches the approved sample):
+      1. Title page — domain, source file, generated-by line
+      2. Executive Summary — narrative + a quick stats table
+      3. Data Model Overview — every dim/fact table, type, row count, columns
+      4. Column-Level Mapping & Lineage — every column's real source,
+         transformation, mapping name, and workflow name
+      5. Gaps & Manual Resolutions — resolved gaps show the resolution;
+         unresolved ones are visibly flagged
+
+    `resolutions` is the same dict shape used by generate_sql_scripts() —
+    gap index or "table.column" -> resolution text.
+
+    Returns raw .docx bytes (write to a file or stream directly in a
+    FastAPI response — no temp file needed).
+    """
+    from docx import Document
+    from docx.shared import Pt, Inches, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.enum.table import WD_TABLE_ALIGNMENT
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+    import io
+
+    resolutions = resolutions or {}
+    tables = scan_result.get("tables", [])
+    mappings = scan_result.get("mappings", [])
+    gaps = scan_result.get("gaps", [])
+    domain = domain_override or scan_result.get("domain", "unknown")
+    ai_summary = scan_result.get("ai_summary", "")
+    source_files = sorted(set(m.get("source_file") for m in mappings if m.get("source_file")))
+    source_file_display = ", ".join(source_files) if source_files else "N/A"
+
+    NAVY = RGBColor(0x2D, 0x2A, 0x6E)
+    GREY = RGBColor(0x55, 0x55, 0x55)
+    RED = RGBColor(0x99, 0x1B, 0x1B)
+    GREEN = RGBColor(0x16, 0x65, 0x34)
+
+    doc = Document()
+    section = doc.sections[0]
+    section.page_width = Inches(8.5)
+    section.page_height = Inches(11)
+
+    def shade_cell(cell, hex_color):
+        shd = OxmlElement('w:shd')
+        shd.set(qn('w:fill'), hex_color)
+        cell._tc.get_or_add_tcPr().append(shd)
+
+    def header_row(table, headers):
+        row = table.rows[0]
+        for i, h in enumerate(headers):
+            cell = row.cells[i]
+            cell.text = ""
+            run = cell.paragraphs[0].add_run(h)
+            run.bold = True
+            run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+            run.font.size = Pt(9)
+            shade_cell(cell, "2D2A6E")
+
+    def data_row(table, values, colors=None):
+        row = table.add_row()
+        for i, v in enumerate(values):
+            cell = row.cells[i]
+            cell.text = ""
+            run = cell.paragraphs[0].add_run(str(v))
+            run.font.size = Pt(9)
+            if colors and colors[i]:
+                run.font.color.rgb = colors[i]
+                run.bold = True
+
+    def narrative(text, size=11):
+        p = doc.add_paragraph()
+        run = p.add_run(text)
+        run.font.size = Pt(size)
+        p.paragraph_format.space_after = Pt(10)
+        return p
+
+    # ── Title page ──
+    for _ in range(6):
+        doc.add_paragraph()
+    title = doc.add_paragraph()
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = title.add_run("Migration Requirements & Data Lineage")
+    r.bold = True; r.font.size = Pt(28); r.font.color.rgb = NAVY
+
+    subtitle = doc.add_paragraph()
+    subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = subtitle.add_run("AIBridge Migration Agent \u2014 Warehouse Migration Documentation")
+    r.font.size = Pt(14); r.font.color.rgb = GREY
+
+    for text, size, color, italic in [
+        (f"Domain: {domain.title() if domain else 'Unknown'}", 12, None, False),
+        (f"Source file(s): {source_file_display}", 10, GREY, False),
+        ("Generated by AIBridge Migration Agent", 11, GREY, True),
+    ]:
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = p.add_run(text)
+        run.font.size = Pt(size)
+        run.italic = italic
+        if color:
+            run.font.color.rgb = color
+
+    doc.add_page_break()
+
+    # ── 1. Executive Summary ──
+    doc.add_heading("1. Executive Summary", level=1)
+    narrative(
+        f"This document describes a data warehouse scanned by AIBridge Migration Agent"
+        + (f", using the source file \"{source_file_display}\"" if source_files else "")
+        + ". AIBridge automatically reconstructed how each warehouse column is populated today, "
+          "based on the uploaded mapping file(s) and/or the existing warehouse structure."
+    )
+    if ai_summary:
+        narrative(ai_summary)
+    narrative(
+        "The sections below summarize what was found, exactly how each column is derived, "
+        "and which pieces still need a person to confirm before this migration is deployed."
+    )
+
+    dim_count = sum(1 for t in tables if t.get("type") == "dim")
+    fact_count = sum(1 for t in tables if t.get("type") == "fact")
+    needs_review_mappings = [m for m in mappings if m.get("needs_review")]
+    total_issues = len(gaps) + len(needs_review_mappings)
+    resolved_gaps = sum(1 for i, g in enumerate(gaps) if resolutions.get(str(i)) or resolutions.get(g.get("column", "")))
+    resolved_review = sum(1 for m in needs_review_mappings if resolutions.get(m.get("target", "")))
+    total_resolved = resolved_gaps + resolved_review
+
+    stats_table = doc.add_table(rows=1, cols=2)
+    stats_table.style = "Table Grid"
+    header_row(stats_table, ["Metric", "Value"])
+    data_row(stats_table, ["Tables scanned", f"{len(tables)} ({dim_count} dimension, {fact_count} fact)"])
+    data_row(stats_table, ["Column mappings extracted", str(len(mappings))])
+    data_row(stats_table, ["Issues identified", str(total_issues)])
+    data_row(stats_table, ["Issues resolved", f"{total_resolved} of {total_issues}"])
+
+    doc.add_page_break()
+
+    # ── 2. Data Model Overview ──
+    doc.add_heading("2. Data Model Overview", level=1)
+    narrative(
+        "The warehouse being migrated consists of the tables below. \u201CDimension\u201D tables "
+        "describe the things being tracked; \u201CFact\u201D tables hold the actual measured events."
+    )
+    dm_table = doc.add_table(rows=1, cols=4)
+    dm_table.style = "Table Grid"
+    header_row(dm_table, ["Table", "Type", "Row Count", "Columns"])
+    for t in tables:
+        data_row(dm_table, [t.get("name", ""), t.get("type", "").upper(), t.get("row_count", "\u2014"), str(len(t.get("columns", [])))])
+
+    doc.add_page_break()
+
+    # ── 3. Column-Level Mapping & Lineage ──
+    doc.add_heading("3. Column-Level Mapping & Lineage", level=1)
+    narrative(
+        "Every mapped column below traces back to its real source field and any transformation "
+        "logic applied. The Mapping and Workflow columns show exactly which object each column's "
+        "logic came from, for cross-checking against the original export if needed."
+    )
+    ml_table = doc.add_table(rows=1, cols=5)
+    ml_table.style = "Table Grid"
+    header_row(ml_table, ["Target Column", "Source", "Transformation", "Mapping", "Workflow"])
+    for m in mappings:
+        source_display = f"{m.get('source_table', '')}.{m.get('source', '')}" if m.get('source_table') else m.get('source', '')
+        if m.get("needs_review"):
+            data_row(ml_table, [
+                m.get("target", ""), source_display,
+                f"NEEDS REVIEW: {m.get('review_reason', 'unresolved')}",
+                m.get("mapping_name") or "\u2014", m.get("workflow_name") or "\u2014"
+            ], colors=[None, None, RED, None, None])
+        else:
+            data_row(ml_table, [
+                m.get("target", ""), source_display, m.get("transformation", ""),
+                m.get("mapping_name") or "\u2014", m.get("workflow_name") or "\u2014"
+            ])
+
+    doc.add_page_break()
+
+    # ── 4. Gaps & Manual Resolutions ──
+    doc.add_heading("4. Gaps & Manual Resolutions", level=1)
+    narrative(
+        "Not every warehouse column had a matching source mapping. The table below lists each "
+        "gap, why it was flagged, and how it was resolved \u2014 or, if still unresolved, that it "
+        "needs input before this migration can be safely deployed."
+    )
+    gp_table = doc.add_table(rows=1, cols=3)
+    gp_table.style = "Table Grid"
+    header_row(gp_table, ["Column", "Reason", "Resolution"])
+
+    any_unresolved = False
+    for i, g in enumerate(gaps):
+        resolution = resolutions.get(str(i)) or resolutions.get(g.get("column", ""))
+        if resolution:
+            data_row(gp_table, [g.get("column", ""), g.get("reason", ""), resolution])
+        else:
+            any_unresolved = True
+            data_row(gp_table, [g.get("column", ""), g.get("reason", ""), "\u26A0 UNRESOLVED \u2014 needs manual input before deployment"], colors=[None, None, RED])
+    for m in needs_review_mappings:
+        resolution = resolutions.get(m.get("target", ""))
+        if resolution:
+            data_row(gp_table, [m.get("target", ""), m.get("review_reason", ""), resolution])
+        else:
+            any_unresolved = True
+            data_row(gp_table, [m.get("target", ""), m.get("review_reason", ""), "\u26A0 UNRESOLVED \u2014 needs manual input before deployment"], colors=[None, None, RED])
+
+    verdict = doc.add_paragraph()
+    verdict.paragraph_format.space_before = Pt(12)
+    run = verdict.add_run(
+        "\u26A0 This migration has unresolved gaps and should not be deployed to production until they are addressed."
+        if any_unresolved else "\u2713 All identified gaps have been resolved."
+    )
+    run.bold = True
+    run.font.size = Pt(11)
+    run.font.color.rgb = RED if any_unresolved else GREEN
+
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    return buffer.getvalue()
+
+
+def _find_soffice() -> str:
+    """
+    Locate the LibreOffice 'soffice' executable. Checks PATH first, then
+    falls back to known default install locations — PATH alone is
+    unreliable here because Windows environment variable changes don't
+    propagate to already-running parent processes (VSCode, an existing
+    terminal session, etc.), which is a common source of "installed but
+    still not found" confusion. Returns None if not found anywhere checked.
+    """
+    import shutil
+    import os
+
+    found = shutil.which("soffice") or shutil.which("soffice.com") or shutil.which("soffice.exe")
+    if found:
+        return found
+
+    candidates = [
+        r"C:\Program Files\LibreOffice\program\soffice.exe",
+        r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
+        "/Applications/LibreOffice.app/Contents/MacOS/soffice",
+        "/usr/bin/soffice",
+        "/usr/local/bin/soffice",
+        "/opt/libreoffice/program/soffice",
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def convert_docx_to_pdf(docx_bytes: bytes) -> bytes:
+    """
+    Convert generated .docx bytes to PDF via a headless LibreOffice
+    conversion. REQUIRES LibreOffice installed on the server this runs on —
+    this is a real system dependency, not just a pip package. Detection
+    checks PATH first, then known default install locations directly (see
+    _find_soffice), since PATH alone is unreliable across Windows
+    processes that were started before an install/PATH change.
+
+    Raises RuntimeError with a clear message if LibreOffice isn't found or
+    the conversion fails, rather than silently returning something broken.
+    """
+    import subprocess
+    import tempfile
+    import os
+
+    soffice_path = _find_soffice()
+    if not soffice_path:
+        raise RuntimeError(
+            "PDF export requires LibreOffice installed. Checked PATH and common install "
+            "locations but couldn't find it. Install LibreOffice from libreoffice.org, or "
+            "use the Word (.docx) export instead. If you just installed it, make sure the "
+            "backend process itself was started AFTER installing (restarting the terminal "
+            "isn't enough if the backend runs inside an app like VSCode that was already open)."
+        )
+
+    with tempfile.TemporaryDirectory() as tmp:
+        docx_path = os.path.join(tmp, "migration_doc.docx")
+        with open(docx_path, "wb") as f:
+            f.write(docx_bytes)
+
+        result = subprocess.run(
+            [soffice_path, "--headless", "--convert-to", "pdf", "--outdir", tmp, docx_path],
+            capture_output=True, text=True, timeout=60
+        )
+        pdf_path = os.path.join(tmp, "migration_doc.pdf")
+        if result.returncode != 0 or not os.path.exists(pdf_path):
+            raise RuntimeError(f"PDF conversion failed: {result.stderr or result.stdout}")
+
+        with open(pdf_path, "rb") as f:
+            return f.read()
