@@ -466,7 +466,7 @@ export default function EtlAgent() {
   const [searchTerm,      setSearchTerm]      = useState('')
 
   const [form, setForm] = useState({
-    source_description: '', raw_schema: '', business_requirements: ''
+    source_description: '', raw_schema: '', business_requirements: '', scd_type: '1'
   })
 
   const [phase1Result,     setPhase1Result]     = useState(null)
@@ -653,6 +653,7 @@ products: product_id, name, category, cost_price`,
         source_description:    form.source_description,
         raw_schema:            effectiveSchema,
         business_requirements: form.business_requirements,
+        scd_type: form.scd_type || "1",
         connector_id:          resolveSmartMode() ? connectorId : '',
         staging_schema:        stagingSchema,
         warehouse_schema:      warehouseSchema
@@ -845,6 +846,28 @@ products: product_id, name, category, cost_price`,
               <textarea style={ta} rows={2} value={form.business_requirements}
                 placeholder="e.g. Enrollment by course, grades by teacher, revenue by region"
                 onChange={e => setForm({ ...form, business_requirements: e.target.value })} />
+            <Field label="SCD Type for dimensions">
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[
+                  { val: '1', label: 'SCD Type 1', desc: 'Overwrite — no history' },
+                  { val: '2', label: 'SCD Type 2', desc: 'Full history with dates' },
+                  { val: '3', label: 'SCD Type 3', desc: 'Previous value column' },
+                ].map(opt => (
+                  <div key={opt.val}
+                    onClick={() => setForm({ ...form, scd_type: opt.val })}
+                    style={{
+                      flex: 1, padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
+                      border: `1px solid ${(form.scd_type || '1') === opt.val ? '#534AB7' : '#e5e7eb'}`,
+                      background: (form.scd_type || '1') === opt.val ? '#EEEDFE' : '#f9fafb',
+                    }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: (form.scd_type || '1') === opt.val ? '#534AB7' : '#374151' }}>
+                      {opt.label}
+                    </div>
+                    <div style={{ fontSize: 10, color: '#888', marginTop: 2 }}>{opt.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </Field>
             </Field>
 
             {connectorId && (
@@ -1155,7 +1178,19 @@ function ModelReview({ data, onApprove, onReject, onEdit }) {
         {dims.map((d, i) => (
           <div key={i} style={{ padding: '6px 0', borderBottom: '1px solid #f3f4f6' }}>
             <div style={{ fontSize: 12, fontWeight: 600 }}>{String(d.name || '')}
-              <span style={{ fontSize: 10, color: '#888', fontWeight: 400 }}> (SCD Type {String(d.scd_type || '?')})</span>
+              <select
+                style={{ fontSize: 10, marginLeft: 8, padding: '1px 4px', borderRadius: 4,
+                  border: '1px solid #d1d5db', background: '#fff', color: '#534AB7', fontWeight: 600, cursor: 'pointer' }}
+                value={String(d.scd_type || '1')}
+                onChange={e => {
+                  const updated = JSON.parse(JSON.stringify(dm))
+                  updated.dimension_tables[i].scd_type = e.target.value
+                  onEdit(updated)
+                }}>
+                <option value="1">SCD Type 1</option>
+                <option value="2">SCD Type 2</option>
+                <option value="3">SCD Type 3</option>
+              </select>
             </div>
             <div style={{ fontSize: 11, color: '#888' }}>Source: {String(d.source_table || '')}</div>
             <div style={{ fontSize: 11, color: '#555' }}>Attributes: {(d.attributes || []).map(nm).join(', ')}</div>

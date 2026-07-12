@@ -588,6 +588,13 @@ def extract_table_universal(
         else:
             df = _read_table_as_dataframe(source_config, source_schema, table, selected_columns)
             df["_loaded_at"] = pd.Timestamp.utcnow()
+            # Round all float/double columns to 2 decimal places
+            # This ensures dim and fact JOIN values always match
+            # Generic: applies to any source, any domain
+            for col in df.select_dtypes(include=["float64", "float32"]).columns:
+                if col != "_loaded_at":
+                    df[col] = df[col].round(2)
+
 
             # Write to target staging DB (any supported DB type)
             tgt_ct_stg = target_config.get("connector_type", "postgres").lower()

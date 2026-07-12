@@ -90,6 +90,7 @@ class PipelineRequest(BaseModel):
     source_description:    str
     raw_schema:            str
     business_requirements: str
+    scd_type:              str = "1"  # SCD Type 1, 2, or 3
     connector_id:          str = ""
     staging_schema:        str = "staging"
     warehouse_schema:      str = "warehouse"
@@ -670,7 +671,7 @@ def run_phase_1(req: PipelineRequest, current_user=Depends(get_current_user),
         print("[Phase 1] Starting OrchestratorAgent Phase 1...")
 
         ctx = _build_ctx("", wid, connector_config or {}, source_schema, [], {},
-                         req.source_description, req.business_requirements,
+                         req.source_description, req.business_requirements + (f". Use SCD Type {req.scd_type} for all dimensions." if req.scd_type else ""),
                          staging_schema=req.staging_schema, warehouse_schema=req.warehouse_schema)
 
         import concurrent.futures
@@ -3023,6 +3024,41 @@ def migration_deploy(
                 db.add(version); db.commit()
             except Exception as e:
                 print(f"[Migration] Could not save version for {tname}: {e}")
+
+            # The native "Mappings" UI reads from the PipelineMapping table
+            # specifically — NOT from Pipeline.artifacts.etl_mappings — so a
+            # dedicated row is required here or that button shows nothing,
+            # exactly like it was before this fix. Shape matches
+            # PipelineMapping's own documented format (database.py).
+            try:
+                pm_columns = []
+                for m in table_mappings:
+                    src_stg = None
+                    if m.get("source_table") and not m.get("needs_review"):
+                        src_stg = f"{staging_schema}.stg_{m['source_table']}"
+                    pm_columns.append({
+                        "source_table":  src_stg,
+                        "source_column": m.get("source", ""),
+                        "target_column": m.get("target", "").split(".")[-1],
+                        "transform_rule": m.get("transformation", "direct"),
+                    })
+                pipeline_mapping = PipelineMapping(
+                    pipeline_id  = pipeline.id,
+                    workspace_id = workspace.get("id"),
+                    created_by   = current_user.id,
+                    name         = f"{pipeline_label} v1",
+                    version      = 1,
+                    is_active    = True,
+                    mappings     = {"mappings": [{
+                        "target_table":  f"{warehouse_schema}.{tname}",
+                        "source_schema": staging_schema,
+                        "columns":       pm_columns,
+                    }]},
+                    notes        = f"Auto-saved from Migration Agent deployment (approval {approval_id})"
+                )
+                db.add(pipeline_mapping); db.commit()
+            except Exception as e:
+                print(f"[Migration] Could not save PipelineMapping for {tname}: {e}")
 
             result = run_migration_deployment(
                 source_connector_config=source_config,

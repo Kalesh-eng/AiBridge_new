@@ -662,6 +662,26 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
                     if sql_new != sql:
                         log(f"[SQLPatch] Incremental: period_id idempotency added to {tbl_name}")
                         sql = sql_new
+            # Fix: convert = to IS NOT DISTINCT FROM in fact->dim JOIN conditions
+            # Handles NULL values and type mismatches for any domain generically
+            if script.get("name","").startswith("fact_") and "JOIN warehouse." in sql:
+                import re as _re_nd
+                def _fact_join_not_distinct(m):
+                    full = m.group(0)
+                    # Skip if already IS NOT DISTINCT FROM
+                    if "IS NOT DISTINCT" in full:
+                        return full
+                    col1 = m.group(1)  # dc.brand
+                    col2 = m.group(2)  # src."Brand"
+                    # Skip dim_date joins — handled separately by fix_date_join
+                    if "dim_date" in full.lower() or "dd." in full:
+                        return full
+                    return f"{col1} IS NOT DISTINCT FROM {col2}"
+                sql = _re_nd.sub(
+                    r'(\w+\.\w+)\s*=\s*((?:src|s)\."\w+"|ROUND\([^)]+\))',
+                    _fact_join_not_distinct, sql
+                )
+
 
             # Fix 0c2: dim tables with NO natural key (flat-file/no-ID sources)
             # frequently get "ON CONFLICT DO NOTHING" with no column list, or
@@ -1167,7 +1187,21 @@ def _auto_create_intermediate_staging(target_config: dict, staging_schema: str,
                     log(f"[StagingBuilder] ⚠ Could not determine columns for {missing_tbl} — skipping")
                     continue
 
-            cols_sql = ", ".join(f'"{c}"' for c in select_cols)
+            # Round float columns to 2dp for consistent dim/fact matching
+            try:
+                cur.execute("""
+                    SELECT column_name, data_type FROM information_schema.columns
+                    WHERE table_schema = %s AND table_name = %s
+                """, (staging_schema, best_raw))
+                _col_types = {r[0]: r[1] for r in cur.fetchall()}
+            except Exception:
+                _col_types = {}
+            def _col_expr(c):
+                dtype = _col_types.get(c, "")
+                if any(t in dtype.lower() for t in ("float","double","real","numeric","decimal")):
+                    return f'ROUND("{c}"::NUMERIC, 2) AS "{c}"'
+                return f'"{c}"'
+            cols_sql = ", ".join(_col_expr(c) for c in select_cols)
             create_sql = f"""
                 DROP TABLE IF EXISTS "{staging_schema}"."{missing_tbl}";
                 CREATE TABLE "{staging_schema}"."{missing_tbl}" AS
