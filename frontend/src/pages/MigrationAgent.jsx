@@ -173,6 +173,47 @@ export default function MigrationAgent() {
       .filter(Boolean)
   ))
 
+  const [exportLoading, setExportLoading] = useState(null) // null | 'docx' | 'pdf'
+  const [exportError, setExportError] = useState(null)
+
+  const handleExportDocs = async (format) => {
+    setExportLoading(format); setExportError(null)
+    try {
+      const r = await api.post('/migration/export-docs', {
+        tables:      scanResult.tables || [],
+        mappings:    scanResult.mappings || [],
+        gaps:        scanResult.gaps || [],
+        domain:      scanResult.domain || '',
+        ai_summary:  scanResult.ai_summary || '',
+        resolutions: resolvedGaps || {},
+        format
+      }, { responseType: 'blob' })
+
+      const blob = new Blob([r.data])
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `migration_requirements.${format}`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (e) {
+      let message = e.message || 'Export failed'
+      // Blob error responses need to be read as text to get the real detail
+      if (e.response?.data instanceof Blob) {
+        try {
+          const text = await e.response.data.text()
+          message = JSON.parse(text).detail || message
+        } catch { /* keep default message */ }
+      } else {
+        message = e.response?.data?.detail || message
+      }
+      setExportError(message)
+    }
+    setExportLoading(null)
+  }
+
   const handleDeploy = async () => {
     if (approvalStatus !== 'approved') {
       setDeployError('These SQL scripts must be approved before deploying — use the Approve button above.')
@@ -534,7 +575,7 @@ export default function MigrationAgent() {
                 {[
                   { id: 'model',    label: '📊 Data model' },
                   { id: 'mappings', label: `🔗 Mappings (${(scanResult.mappings || []).length})` },
-                  { id: 'gaps',     label: `⚠️ Gaps (${(scanResult.gaps || []).length})` },
+                  { id: 'gaps',     label: `⚠️ Gaps (${(scanResult.gaps || []).length + (scanResult.mappings || []).filter(m => m.needs_review).length})` },
                   { id: 'dict',     label: '📖 Dictionary' },
                 ].map(tab => (
                   <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
@@ -591,16 +632,35 @@ export default function MigrationAgent() {
                       <button style={{ float: 'right', background: 'none', border: 'none', cursor: 'pointer', color: '#991b1b' }} onClick={() => setSqlError(null)}>✕</button>
                     </div>
                   )}
-                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                  {exportError && (
+                    <div style={{ ...errBox, marginTop: 12 }}>
+                      {exportError}
+                      <button style={{ float: 'right', background: 'none', border: 'none', cursor: 'pointer', color: '#991b1b' }} onClick={() => setExportError(null)}>✕</button>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'center' }}>
                     <button style={{ ...btnPrimary, background: '#534AB7', opacity: sqlLoading ? 0.6 : 1 }}
                       onClick={handleGenerateSql} disabled={sqlLoading}>
                       {sqlLoading ? '⏳ Generating SQL...' : 'Generate SQL scripts →'}
                     </button>
-                    {(scanResult.gaps || []).length > Object.keys(resolvedGaps).length && (
+                    <button style={btnGhost} onClick={() => handleExportDocs('docx')} disabled={exportLoading !== null}>
+                      {exportLoading === 'docx' ? '⏳ Exporting...' : '📄 Export Word'}
+                    </button>
+                    <button style={btnGhost} onClick={() => handleExportDocs('pdf')} disabled={exportLoading !== null}>
+                      {exportLoading === 'pdf' ? '⏳ Exporting...' : '📕 Export PDF'}
+                    </button>
+                  {(() => {
+                    const trueGapsCount = (scanResult.gaps || []).length
+                    const needsReviewList = (scanResult.mappings || []).filter(m => m.needs_review)
+                    const trueGapsResolved = (scanResult.gaps || []).filter((g, i) => resolvedGaps[i]).length
+                    const needsReviewResolved = needsReviewList.filter(m => resolvedGaps[m.target]).length
+                    const totalUnresolved = (trueGapsCount - trueGapsResolved) + (needsReviewList.length - needsReviewResolved)
+                    return totalUnresolved > 0 && (
                       <button style={btnGhost} onClick={() => setActiveTab('gaps')}>
-                        {(scanResult.gaps || []).length - Object.keys(resolvedGaps).length} gaps still unresolved
+                        {totalUnresolved} issue{totalUnresolved !== 1 ? 's' : ''} still unresolved
                       </button>
-                    )}
+                    )
+                  })()}
                   </div>
                 </div>
               )}
@@ -635,36 +695,86 @@ export default function MigrationAgent() {
               {/* Gaps tab */}
               {activeTab === 'gaps' && (
                 <div>
-                  {(scanResult.gaps || []).length === 0 ? (
-                    <div style={{ ...card, background: '#EAF3DE', borderColor: '#a7d9a0', textAlign: 'center', padding: 24 }}>
-                      <div style={{ fontSize: 16 }}>✅</div>
-                      <div style={{ fontSize: 13, color: '#27500A', fontWeight: 600, marginTop: 6 }}>No gaps — all columns are mapped</div>
-                    </div>
-                  ) : (
-                    <div style={{ ...card, borderColor: '#f5c08a' }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: '#854F0B', marginBottom: 12 }}>⚠️ {(scanResult.gaps || []).length} gaps need your input</div>
-                      {(scanResult.gaps || []).map((g, i) => (
-                        <div key={i} style={{ padding: '10px 0', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontFamily: 'monospace', fontSize: 11, color: '#854F0B', marginBottom: 4 }}>{g.column}</div>
-                            <div style={{ fontSize: 12, color: '#555' }}>{g.reason}</div>
-                            {resolvedGaps[i] && (
-                              <div style={{ fontSize: 11, color: '#3B6D11', marginTop: 4 }}>✓ Resolution: {resolvedGaps[i]}</div>
-                            )}
-                          </div>
-                          {!resolvedGaps[i] ? (
-                            <button style={{ ...btnGhost, fontSize: 11, padding: '4px 10px', whiteSpace: 'nowrap' }}
-                              onClick={() => {
-                                const resolution = prompt(`How should ${g.column} be derived?\n\nExample: "Bucket date_of_birth into 5-year age ranges"`)
-                                if (resolution) setResolvedGaps(prev => ({ ...prev, [i]: resolution }))
-                              }}>Resolve ↗</button>
-                          ) : (
-                            <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 20, background: '#EAF3DE', color: '#3B6D11' }}>✓ Resolved</span>
-                          )}
+                  {(() => {
+                    const needsReviewMappings = (scanResult.mappings || []).filter(m => m.needs_review)
+                    const trueGaps = scanResult.gaps || []
+                    const totalIssues = trueGaps.length + needsReviewMappings.length
+
+                    if (totalIssues === 0) {
+                      return (
+                        <div style={{ ...card, background: '#EAF3DE', borderColor: '#a7d9a0', textAlign: 'center', padding: 24 }}>
+                          <div style={{ fontSize: 16 }}>✅</div>
+                          <div style={{ fontSize: 13, color: '#27500A', fontWeight: 600, marginTop: 6 }}>No gaps — all columns are mapped</div>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      )
+                    }
+
+                    return (
+                      <>
+                        {trueGaps.length > 0 && (
+                          <div style={{ ...card, borderColor: '#f5c08a', marginBottom: needsReviewMappings.length > 0 ? 12 : 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: '#854F0B', marginBottom: 12 }}>⚠️ {trueGaps.length} unmapped column{trueGaps.length !== 1 ? 's' : ''}</div>
+                            {trueGaps.map((g, i) => (
+                              <div key={i} style={{ padding: '10px 0', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontFamily: 'monospace', fontSize: 11, color: '#854F0B', marginBottom: 4 }}>{g.column}</div>
+                                  <div style={{ fontSize: 12, color: '#555' }}>{g.reason}</div>
+                                  {resolvedGaps[i] && (
+                                    <div style={{ fontSize: 11, color: '#3B6D11', marginTop: 4 }}>✓ Resolution: {resolvedGaps[i]}</div>
+                                  )}
+                                </div>
+                                {!resolvedGaps[i] ? (
+                                  <button style={{ ...btnGhost, fontSize: 11, padding: '4px 10px', whiteSpace: 'nowrap' }}
+                                    onClick={() => {
+                                      const resolution = prompt(`How should ${g.column} be derived?\n\nExample: "Bucket date_of_birth into 5-year age ranges"`)
+                                      if (resolution) setResolvedGaps(prev => ({ ...prev, [i]: resolution }))
+                                    }}>Resolve ↗</button>
+                                ) : (
+                                  <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 20, background: '#EAF3DE', color: '#3B6D11' }}>✓ Resolved</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {needsReviewMappings.length > 0 && (
+                          <div style={{ ...card, borderColor: '#fca5a5' }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: '#991b1b', marginBottom: 4 }}>🔍 {needsReviewMappings.length} column{needsReviewMappings.length !== 1 ? 's' : ''} need manual review</div>
+                            <div style={{ fontSize: 11, color: '#888', marginBottom: 12 }}>
+                              These ARE mapped to a source, but the parser couldn't confirm it traces to a real,
+                              extractable table (usually a Lookup transformation without enough info in the mapping file).
+                            </div>
+                            {needsReviewMappings.map((m, i) => (
+                              <div key={i} style={{ padding: '10px 0', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontFamily: 'monospace', fontSize: 11, color: '#991b1b', marginBottom: 4 }}>{m.target}</div>
+                                  <div style={{ fontSize: 12, color: '#555' }}>{m.review_reason || 'Source could not be confirmed as a real table.'}</div>
+                                  {m.lookup_join_hint && (
+                                    <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>
+                                      Hint: likely keyed by <span style={{ fontFamily: 'monospace' }}>{m.lookup_join_hint.fed_by_table}.{m.lookup_join_hint.fed_by_column}</span> (unconfirmed)
+                                    </div>
+                                  )}
+                                  {resolvedGaps[m.target] && (
+                                    <div style={{ fontSize: 11, color: '#3B6D11', marginTop: 4 }}>✓ Resolution: {resolvedGaps[m.target]}</div>
+                                  )}
+                                </div>
+                                {!resolvedGaps[m.target] ? (
+                                  <button style={{ ...btnGhost, fontSize: 11, padding: '4px 10px', whiteSpace: 'nowrap' }}
+                                    onClick={() => {
+                                      const hintText = m.lookup_join_hint ? `\n\nHint: likely keyed by ${m.lookup_join_hint.fed_by_table}.${m.lookup_join_hint.fed_by_column}` : ''
+                                      const resolution = prompt(`How should ${m.target} actually be derived?${hintText}\n\nExample: "JOIN staging.stg_CAR_MAKE ON make_code, use make_name column"`)
+                                      if (resolution) setResolvedGaps(prev => ({ ...prev, [m.target]: resolution }))
+                                    }}>Resolve ↗</button>
+                                ) : (
+                                  <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 20, background: '#EAF3DE', color: '#3B6D11' }}>✓ Resolved</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )
+                  })()}
                 </div>
               )}
 
@@ -709,7 +819,13 @@ export default function MigrationAgent() {
               {[
                 { label: 'Scripts generated', val: (sqlScripts || []).length },
                 { label: 'Tables covered',    val: (scanResult?.tables || []).filter(t => t.type === 'dim' || t.type === 'fact').length },
-                { label: 'Gaps resolved',     val: `${Object.keys(resolvedGaps).length}/${(scanResult?.gaps || []).length}` },
+                { label: 'Issues resolved',   val: (() => {
+                    const trueGaps = scanResult?.gaps || []
+                    const needsReviewList = (scanResult?.mappings || []).filter(m => m.needs_review)
+                    const total = trueGaps.length + needsReviewList.length
+                    const resolved = trueGaps.filter((g, i) => resolvedGaps[i]).length + needsReviewList.filter(m => resolvedGaps[m.target]).length
+                    return `${resolved}/${total}`
+                  })() },
               ].map(m => (
                 <div key={m.label} style={{ background: '#f9fafb', borderRadius: 8, padding: 12, textAlign: 'center' }}>
                   <div style={{ fontSize: 11, color: '#888' }}>{m.label}</div>
