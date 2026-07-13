@@ -2730,15 +2730,33 @@ async def migration_scan(
     connection:   str = Form(...),
     sub_mode:     str = Form("reverse"),
     upload_mode:  str = Form("repository"),
+    technology:   str = Form("informatica"),
     files:        List[UploadFile] = File(default=[]),
     current_user=Depends(get_current_user)
 ):
     """
     Scan existing warehouse + optionally parse uploaded mapping files.
     Returns reverse data model, mappings, gaps, and data dictionary.
+
+    `technology` selects which parser interprets the uploaded files:
+      "informatica" (default) — repository/mapping XML, column-level
+                                 mappings, column-level gaps (a column with
+                                 no source mapping is a gap).
+      "dbt"                    — a dbt project's .sql model files + .yml
+                                 (sources.yml/schema.yml). dbt models are
+                                 complete, self-contained SQL — there's no
+                                 column-level "gap" concept the way
+                                 Informatica has. Instead, a gap here means
+                                 a scanned warehouse table has NO matching
+                                 dbt model at all, plus any source()
+                                 reference that couldn't be resolved via
+                                 sources.yml.
     """
     import json, tempfile, os, shutil
-    from agents.migration_agent import scan_warehouse, parse_informatica_xml, parse_dbt_yml, detect_gaps
+    from agents.migration_agent import (
+        scan_warehouse, parse_informatica_xml, parse_dbt_yml, detect_gaps,
+        parse_dbt_project
+    )
 
     try:
         conn_config = json.loads(connection)
@@ -2747,45 +2765,88 @@ async def migration_scan(
 
     warehouse_schema = conn_config.get("warehouse_schema", "warehouse")
 
-    # Step 1: Scan warehouse
+    # Step 1: Scan warehouse (unchanged regardless of technology)
     scan_result = scan_warehouse(conn_config, warehouse_schema, sub_mode)
     if not scan_result.get("success"):
         raise HTTPException(400, f"Warehouse scan failed: {scan_result.get('error')}")
 
-    # Step 2: Parse uploaded mapping files
     all_mappings = []
-    if files:
-        tmp_dir = tempfile.mkdtemp()
-        try:
-            for f in files:
-                content = await f.read()
-                fname   = f.filename.lower()
-                if fname.endswith(".xml"):
-                    mappings = parse_informatica_xml(content.decode("utf-8", errors="ignore"))
-                    all_mappings.extend(mappings)
-                elif fname.endswith(".yml") or fname.endswith(".yaml"):
-                    mappings = parse_dbt_yml(content.decode("utf-8", errors="ignore"))
-                    all_mappings.extend(mappings)
-                # SSIS, ODI, BRD parsers — future
-        finally:
-            shutil.rmtree(tmp_dir, ignore_errors=True)
+    gaps = []
+    dbt_deployment_order = None
 
-    # Step 3: Detect gaps
-    gaps = detect_gaps(scan_result["tables"], all_mappings) if all_mappings else []
+    if technology == "dbt":
+        # Step 2 (dbt): separate uploaded files by type, parse as a dbt project
+        sql_files_map, yml_files_map = {}, {}
+        for f in files:
+            content = await f.read()
+            text = content.decode("utf-8", errors="ignore")
+            fname_lower = f.filename.lower()
+            if fname_lower.endswith(".sql"):
+                sql_files_map[f.filename] = text
+            elif fname_lower.endswith(".yml") or fname_lower.endswith(".yaml"):
+                yml_files_map[f.filename] = text
 
-    # Add coverage calculation
-    total_cols   = sum(len(t.get("columns", [])) for t in scan_result["tables"])
-    mapped_cols  = len(all_mappings)
-    coverage     = round((mapped_cols / total_cols) * 100) if total_cols > 0 else 90
+        if not sql_files_map:
+            raise HTTPException(400, "No .sql model files found in upload — a dbt migration needs at least one model file.")
 
-    return {
+        dbt_parsed = parse_dbt_project(sql_files_map, yml_files_map)
+        if not dbt_parsed.get("success"):
+            raise HTTPException(400, f"dbt project parsing failed: {dbt_parsed.get('error')}")
+
+        all_mappings = dbt_parsed["mappings"]
+        dbt_deployment_order = dbt_parsed["deployment_order"]
+
+        # Table-level gaps: warehouse tables with no matching dbt model,
+        # PLUS any unresolved source() reference the parser already found.
+        dbt_model_names = set(dbt_deployment_order)
+        for t in scan_result["tables"]:
+            if t.get("type") in ("dim", "fact") and t["name"] not in dbt_model_names:
+                gaps.append({
+                    "column": t["name"], "table": t["name"],
+                    "reason": f"No dbt model found for warehouse table '{t['name']}'."
+                })
+        gaps.extend(dbt_parsed.get("gaps", []))
+
+        relevant_tables = [t for t in scan_result["tables"] if t.get("type") in ("dim", "fact")]
+        mapped_count = len(dbt_model_names & {t["name"] for t in relevant_tables})
+        coverage = round((mapped_count / len(relevant_tables)) * 100) if relevant_tables else 0
+
+    else:
+        # Step 2 (Informatica, default): unchanged from before
+        if files:
+            tmp_dir = tempfile.mkdtemp()
+            try:
+                for f in files:
+                    content = await f.read()
+                    fname   = f.filename.lower()
+                    if fname.endswith(".xml"):
+                        mappings = parse_informatica_xml(content.decode("utf-8", errors="ignore"), source_file=f.filename)
+                        all_mappings.extend(mappings)
+                    elif fname.endswith(".yml") or fname.endswith(".yaml"):
+                        mappings = parse_dbt_yml(content.decode("utf-8", errors="ignore"))
+                        all_mappings.extend(mappings)
+                    # SSIS, ODI, BRD parsers — future
+            finally:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+
+        gaps = detect_gaps(scan_result["tables"], all_mappings) if all_mappings else []
+        total_cols   = sum(len(t.get("columns", [])) for t in scan_result["tables"])
+        mapped_cols  = len(all_mappings)
+        coverage     = round((mapped_cols / total_cols) * 100) if total_cols > 0 else 90
+
+    response = {
         **scan_result,
         "mappings":    all_mappings,
         "gaps":        gaps,
         "coverage":    coverage,
         "upload_mode": upload_mode,
+        "technology":  technology,
         "files_count": len(files)
     }
+    if dbt_deployment_order is not None:
+        response["dbt_deployment_order"] = dbt_deployment_order
+        response["dbt_source_lookup"] = dbt_parsed.get("source_lookup_display", {})
+    return response
 
 
 @app.get("/migration/list")
@@ -2815,20 +2876,43 @@ async def migration_generate_sql(
     straight to deploy. Nothing runs against the warehouse until a human
     approves via the existing /pipeline/approve-sql endpoint.
 
+    `technology` selects which SQL generation path runs:
+      "informatica" (default) — generate_sql_scripts(): the AI reconstructs
+                                 SQL column-by-column from traced Informatica
+                                 mappings, since Informatica's XML never
+                                 contains real target SQL itself.
+      "dbt"                    — generate_sql_from_dbt_models(): dbt models
+                                 ALREADY are real, tested SQL — no AI
+                                 reconstruction needed. Each script
+                                 replicates dbt's own materialization
+                                 (DROP + CREATE TABLE AS SELECT), with
+                                 ref()/source() resolved to real tables.
+                                 CRITICAL: dbt scripts must stay in the
+                                 topologically-sorted deployment_order the
+                                 parser already computed — see
+                                 generate_sql_from_dbt_models()'s docstring
+                                 for why (dbt models form a real dependency
+                                 graph, unlike Informatica's mostly-
+                                 independent target tables).
+
     Expected payload:
       {
+        "technology": "informatica" | "dbt",
         "tables": [...], "mappings": [...], "gaps": [...],
         "resolutions": { "<gap column or index>": "<user's resolution text>" },
         "domain": "retail",
-        "staging_schema": "staging" (optional), "warehouse_schema": "warehouse" (optional)
+        "staging_schema": "staging" (optional), "warehouse_schema": "warehouse" (optional),
+        "dbt_deployment_order": [...],  (REQUIRED if technology == "dbt" — from /migration/scan)
+        "dbt_source_lookup": {...}      (REQUIRED if technology == "dbt" — from /migration/scan)
       }
 
     Response:
       { "success": true, "approval_id": "...", "sql_scripts": {"scripts": [...]},
         "risk_level": "low"|"medium"|"high", "generated_at": "..." }
     """
-    from agents.migration_agent import generate_sql_scripts
+    from agents.migration_agent import generate_sql_scripts, generate_sql_from_dbt_models
 
+    technology       = payload.get("technology", "informatica")
     tables           = payload.get("tables", [])
     mappings         = payload.get("mappings", [])
     gaps             = payload.get("gaps", [])
@@ -2840,31 +2924,82 @@ async def migration_generate_sql(
     if not tables:
         raise HTTPException(400, "No tables provided — run a scan first")
 
-    result = generate_sql_scripts(
-        tables, mappings, gaps, resolutions, domain,
-        staging_schema=staging_schema, warehouse_schema=warehouse_schema
-    )
-    if not result.get("success"):
-        raise HTTPException(400, f"SQL generation failed: {result.get('error')}")
+    if technology == "dbt":
+        deployment_order = payload.get("dbt_deployment_order")
+        if not deployment_order:
+            raise HTTPException(400, "dbt_deployment_order is required for dbt migrations — re-run /migration/scan first.")
 
-    scripts = result["sql_scripts"].get("scripts", [])
-    unresolved_count = sum(1 for m in mappings if m.get("needs_review"))
-    unmapped_count = sum(
-        s.get("columns_total", 0) - s.get("columns_mapped", 0) for s in scripts
-    )
-    risk_level = "high" if unresolved_count > 0 else ("medium" if unmapped_count > 0 else "low")
+        # Reconstruct the parsed-project shape generate_sql_from_dbt_models()
+        # expects from what /migration/scan already returned in `mappings`
+        # (raw_sql, ref_dependencies, source_dependencies were carried
+        # through specifically so this round-trip works without re-parsing
+        # the original .sql files).
+        models_by_name = {}
+        for m in mappings:
+            models_by_name[m["target"]] = {
+                "name": m["target"],
+                "ref_dependencies": m.get("ref_dependencies", []),
+                "source_dependencies": [tuple(sd) for sd in m.get("source_dependencies", [])],
+                "materialized": m.get("materialized", "table"),
+                "raw_sql": m.get("raw_sql", ""),
+            }
+
+        # source_lookup crossed the HTTP boundary as a JSON-safe
+        # {"source.table": "schema.table"} dict — reconstruct the
+        # tuple-keyed form resolve_dbt_model_sql() actually expects.
+        source_lookup_display = payload.get("dbt_source_lookup", {})
+        source_lookup = {}
+        for key, val in source_lookup_display.items():
+            if "." in key:
+                src_name, tbl_name = key.split(".", 1)
+                source_lookup[(src_name, tbl_name)] = val
+
+        parsed_project = {
+            "success": True,
+            "models": [models_by_name[name] for name in deployment_order if name in models_by_name],
+            "deployment_order": [name for name in deployment_order if name in models_by_name],
+            "source_lookup": source_lookup,
+        }
+        result = generate_sql_from_dbt_models(parsed_project, warehouse_schema=warehouse_schema)
+        if not result.get("success"):
+            raise HTTPException(400, f"dbt SQL generation failed: {result.get('error')}")
+
+        scripts = result["sql_scripts"].get("scripts", [])
+        incremental_count = sum(1 for s in scripts if s.get("materialized") == "incremental")
+        risk_level = "high" if incremental_count > 0 else ("medium" if gaps else "low")
+        description = (
+            f"{len(scripts)} dbt model(s) in dependency order. "
+            f"{incremental_count} incremental model(s) need manual review of their filter logic. "
+            f"{len(gaps)} warehouse table(s) or source() reference(s) have no matching dbt model."
+        )
+    else:
+        result = generate_sql_scripts(
+            tables, mappings, gaps, resolutions, domain,
+            staging_schema=staging_schema, warehouse_schema=warehouse_schema
+        )
+        if not result.get("success"):
+            raise HTTPException(400, f"SQL generation failed: {result.get('error')}")
+
+        scripts = result["sql_scripts"].get("scripts", [])
+        unresolved_count = sum(1 for m in mappings if m.get("needs_review"))
+        unmapped_count = sum(
+            s.get("columns_total", 0) - s.get("columns_mapped", 0) for s in scripts
+        )
+        risk_level = "high" if unresolved_count > 0 else ("medium" if unmapped_count > 0 else "low")
+        description = (
+            f"{unmapped_count} unmapped column(s), {unresolved_count} needing manual review. "
+            f"Review each script before deploying to the warehouse."
+        )
 
     workspace = get_user_workspace(current_user.id, db)
     approval = ApprovalQueue(
         workspace_id=workspace.get("id"),
         approval_type="migration_sql_scripts",
-        title=f"Migration SQL — {len(scripts)} scripts ({domain or 'unknown domain'})",
-        description=(
-            f"{unmapped_count} unmapped column(s), {unresolved_count} needing manual review. "
-            f"Review each script before deploying to the warehouse."
-        ),
+        title=f"Migration SQL ({technology}) — {len(scripts)} scripts ({domain or 'unknown domain'})",
+        description=description,
         proposed_data={
             "sql_scripts":      result["sql_scripts"],
+            "technology":       technology,
             "tables":           tables,
             "mappings":         mappings,
             "gaps":             gaps,
@@ -2872,10 +3007,11 @@ async def migration_generate_sql(
             "domain":           domain,
             "staging_schema":   staging_schema,
             "warehouse_schema": warehouse_schema,
+            "dbt_deployment_order": payload.get("dbt_deployment_order"),
         },
         context={
             "domain": domain, "staging_schema": staging_schema,
-            "warehouse_schema": warehouse_schema
+            "warehouse_schema": warehouse_schema, "technology": technology
         },
         status="pending",
         requested_by=current_user.id,
@@ -2899,29 +3035,52 @@ def migration_deploy(
     db: Session = Depends(get_db)
 ):
     """
-    Deploy an APPROVED migration SQL set — as ONE INDEPENDENT PIPELINE PER
-    INFORMATICA MAPPING (typically one per target table), not a single
-    monolithic pipeline for the whole repository. This gives each table
-    its own Pipeline row, its own PipelineRun history, and failure
-    isolation: if fact_car_listings' extraction fails, dim_car's pipeline
-    (already run separately) is completely unaffected.
+    Deploy an APPROVED migration SQL set.
+
+    Deploy strategy depends on `technology` (stored on the approval from
+    /migration/generate-sql):
+
+      "informatica" (default) — ONE INDEPENDENT PIPELINE PER MAPPING
+                                 (typically one per target table). Informatica
+                                 mappings are mostly independent target
+                                 tables, so each gets its own Pipeline row,
+                                 its own PipelineRun history, and failure
+                                 isolation.
+
+      "dbt"                    — ONE SEQUENTIAL PIPELINE containing ALL dbt
+                                 models as scripts, in the topologically-
+                                 sorted dependency order already computed at
+                                 generate-sql time. dbt models form a real
+                                 dependency graph (via ref()) — splitting them
+                                 into independent pipelines would risk a
+                                 downstream model running before its
+                                 dependency exists. execute_warehouse_scripts()
+                                 already runs scripts sequentially in the
+                                 order given, so one pipeline with correctly
+                                 ordered scripts is sufficient — no new
+                                 orchestration needed. Uses run_dbt_deployment()
+                                 (skips extraction — dbt sources are assumed
+                                 already loaded in the target warehouse),
+                                 not run_migration_deployment().
 
     Requires approval_id from /migration/generate-sql, and that approval
     must be "approved" or "edited" (via the existing /pipeline/approve-sql)
-    before anything runs — this check happens ONCE, up front, covering the
-    whole approved SQL set; only the actual creation/execution is split
-    per-table afterward.
+    before anything runs.
 
     Expects in `req`:
-      approval_id (REQUIRED), source_connector_id (REQUIRED),
-      target_connector_id (REQUIRED), project_name, source_schema.
+      approval_id (REQUIRED), target_connector_id (REQUIRED),
+      source_connector_id (REQUIRED for informatica; NOT required for dbt,
+      since dbt deployment skips extraction), project_name, source_schema.
 
     Returns:
-      {"success": bool (true if ALL sub-pipelines succeeded),
-       "pipelines": [{"pipeline_id", "table", "mapping_name", "success",
-                       "stage", "error", "staging", "warehouse", "quality"}, ...]}
+      Informatica: {"success": bool, "technology": "informatica",
+                    "pipelines": [{"pipeline_id", "table", "mapping_name",
+                                    "success", "stage", "error", ...}, ...]}
+      dbt:         {"success": bool, "technology": "dbt", "pipeline_id": str,
+                    "pipeline_name": str, "models": [{"name", "success"}, ...],
+                    "quality": ..., "log": [...]}
     """
-    from agents.migration_agent import run_migration_deployment
+    from agents.migration_agent import run_migration_deployment, run_dbt_deployment
 
     try:
         workspace = get_user_workspace(current_user.id, db)
@@ -2942,6 +3101,7 @@ def migration_deploy(
         domain       = approved_data.get("domain", "migrated")
         all_mappings = approved_data.get("mappings", [])
         all_tables   = approved_data.get("tables", [])
+        technology   = approved_data.get("technology", "informatica")
 
         if not all_scripts:
             raise HTTPException(400, "No SQL scripts found in this approval.")
@@ -2951,6 +3111,121 @@ def migration_deploy(
         warehouse_schema = req.get("warehouse_schema") or approved_data.get("warehouse_schema", "warehouse")
         project_prefix   = req.get("project_name", f"Migration - {domain}")
 
+        target_connector_id = req.get("target_connector_id")
+        if not target_connector_id:
+            raise HTTPException(400, "target_connector_id is required — the warehouse being migrated into.")
+        tgt_connector = db.query(Connector).filter(Connector.id == target_connector_id).first()
+        if not tgt_connector:
+            raise HTTPException(404, "Target connector not found")
+        target_config = _cfg(tgt_connector)
+
+        # ══════════════════════════════════════════════════════════════════
+        # dbt: ONE sequential pipeline, dependency order preserved, no extraction
+        # ══════════════════════════════════════════════════════════════════
+        if technology == "dbt":
+            pipeline_label = f"dbt project ({len(all_scripts)} models)"
+            artifacts = {
+                "sql_scripts":  {"scripts": all_scripts},
+                "data_model":   {"domain": domain, "tables": all_tables},
+                "etl_mappings": {"mappings": all_mappings},
+                "migration":    {"domain": domain, "approval_id": approval_id, "technology": "dbt"},
+            }
+
+            pipeline = Pipeline(
+                workspace_id      = workspace.get("id"),
+                name              = f"{project_prefix} — {pipeline_label}",
+                source_desc       = f"dbt migration - {domain} domain, {len(all_scripts)} models",
+                biz_requirements  = f"Migrated dbt project. Domain: {domain}.",
+                schedule          = "manual",
+                artifacts         = artifacts,
+                connector_id      = None,
+                source_schema     = "migration",
+                source_columns    = {},
+                source_tables     = [s.get("name") for s in all_scripts],
+                target_connector_id = target_connector_id,
+                staging_schema    = staging_schema,
+                warehouse_schema  = warehouse_schema
+            )
+            db.add(pipeline); db.commit(); db.refresh(pipeline)
+
+            try:
+                version = PipelineVersion(
+                    pipeline_id    = pipeline.id,
+                    workspace_id   = workspace.get("id"),
+                    created_by     = current_user.id,
+                    version        = 1,
+                    version_label  = "v1",
+                    is_active      = True,
+                    data_model     = artifacts.get("data_model", {}),
+                    sql_scripts    = {"scripts": all_scripts},
+                    etl_mappings   = artifacts.get("etl_mappings", {}),
+                    schema_hash    = "",
+                    change_summary = f"dbt migration deployment (approval {approval_id})"
+                )
+                db.add(version); db.commit()
+            except Exception as e:
+                print(f"[Migration] Could not save version: {e}")
+
+            # One PipelineMapping row per dbt model, all under the same pipeline
+            try:
+                for m in all_mappings:
+                    pipeline_mapping = PipelineMapping(
+                        pipeline_id  = pipeline.id,
+                        workspace_id = workspace.get("id"),
+                        created_by   = current_user.id,
+                        name         = f"{m.get('target', '')} v1",
+                        version      = 1,
+                        is_active    = True,
+                        mappings     = {"mappings": [{
+                            "target_table":  f"{warehouse_schema}.{m.get('target', '')}",
+                            "source_schema": staging_schema,
+                            "columns":       [],  # dbt lineage is table-level, not column-level — see parse_dbt_model_sql
+                        }]},
+                        notes = f"dbt model — depends on: {m.get('source', 'none')}"
+                    )
+                    db.add(pipeline_mapping)
+                db.commit()
+            except Exception as e:
+                print(f"[Migration] Could not save dbt PipelineMappings: {e}")
+
+            result = run_dbt_deployment(
+                target_connector_config=target_config,
+                staging_schema=staging_schema,
+                warehouse_schema=warehouse_schema,
+                sql_scripts={"scripts": all_scripts},
+                pipeline_id=pipeline.id,
+                workspace_id=workspace.get("id"),
+            )
+
+            try:
+                run = PipelineRun(
+                    run_id=f"{pipeline.id}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}",
+                    pipeline_id=pipeline.id, workspace_id=workspace.get("id"),
+                    status="success" if result.get("success") else "failed",
+                    started_at=datetime.utcnow(), ended_at=datetime.utcnow(),
+                    rows_loaded=result.get("warehouse", {}).get("total_rows", 0),
+                    log="\n".join(result.get("pipeline_log", []) or result.get("log", []))
+                )
+                db.add(run); db.commit()
+            except Exception as e:
+                print(f"[Migration] Could not save run record: {e}")
+
+            model_results = result.get("warehouse", {}).get("scripts", [])
+            return {
+                "success":       result.get("success", False),
+                "technology":    "dbt",
+                "pipeline_id":   pipeline.id,
+                "pipeline_name": pipeline.name,
+                "models":        model_results,
+                "stage":         result.get("stage"),
+                "error":         result.get("error"),
+                "quality":       result.get("quality"),
+                "log":           result.get("log", []),
+            }
+
+        # ══════════════════════════════════════════════════════════════════
+        # Informatica (default): one independent pipeline per mapping
+        # ══════════════════════════════════════════════════════════════════
         source_connector_id = req.get("source_connector_id")
         if not source_connector_id:
             raise HTTPException(400, "source_connector_id is required — the legacy system "
@@ -2958,16 +3233,7 @@ def migration_deploy(
         src_connector = db.query(Connector).filter(Connector.id == source_connector_id).first()
         if not src_connector:
             raise HTTPException(404, "Source connector not found")
-
-        target_connector_id = req.get("target_connector_id")
-        if not target_connector_id:
-            raise HTTPException(400, "target_connector_id is required — the warehouse being migrated into.")
-        tgt_connector = db.query(Connector).filter(Connector.id == target_connector_id).first()
-        if not tgt_connector:
-            raise HTTPException(404, "Target connector not found")
-
         source_config = _cfg(src_connector)
-        target_config = _cfg(tgt_connector)
 
         results = []
         for script in all_scripts:
@@ -3025,11 +3291,6 @@ def migration_deploy(
             except Exception as e:
                 print(f"[Migration] Could not save version for {tname}: {e}")
 
-            # The native "Mappings" UI reads from the PipelineMapping table
-            # specifically — NOT from Pipeline.artifacts.etl_mappings — so a
-            # dedicated row is required here or that button shows nothing,
-            # exactly like it was before this fix. Shape matches
-            # PipelineMapping's own documented format (database.py).
             try:
                 pm_columns = []
                 for m in table_mappings:
@@ -3100,8 +3361,9 @@ def migration_deploy(
             })
 
         return {
-            "success":   all(r["success"] for r in results),
-            "pipelines": results,
+            "success":    all(r["success"] for r in results),
+            "technology": "informatica",
+            "pipelines":  results,
         }
     except HTTPException:
         raise

@@ -576,6 +576,15 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
                 sql = re.sub(r',\s*\)', ')', sql)
                 log(f"[SQLPatch] ✓ src.None/business_key removed")
 
+            # Fix: ON CONFLICT DO UPDATE → WHERE NOT EXISTS is too complex to inject generically.
+            # Simply strip DO UPDATE (which requires UNIQUE constraint) — leave DO NOTHING as-is.
+            # The WHERE NOT EXISTS patch below handles dim idempotency for existing WHERE NOT EXISTS blocks.
+            if script.get("name", "").startswith("dim_") and "ON CONFLICT" in sql.upper() and "DO UPDATE" in sql.upper():
+                sql = re.sub(
+                    r'\s*ON\s+CONFLICT\s*(?:\([^)]*\))?\s*DO\s+UPDATE[^;]*',
+                    '', sql, flags=re.IGNORECASE | re.DOTALL
+                )
+                log(f"[SQLPatch] Stripped ON CONFLICT DO UPDATE from dim: {script.get('name')}")
             # Fix 0b: SERIAL PRIMARY KEY INTEGER → always fix regardless of src.None
             if re.search(r'SERIAL\s+PRIMARY\s+KEY\s+INTEGER', sql, re.IGNORECASE):
                 log(f"[SQLPatch] Fixing SERIAL PRIMARY KEY syntax in {script.get('name')}")
@@ -977,23 +986,8 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
             )
 
 
-            # Fix: WHERE NOT EXISTS — use IS NOT DISTINCT FROM for nullable columns
-            if script.get("name", "").startswith("dim_") and "WHERE NOT EXISTS" in sql:
-                import re as _re3
-                import re as _re3
-                def _apply_not_distinct(m):
-                    # Skip if already using IS NOT DISTINCT FROM or ROUND
-                    full = m.group(0)
-                    if "ROUND(" in full or "IS NOT DISTINCT" in full:
-                        return full
-                    return m.group(1) + " IS NOT DISTINCT FROM " + m.group(2) + '."'+ m.group(3) + '"'
-                new_sql = _re3.sub(
-                    r'(\w+\.\w+)\s*=\s*(s|src)\."(\w+)"',
-                    _apply_not_distinct, sql
-                )
-                if new_sql != sql:
-                    sql = new_sql
-                    log(f"[SQLPatch] WHERE NOT EXISTS: IS NOT DISTINCT FROM applied for {script.get('name')}")
+            # IS NOT DISTINCT FROM patch removed — causes O(n²) slow queries
+            # WHERE NOT EXISTS with plain = is fast and index-friendly
             if sql != original:
                 script = {**script, "sql": sql}
                 log(f"[SQLPatch] ✓ Patched SQL for: {script.get('name')}")

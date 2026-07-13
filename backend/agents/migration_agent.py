@@ -1670,3 +1670,435 @@ def convert_docx_to_pdf(docx_bytes: bytes) -> bytes:
 
         with open(pdf_path, "rb") as f:
             return f.read()
+
+
+# ── dbt project parsing & SQL generation ─────────────────────────────────
+import re
+
+
+def parse_dbt_sources_yml(yml_content: str) -> dict:
+    """
+    Parse a dbt sources.yml file. Returns a lookup:
+        {(source_name, table_name): "schema.real_table_name"}
+    honoring an `identifier:` override if present (dbt lets a source table's
+    logical name differ from its actual table name via `identifier`).
+    """
+    import yaml
+    lookup = {}
+    try:
+        data = yaml.safe_load(yml_content) or {}
+        for src in (data.get("sources") or []):
+            src_name = src.get("name", "")
+            schema = src.get("schema", src_name)
+            for tbl in (src.get("tables") or []):
+                tbl_name = tbl.get("name", "")
+                real_name = tbl.get("identifier", tbl_name)
+                lookup[(src_name, tbl_name)] = f"{schema}.{real_name}"
+    except Exception as e:
+        print(f"[MigrationAgent] dbt sources.yml parse error: {e}")
+    return lookup
+
+
+def parse_dbt_schema_yml(yml_content: str) -> dict:
+    """
+    Parse a dbt schema.yml file (model + column descriptions). Returns:
+        {model_name: {"description": str, "columns": {col_name: description}}}
+    """
+    import yaml
+    result = {}
+    try:
+        data = yaml.safe_load(yml_content) or {}
+        for model in (data.get("models") or []):
+            name = model.get("name", "")
+            cols = {c.get("name", ""): c.get("description", "") for c in (model.get("columns") or [])}
+            result[name] = {"description": model.get("description", ""), "columns": cols}
+    except Exception as e:
+        print(f"[MigrationAgent] dbt schema.yml parse error: {e}")
+    return result
+
+
+_REF_PATTERN = re.compile(r"\{\{\s*ref\(\s*['\"]([^'\"]+)['\"]\s*\)\s*\}\}")
+_SOURCE_PATTERN = re.compile(r"\{\{\s*source\(\s*['\"]([^'\"]+)['\"]\s*,\s*['\"]([^'\"]+)['\"]\s*\)\s*\}\}")
+_CONFIG_PATTERN = re.compile(r"\{\{\s*config\([^)]*\)\s*\}\}\s*", re.DOTALL)
+
+
+def parse_dbt_model_sql(model_name: str, sql_content: str) -> dict:
+    """
+    Parse one dbt .sql model file. Extracts:
+      - ref_dependencies: list of other model names this model depends on
+      - source_dependencies: list of (source_name, table_name) tuples
+      - materialized: 'table', 'view', 'incremental', etc. if a config()
+        block specifies it (defaults to 'table' if not found)
+      - raw_sql: the model body with the {{ config(...) }} block stripped
+        (ref()/source() calls left as-is, resolved separately)
+
+    Does NOT attempt to parse individual column-level lineage from the SQL
+    body — dbt SQL can be arbitrarily complex (CTEs, window functions,
+    subqueries), and reliably extracting per-column source lineage would
+    require a real SQL parser, not regex. Table-level dependencies (which
+    models/sources feed this model) ARE reliably extracted via ref()/
+    source(), since those are simple, standardized Jinja macro calls.
+    """
+    ref_deps = list(dict.fromkeys(_REF_PATTERN.findall(sql_content)))
+    source_deps = list(dict.fromkeys(_SOURCE_PATTERN.findall(sql_content)))
+
+    materialized = "table"
+    config_match = re.search(r"config\(([^)]*)\)", sql_content)
+    if config_match:
+        mat_match = re.search(r"materialized\s*=\s*['\"]([^'\"]+)['\"]", config_match.group(1))
+        if mat_match:
+            materialized = mat_match.group(1)
+
+    raw_sql = _CONFIG_PATTERN.sub("", sql_content).strip()
+
+    return {
+        "name": model_name,
+        "ref_dependencies": ref_deps,
+        "source_dependencies": source_deps,
+        "materialized": materialized,
+        "raw_sql": raw_sql,
+    }
+
+
+def resolve_dbt_model_sql(model: dict, all_models: dict, source_lookup: dict, warehouse_schema: str) -> str:
+    """
+    Replace every {{ ref('x') }} and {{ source('a','b') }} in a model's raw
+    SQL with a real, resolved table reference, producing valid standalone
+    SQL with no Jinja left in it.
+
+    ref('x') -> "{warehouse_schema}.x" (assumes x is/will be deployed into
+    the same warehouse schema as this model, since dbt's ref() always
+    points at another model in the same project).
+
+    source('a','b') -> resolved from source_lookup (from sources.yml) if
+    found; otherwise falls back to "staging.stg_b" (the same source-table
+    naming convention already confirmed for Informatica migrations), with
+    a REVIEW comment since we couldn't confirm the real location.
+    """
+    sql = model["raw_sql"]
+
+    for ref_name in model["ref_dependencies"]:
+        if ref_name in all_models:
+            replacement = f"{warehouse_schema}.{ref_name}"
+        else:
+            replacement = f"{warehouse_schema}.{ref_name} /* REVIEW: '{ref_name}' not found among parsed models */"
+        sql = re.sub(
+            r"\{\{\s*ref\(\s*['\"]" + re.escape(ref_name) + r"['\"]\s*\)\s*\}\}",
+            replacement, sql
+        )
+
+    for src_name, tbl_name in model["source_dependencies"]:
+        resolved = source_lookup.get((src_name, tbl_name))
+        if resolved:
+            replacement = resolved
+        else:
+            replacement = f"staging.stg_{tbl_name} /* REVIEW: source '{src_name}.{tbl_name}' not found in sources.yml, assumed staging convention */"
+        sql = re.sub(
+            r"\{\{\s*source\(\s*['\"]" + re.escape(src_name) + r"['\"]\s*,\s*['\"]" + re.escape(tbl_name) + r"['\"]\s*\)\s*\}\}",
+            replacement, sql
+        )
+
+    return sql
+
+
+def topological_sort_dbt_models(models: dict) -> list:
+    """
+    Sort dbt models so every model appears AFTER all models it depends on
+    (via ref()) — critical because, unlike Informatica mappings (mostly
+    independent target tables), dbt models form a real dependency DAG.
+    Deploying them out of order means a downstream model's SQL would
+    reference a table that doesn't exist yet.
+
+    Uses Kahn's algorithm. Raises ValueError if a circular dependency is
+    detected (shouldn't happen in a valid dbt project, but dbt itself
+    would refuse to run such a project too, so surfacing it rather than
+    silently picking an arbitrary order is the right behavior).
+
+    Only considers ref() dependencies (model-to-model) — source()
+    dependencies point outside the model graph entirely, not to something
+    being deployed in this same run.
+    """
+    in_degree = {name: 0 for name in models}
+    graph = {name: [] for name in models}
+
+    for name, model in models.items():
+        for dep in model["ref_dependencies"]:
+            if dep in models:
+                graph[dep].append(name)
+                in_degree[name] += 1
+
+    queue = sorted([name for name, deg in in_degree.items() if deg == 0])
+    ordered = []
+
+    while queue:
+        current = queue.pop(0)
+        ordered.append(current)
+        for downstream in sorted(graph[current]):
+            in_degree[downstream] -= 1
+            if in_degree[downstream] == 0:
+                queue.append(downstream)
+        queue.sort()
+
+    if len(ordered) != len(models):
+        remaining = set(models.keys()) - set(ordered)
+        raise ValueError(f"Circular dependency detected among dbt models: {remaining}")
+
+    return ordered
+
+
+def parse_dbt_project(sql_files: dict, yml_files: dict) -> dict:
+    """
+    Parse a full dbt project upload.
+
+    sql_files: {filename: content} for every uploaded .sql model file
+               (model name = filename without .sql extension, per dbt convention)
+    yml_files: {filename: content} for every uploaded .yml file (sources.yml,
+               schema.yml, or any dbt-allowed filename — distinguished by
+               checking for a top-level "sources:" or "models:" key, not
+               filename, since dbt allows arbitrary yml filenames)
+
+    Returns:
+        {
+          "success": True,
+          "models": [...],              # parsed model dicts, in deployment order
+          "deployment_order": [...],    # list of model names, topologically sorted
+          "mappings": [...],            # table-level lineage for the Mappings UI
+          "gaps": [...],                # sources referenced but not found in sources.yml
+        }
+    """
+    source_lookup = {}
+    schema_docs = {}
+    for fname, content in yml_files.items():
+        try:
+            import yaml
+            data = yaml.safe_load(content) or {}
+        except Exception:
+            continue
+        if "sources" in data:
+            source_lookup.update(parse_dbt_sources_yml(content))
+        if "models" in data:
+            schema_docs.update(parse_dbt_schema_yml(content))
+
+    models = {}
+    for fname, content in sql_files.items():
+        if not fname.endswith(".sql"):
+            continue
+        model_name = fname.rsplit("/", 1)[-1][:-4]  # strip path and .sql
+        models[model_name] = parse_dbt_model_sql(model_name, content)
+
+    try:
+        deployment_order = topological_sort_dbt_models(models)
+    except ValueError as e:
+        return {"success": False, "error": str(e), "models": [], "deployment_order": [], "mappings": [], "gaps": []}
+
+    # Table-level lineage for the Mappings UI — one entry per model showing
+    # what it depends on. Column-level lineage isn't attempted (see
+    # parse_dbt_model_sql's docstring for why).
+    mappings = []
+    gaps = []
+    for name in deployment_order:
+        model = models[name]
+        upstream = list(model["ref_dependencies"])
+        for src_name, tbl_name in model["source_dependencies"]:
+            if (src_name, tbl_name) in source_lookup:
+                upstream.append(source_lookup[(src_name, tbl_name)])
+            else:
+                upstream.append(f"{src_name}.{tbl_name} (UNRESOLVED)")
+                gaps.append({
+                    "column": f"{name} (source)",
+                    "table": name,
+                    "reason": f"source('{src_name}', '{tbl_name}') has no matching entry in sources.yml"
+                })
+        mappings.append({
+            "target": name,
+            "source": ", ".join(upstream) if upstream else "(no dependencies — likely a seed or root source)",
+            "materialized": model["materialized"],
+            "description": schema_docs.get(name, {}).get("description", ""),
+            # Carried through so /migration/generate-sql can regenerate SQL
+            # later without needing the original .sql files re-uploaded —
+            # same round-trip principle as Informatica's mappings list.
+            "raw_sql": model["raw_sql"],
+            "ref_dependencies": model["ref_dependencies"],
+            "source_dependencies": model["source_dependencies"],
+        })
+
+    return {
+        "success": True,
+        "source_lookup_display": {f"{k[0]}.{k[1]}": v for k, v in source_lookup.items()},
+        "models": [models[name] for name in deployment_order],
+        "deployment_order": deployment_order,
+        "source_lookup": source_lookup,
+        "mappings": mappings,
+        "gaps": gaps,
+    }
+
+
+def generate_sql_from_dbt_models(parsed_project: dict, warehouse_schema: str = "warehouse") -> dict:
+    """
+    Generate deployable SQL scripts from a parsed dbt project, in the exact
+    {name, label, schema, sql} shape pipeline_executor.execute_warehouse_scripts()
+    expects — same contract as generate_sql_scripts() (the Informatica path),
+    so this plugs into the same approval/deploy flow with no new endpoint
+    logic needed.
+
+    Unlike the Informatica path, this does NOT ask an AI to reconstruct SQL
+    from column-level derivations — dbt models already ARE real, tested SQL.
+    Each script replicates dbt's own default 'table' materialization
+    behavior (full refresh): DROP TABLE IF EXISTS + CREATE TABLE AS SELECT,
+    using the model's actual SQL with ref()/source() resolved to real table
+    references.
+
+    Models with materialized='incremental' are flagged rather than
+    full-refreshed silently — incremental models rely on dbt's
+    is_incremental() Jinja macro for conditional logic that isn't safely
+    resolvable without running inside dbt itself, so guessing at that logic
+    would risk silently wrong behavior on a re-run.
+
+    CRITICAL: scripts are returned in the project's topologically-sorted
+    deployment order. execute_warehouse_scripts() runs scripts sequentially
+    in the order given, so this order must be preserved all the way through
+    to deployment — do NOT split dbt models into independent per-model
+    pipelines the way Informatica migrations are, since a downstream
+    model's SQL directly depends on an upstream model already existing.
+    """
+    if not parsed_project.get("success"):
+        return {"success": False, "error": parsed_project.get("error", "dbt project parsing failed")}
+
+    models_by_name = {m["name"]: m for m in parsed_project["models"]}
+    source_lookup = parsed_project.get("source_lookup", {})
+    scripts = []
+
+    for name in parsed_project["deployment_order"]:
+        model = models_by_name[name]
+        resolved_sql = resolve_dbt_model_sql(model, models_by_name, source_lookup, warehouse_schema)
+
+        if model["materialized"] == "incremental":
+            sql = (
+                f"-- REVIEW: this dbt model uses materialized='incremental', which relies on\n"
+                f"-- dbt's is_incremental() macro for conditional logic (typically a WHERE\n"
+                f"-- clause limiting to new/changed rows) that this migration could not safely\n"
+                f"-- resolve automatically. Below is a FULL REFRESH equivalent as a starting\n"
+                f"-- point \u2014 review and add the correct incremental filter before relying on this.\n\n"
+                f"DROP TABLE IF EXISTS {warehouse_schema}.{name};\n"
+                f"CREATE TABLE {warehouse_schema}.{name} AS\n{resolved_sql};"
+            )
+        else:
+            sql = (
+                f"-- Replicates dbt's default table materialization (full refresh),\n"
+                f"-- matching this model's original materialized='{model['materialized']}' config.\n"
+                f"DROP TABLE IF EXISTS {warehouse_schema}.{name};\n"
+                f"CREATE TABLE {warehouse_schema}.{name} AS\n{resolved_sql};"
+            )
+
+        scripts.append({
+            "name": name,
+            "label": name.replace("_", " ").title(),
+            "schema": warehouse_schema,
+            "sql": sql,
+            "materialized": model["materialized"],
+        })
+
+    return {"success": True, "sql_scripts": {"scripts": scripts}, "deployment_order": parsed_project["deployment_order"]}
+
+
+def run_dbt_deployment(
+    target_connector_config: dict,
+    staging_schema: str,
+    warehouse_schema: str,
+    sql_scripts: dict,
+    pipeline_id: str,
+    workspace_id: str,
+) -> dict:
+    """
+    Dedicated dbt deployment flow — deliberately DIFFERENT from
+    run_migration_deployment() (the Informatica path). dbt's own convention
+    is that source() tables already exist in the target warehouse (loaded
+    there by a separate tool like Fivetran/Airbyte — dbt itself never does
+    extraction). So this skips ETLAgent entirely and runs QualityAgent ->
+    ExecutionAgent -> RecoveryAgent -> AnalyticsAgent directly against the
+    already-resolved model SQL.
+
+    CRITICAL: `sql_scripts["scripts"]` MUST already be in the project's
+    topologically-sorted deployment order (from generate_sql_from_dbt_models)
+    — this function does not re-order anything, and ExecutionAgent runs
+    scripts strictly in the order given. Running dbt models out of order
+    means a downstream model could reference a table that doesn't exist yet.
+
+    If your actual migration involves moving the underlying source data to
+    a NEW physical warehouse (not just porting the transformation logic to
+    run against data that's already there), this assumption is wrong and
+    an extraction step would be needed first — this function does not
+    handle that case.
+
+    Returns the same result shape as run_migration_deployment() minus the
+    "staging" key (since no extraction happens):
+        {"success": bool, "warehouse": ..., "quality": ..., "analytics": ...,
+         "recovery": ..., "log": [...], "pipeline_log": [...]}
+    """
+    from agents.base import AgentContext
+    from agents.quality_agent import QualityAgent
+    from agents.execution_agent import ExecutionAgent
+    from agents.recovery_agent import RecoveryAgent
+    from agents.analytics_agent import AnalyticsAgent
+
+    log = []
+
+    def _log(msg):
+        log.append(msg)
+        print(f"[dbtDeploy] {msg}")
+
+    try:
+        ctx = AgentContext(
+            pipeline_id=pipeline_id,
+            workspace_id=workspace_id,
+            connector_config=target_connector_config,
+            source_schema=staging_schema,
+            source_tables=[],
+            source_columns={},
+            source_description="dbt project deployment via Migration Agent",
+            business_requirements="",
+            target_config=target_connector_config,
+            staging_schema=staging_schema,
+            warehouse_schema=warehouse_schema,
+        )
+        ctx.sql_scripts = sql_scripts
+        ctx.data_model = {}
+    except Exception as e:
+        return {"success": False, "stage": "context_setup", "error": str(e), "log": log}
+
+    _log("Skipping extraction — dbt source() tables are assumed already loaded "
+         "in the target warehouse, per dbt's own convention (dbt never extracts data itself).")
+
+    _log("Running QualityAgent...")
+    QualityAgent().run(ctx)
+    quality_data = ctx.quality_result or {}
+    _log(f"Quality: {quality_data.get('status', 'unknown')} ({quality_data.get('score', '?')}%)")
+
+    n_models = len(sql_scripts.get("scripts", []))
+    _log(f"Running ExecutionAgent — {n_models} dbt model(s) in dependency order...")
+    ExecutionAgent().run(ctx)
+    exec_result = ctx.execution_result or {}
+
+    failed_scripts = [s for s in exec_result.get("scripts", []) if not s.get("success", True)]
+    if failed_scripts:
+        _log(f"{len(failed_scripts)} model(s) failed — running RecoveryAgent...")
+        RecoveryAgent().run(ctx)
+        if ctx.recovery_result and ctx.recovery_result.get("recovered", 0) > 0:
+            _log("Recovery fixed model(s) — retrying execution...")
+            ExecutionAgent().run(ctx)
+            exec_result = ctx.execution_result or {}
+
+    AnalyticsAgent().run(ctx)
+
+    success = exec_result.get("success", False)
+    _log(("✓" if success else "✗") + " dbt deployment finished")
+
+    return {
+        "success":      success,
+        "warehouse":    exec_result,
+        "quality":      quality_data,
+        "analytics":    ctx.analytics_result,
+        "recovery":     ctx.recovery_result,
+        "log":          log,
+        "pipeline_log": ctx.pipeline_log,
+    }
