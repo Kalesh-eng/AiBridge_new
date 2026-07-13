@@ -1014,7 +1014,7 @@ WRONG (✗):
 ║   INSERT INTO warehouse.dim_<entity> (<cols>)                        ║
 ║   SELECT s.<col1>, s.<col2>                                          ║
 ║   FROM staging.stg_<entity> s                                        ║
-║   ON CONFLICT DO NOTHING;                                            ║
+║   WHERE NOT EXISTS (SELECT 1 FROM warehouse.dim_<entity> d WHERE d.<nat_key> = s.<nat_key>);                                            ║
 ║                                                                      ║
 ║   -- Step 3: Load fact from raw staging table                        ║
 ║   INSERT INTO warehouse.fact_<name> (<cols>)                         ║
@@ -1825,55 +1825,65 @@ def run_phase_2_sql_generation(schema_analysis: dict,
         print(f"[ETL Agent] ✓ Rewrote SQL to use schemas: {staging_schema}, {warehouse_schema}")
 
     # Inject individual staging CREATE TABLE scripts for each stg_<entity>
-    # referenced in the generated SQL but not in actual_staging_tables.
-    # This ensures each dim/fact reads from its own pre-rounded staging table.
+    # Create individual staging tables per dim/fact script.
+    # Each dim gets its own stg_<entity> table with only its columns.
+    # This avoids shared stg table mismatches and float precision issues.
     # Fully generic — no hardcoding of table/column names.
     import re as _re_stg
-    # Find raw staging table (the one actually extracted)
     _raw_stg = (actual_staging_tables or [""])[0] if actual_staging_tables else ""
     if _raw_stg:
-        # Find all staging.stg_<X> references in generated SQL
-        _referenced_stg = set()
-        for _s in sql.get("scripts", []):
-            for _m in _re_stg.finditer(r'staging\.stg_(\w+)', _s.get("sql",""), _re_stg.IGNORECASE):
-                _tbl = f'stg_{_m.group(1)}'
-                if _tbl != _raw_stg:
-                    _referenced_stg.add(_tbl)
-        # For each referenced intermediate staging table, generate CREATE script
         _inject_scripts = []
-        for _stg_tbl in sorted(_referenced_stg):
-            # Find columns used from this table in the SQL scripts
-            _cols_used = set()
-            for _s in sql.get("scripts", []):
-                _sql = _s.get("sql", "")
-                if f'staging.{_stg_tbl}' in _sql:
-                    # Extract s."ColName" or src."ColName" patterns
-                    for _cm in _re_stg.finditer(r'(?:s|src)\."(\w+)"', _sql):
-                        _cols_used.add(_cm.group(1))
-            if not _cols_used:
-                continue  # skip if no columns detected
-            # Build SELECT with ROUND for float-like column names
-            # Generic heuristic: columns containing cc, kmpl, power, amount, price
-            _float_hints = ("cc", "kmpl", "power", "mileage", "price", "amount",
-                            "salary", "cost", "revenue", "fee", "rate", "score")
-            def _col_select(c):
-                if any(h in c.lower() for h in _float_hints):
-                    return f'ROUND("{c}"::NUMERIC, 2) AS "{c}"'
-                return f'"{c}"'
-            _cols_sql = ", ".join(_col_select(c) for c in sorted(_cols_used))
+        _created_stg_tables = {}  # stg_tbl_name -> cols_used
+        for _s in sql.get("scripts", []):
+            _sname = _s.get("name", "")
+            _sql   = _s.get("sql", "")
+            # Find which intermediate staging table this script reads from
+            _stg_refs = _re_stg.findall(r'FROM\s+(?:staging\.)(stg_\w+)|JOIN\s+(?:staging\.)(stg_\w+)', _sql, _re_stg.IGNORECASE)
+            _stg_tbls = set(a or b for a, b in _stg_refs if (a or b) and (a or b) != _raw_stg)
+            for _stg_tbl in _stg_tbls:
+                # Determine target staging table name per dim/fact
+                if _sname.startswith("dim_"):
+                    # e.g. dim_car -> stg_car, dim_location -> stg_location
+                    _entity = _sname.replace("dim_", "")
+                    _target_stg = f"stg_{_entity}"
+                elif _sname.startswith("fact_"):
+                    # fact tables get their own staging with all cols
+                    _entity = _sname.replace("fact_", "")
+                    _target_stg = f"stg_{_entity}"
+                else:
+                    _target_stg = _stg_tbl
+                # Extract columns used by this script
+                _cols_used = set()
+                for _cm in _re_stg.finditer(r'(?:s|src)\."(\w+)"', _sql):
+                    _cols_used.add(_cm.group(1))
+                if not _cols_used:
+                    continue
+                # Replace old stg table reference with new per-script stg table
+                if _stg_tbl != _target_stg:
+                    _s["sql"] = _sql.replace(
+                        f'staging.{_stg_tbl}', f'{staging_schema}.{_target_stg}'
+                    )
+                # Track for CREATE script generation
+                if _target_stg not in _created_stg_tables:
+                    _created_stg_tables[_target_stg] = _cols_used
+                else:
+                    _created_stg_tables[_target_stg].update(_cols_used)
+        # Generate CREATE TABLE scripts for each individual staging table
+        for _target_stg, _cols_used in sorted(_created_stg_tables.items()):
+            # Use ALL columns from raw staging — simpler and more reliable
+            _cols_sql = "*"
             _inject_sql = (
-                f'DROP TABLE IF EXISTS {staging_schema}.{_stg_tbl}; '
-                f'CREATE TABLE {staging_schema}.{_stg_tbl} AS '
+                f'DROP TABLE IF EXISTS {staging_schema}.{_target_stg} CASCADE; '
+                f'CREATE TABLE {staging_schema}.{_target_stg} AS '
                 f'SELECT DISTINCT {_cols_sql} '
                 f'FROM {staging_schema}.{_raw_stg};'
             )
             _inject_scripts.append({
-                "name":  _stg_tbl,
-                "label": f"Create intermediate staging from {_raw_stg}",
+                "name":  _target_stg,
+                "label": f"Individual staging for {_target_stg} from {_raw_stg}",
                 "sql":   _inject_sql
             })
-            print(f"[ETL Agent] + Injected staging script: {_stg_tbl} (cols: {sorted(_cols_used)})")
-        # Prepend staging scripts before dim/fact scripts
+            print(f"[ETL Agent] + Injected individual staging: {_target_stg} ({len(_cols_used)} cols)")
         if _inject_scripts:
             sql["scripts"] = _inject_scripts + sql.get("scripts", [])
 

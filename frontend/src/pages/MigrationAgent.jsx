@@ -18,6 +18,7 @@ const STEPS = ['Choose mode', 'Connect & upload', 'Scan & analyze', 'Review & de
 export default function MigrationAgent() {
   const [step, setStep]               = useState(0)
   const [subMode, setSubMode]         = useState(null)   // reverse | import | extend
+  const [technology, setTechnology]   = useState('informatica')  // informatica | dbt
   const [uploadMode, setUploadMode]   = useState('repository')  // repository | individual
   const [loading, setLoading]         = useState(false)
   const [error, setError]             = useState(null)
@@ -83,6 +84,7 @@ export default function MigrationAgent() {
       formData.append('connection', JSON.stringify(conn))
       formData.append('sub_mode', subMode)
       formData.append('upload_mode', uploadMode)
+      formData.append('technology', technology)
       uploadedFiles.forEach(f => formData.append('files', f.file))
       const r = await api.post('/migration/scan', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -105,11 +107,14 @@ export default function MigrationAgent() {
         resolutions[idx] = text
       })
       const r = await api.post('/migration/generate-sql', {
+        technology:  scanResult.technology || technology,
         tables:      scanResult.tables || [],
         mappings:    scanResult.mappings || [],
         gaps:        scanResult.gaps || [],
         resolutions,
-        domain:      scanResult.domain || ''
+        domain:      scanResult.domain || '',
+        dbt_deployment_order: scanResult.dbt_deployment_order,
+        dbt_source_lookup:    scanResult.dbt_source_lookup
       })
       setSqlScripts(r.data.sql_scripts?.scripts || [])
       setApprovalId(r.data.approval_id)
@@ -435,59 +440,97 @@ export default function MigrationAgent() {
             {/* File upload section — import mode only */}
             {subMode === 'import' && (
               <div style={card}>
-                <div style={sectionLabel}>Upload mapping files</div>
-
-                {/* Upload mode selector */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+                <div style={sectionLabel}>Source technology</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 18 }}>
                   {[
                     {
-                      id: 'repository',
-                      icon: 'ti-package',
+                      id: 'informatica', icon: 'ti-git-branch',
                       color: '#185FA5', bg: '#E6F1FB',
-                      title: 'Repository XML',
-                      badge: 'Recommended',
-                      desc: 'Upload one Informatica repository XML — AIBridge extracts ALL mappings automatically.',
-                      accepts: '.xml'
+                      title: 'Informatica PowerCenter',
+                      desc: 'Upload a repository/mapping XML export. AIBridge traces the transformation graph automatically.',
                     },
                     {
-                      id: 'individual',
-                      icon: 'ti-files',
-                      color: '#534AB7', bg: '#EEEDFE',
-                      title: 'Individual files',
-                      badge: 'More control',
-                      desc: 'Upload one mapping file per dim/fact table. Supports Informatica XML, dbt YML, SSIS, ODI, BRD.',
-                      accepts: '.xml,.yml,.yaml,.dtsx,.pdf,.docx'
+                      id: 'dbt', icon: 'ti-brand-git',
+                      color: '#FF694A', bg: '#FFEEE9',
+                      title: 'dbt',
+                      desc: 'Upload your dbt project\u2019s .sql model files + sources.yml/schema.yml. Models are already real SQL \u2014 no reconstruction needed.',
                     },
                   ].map(opt => (
-                    <div key={opt.id} onClick={() => setUploadMode(opt.id)} style={{
-                      border: uploadMode === opt.id ? `2px solid ${opt.color}` : '1px solid #e5e7eb',
-                      background: uploadMode === opt.id ? opt.bg : '#f9fafb',
+                    <div key={opt.id} onClick={() => { setTechnology(opt.id); setUploadedFiles([]) }} style={{
+                      border: technology === opt.id ? `2px solid ${opt.color}` : '1px solid #e5e7eb',
+                      background: technology === opt.id ? opt.bg : '#f9fafb',
                       borderRadius: 8, padding: 14, cursor: 'pointer'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                         <i className={`ti ${opt.icon}`} style={{ fontSize: 18, color: opt.color }} />
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{opt.title}</span>
-                        <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: opt.bg, color: opt.color, marginLeft: 'auto' }}>{opt.badge}</span>
                       </div>
                       <div style={{ fontSize: 11, color: '#555', lineHeight: 1.5 }}>{opt.desc}</div>
                     </div>
                   ))}
                 </div>
 
+                <div style={sectionLabel}>Upload mapping files</div>
+
+                {/* Upload mode selector — Informatica only; dbt is always multi-file */}
+                {technology === 'informatica' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+                    {[
+                      {
+                        id: 'repository',
+                        icon: 'ti-package',
+                        color: '#185FA5', bg: '#E6F1FB',
+                        title: 'Repository XML',
+                        badge: 'Recommended',
+                        desc: 'Upload one Informatica repository XML — AIBridge extracts ALL mappings automatically.',
+                        accepts: '.xml'
+                      },
+                      {
+                        id: 'individual',
+                        icon: 'ti-files',
+                        color: '#534AB7', bg: '#EEEDFE',
+                        title: 'Individual files',
+                        badge: 'More control',
+                        desc: 'Upload one mapping file per dim/fact table.',
+                        accepts: '.xml'
+                      },
+                    ].map(opt => (
+                      <div key={opt.id} onClick={() => setUploadMode(opt.id)} style={{
+                        border: uploadMode === opt.id ? `2px solid ${opt.color}` : '1px solid #e5e7eb',
+                        background: uploadMode === opt.id ? opt.bg : '#f9fafb',
+                        borderRadius: 8, padding: 14, cursor: 'pointer'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                          <i className={`ti ${opt.icon}`} style={{ fontSize: 18, color: opt.color }} />
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{opt.title}</span>
+                          <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: opt.bg, color: opt.color, marginLeft: 'auto' }}>{opt.badge}</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: '#555', lineHeight: 1.5 }}>{opt.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {technology === 'dbt' && (
+                  <div style={{ fontSize: 11, color: '#888', marginBottom: 14, padding: '8px 10px', background: '#FFF7ED', borderRadius: 6 }}>
+                    Select every <code>.sql</code> model file in your project, plus <code>sources.yml</code> and any <code>schema.yml</code> files. dbt models form a dependency graph (via <code>ref()</code>/<code>source()</code>) \u2014 AIBridge deploys them in the correct order automatically.
+                  </div>
+                )}
+
                 {/* Upload zone */}
                 <input ref={fileRef} type="file"
-                  multiple={uploadMode === 'individual'}
-                  accept={uploadMode === 'repository' ? '.xml' : '.xml,.yml,.yaml,.dtsx,.pdf,.docx'}
+                  multiple={technology === 'dbt' || uploadMode === 'individual'}
+                  accept={technology === 'dbt' ? '.sql,.yml,.yaml' : (uploadMode === 'repository' ? '.xml' : '.xml')}
                   style={{ display: 'none' }} onChange={handleFileUpload} />
 
                 <div style={{ border: '1.5px dashed #d1d5db', borderRadius: 8, padding: 20, textAlign: 'center', cursor: 'pointer', background: '#f9fafb' }}
                   onClick={() => fileRef.current?.click()}>
                   <i className="ti ti-upload" style={{ fontSize: 24, color: '#aaa' }} />
                   <div style={{ fontSize: 13, fontWeight: 500, color: '#374151', marginTop: 8 }}>
-                    {uploadMode === 'repository' ? 'Drop Informatica Repository XML here' : 'Drop mapping files here or click to browse'}
+                    {technology === 'dbt' ? 'Drop your dbt project files here (.sql + .yml)' : (uploadMode === 'repository' ? 'Drop Informatica Repository XML here' : 'Drop mapping files here or click to browse')}
                   </div>
                   <div style={{ fontSize: 11, color: '#aaa', marginTop: 4 }}>
-                    {uploadMode === 'repository' ? 'One .xml file — all mappings extracted automatically' : 'Informatica XML · dbt YML · SSIS dtsx · ODI xml · BRD PDF/Word'}
+                    {technology === 'dbt' ? 'Select all model files + sources.yml/schema.yml at once' : (uploadMode === 'repository' ? 'One .xml file — all mappings extracted automatically' : 'Informatica repository/mapping XML')}
                   </div>
                 </div>
 
@@ -978,24 +1021,46 @@ export default function MigrationAgent() {
             )}
 
             {deployResult && (
-              <div style={{ ...card, marginTop: 16, background: deployResult.success ? '#f0fdf4' : '#fef2f2' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: deployResult.success ? '#166534' : '#991b1b', marginBottom: 6 }}>
-                  {deployResult.success ? '✅ Deployment succeeded' : `✗ Deployment failed at: ${deployResult.stage || 'unknown stage'}`}
+              <div style={{ marginTop: 16 }}>
+                <div style={{
+                  ...card, marginBottom: 12,
+                  background: deployResult.success ? '#f0fdf4' : '#fef7ed',
+                  borderColor: deployResult.success ? '#86efac' : '#fdba74'
+                }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: deployResult.success ? '#166534' : '#9a3412' }}>
+                    {deployResult.success
+                      ? `✅ All ${(deployResult.pipelines || []).length} pipeline(s) deployed successfully`
+                      : `⚠ ${(deployResult.pipelines || []).filter(p => p.success).length}/${(deployResult.pipelines || []).length} pipeline(s) succeeded`}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>
+                    Each table below ran as its own independent pipeline — a failure in one does not affect the others.
+                  </div>
                 </div>
-                {deployResult.error && <div style={{ fontSize: 12, color: '#991b1b', marginBottom: 6 }}>{deployResult.error}</div>}
-                {deployResult.quality && (
-                  <div style={{ fontSize: 12, color: '#555' }}>
-                    Quality: {deployResult.quality.status} ({deployResult.quality.score}%)
+
+                {(deployResult.pipelines || []).map((p, i) => (
+                  <div key={i} style={{
+                    ...card, marginBottom: 8,
+                    background: p.success ? '#fff' : '#fef2f2',
+                    borderColor: p.success ? '#e5e7eb' : '#fca5a5'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 14 }}>{p.success ? '✅' : '✗'}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, fontFamily: 'monospace' }}>{p.table}</span>
+                      <span style={{ fontSize: 10, color: '#888' }}>({p.mapping_name})</span>
+                      {!p.success && p.stage && (
+                        <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 20, background: '#fee2e2', color: '#991b1b', marginLeft: 'auto' }}>failed: {p.stage}</span>
+                      )}
+                    </div>
+                    {p.error && <div style={{ fontSize: 11, color: '#991b1b', marginTop: 4 }}>{p.error}</div>}
+                    {p.warehouse && (
+                      <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>Rows loaded: {p.warehouse.total_rows ?? 'n/a'}</div>
+                    )}
+                    {p.quality && (
+                      <div style={{ fontSize: 11, color: '#555' }}>Quality: {p.quality.status} ({p.quality.score}%)</div>
+                    )}
+                    <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>Pipeline ID: {p.pipeline_id}</div>
                   </div>
-                )}
-                {deployResult.warehouse && (
-                  <div style={{ fontSize: 12, color: '#555' }}>
-                    Rows loaded: {deployResult.warehouse.total_rows ?? 'n/a'}
-                  </div>
-                )}
-                {deployResult.pipeline_id && (
-                  <div style={{ fontSize: 11, color: '#888', marginTop: 6 }}>Pipeline ID: {deployResult.pipeline_id}</div>
-                )}
+                ))}
               </div>
             )}
 
