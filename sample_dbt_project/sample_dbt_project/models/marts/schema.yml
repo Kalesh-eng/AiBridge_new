@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: dim_car
+    description: "Car dimension — one row per vehicle"
+    columns:
+      - name: car_key
+        description: "Surrogate key for the car"
+      - name: brand
+        description: "Vehicle make/brand name"
+      - name: model
+        description: "Vehicle model name"
+      - name: age_bracket
+        description: "Bucketed age category based on model year"
+
+  - name: dim_seller
+    description: "Seller dimension"
+    columns:
+      - name: seller_key
+        description: "Surrogate key for the seller"
+      - name: seller_type
+        description: "Dealer, Private, or Unknown"
+
+  - name: fact_car_listings
+    description: "One row per car listing event"
+    columns:
+      - name: listing_id
+        description: "Natural key for the listing"
+      - name: price
+        description: "Listed price"
