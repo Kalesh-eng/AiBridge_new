@@ -38,7 +38,6 @@ export default function MigrationAgent() {
   const [safetyBlock, setSafetyBlock]         = useState(null) // {violations, warnings, message} when blocked
   const [understandDestructive, setUnderstandDestructive] = useState(false)
   const [deploySourceConnector, setDeploySourceConnector] = useState('')
-  const [deploySourceSchema, setDeploySourceSchema]       = useState('raw')
   const [deployLoading, setDeployLoading] = useState(false)
   const [deployError, setDeployError]     = useState(null)
   const [deployResult, setDeployResult]   = useState(null)
@@ -57,7 +56,8 @@ export default function MigrationAgent() {
 
   const [conn, setConn] = useState({
     host: '', port: '5432', database: '', username: '', password: '',
-    warehouse_schema: 'warehouse', connector_type: 'postgres'
+    source_schema: 'raw', staging_schema: 'staging', warehouse_schema: 'warehouse',
+    connector_type: 'postgres'
   })
 
   const goTo = (n) => { setStep(n); setError(null) }
@@ -113,6 +113,9 @@ export default function MigrationAgent() {
         gaps:        scanResult.gaps || [],
         resolutions,
         domain:      scanResult.domain || '',
+        source_schema:    conn.source_schema,
+        staging_schema:   conn.staging_schema,
+        warehouse_schema: conn.warehouse_schema,
         dbt_deployment_order: scanResult.dbt_deployment_order,
         dbt_source_lookup:    scanResult.dbt_source_lookup
       })
@@ -239,7 +242,7 @@ export default function MigrationAgent() {
         project_name:         `Migration: ${scanResult?.domain || 'warehouse'} — ${new Date().toLocaleDateString()}`,
         source_connector_id:  deploySourceConnector,
         target_connector_id:  selectedConnector,
-        source_schema:        deploySourceSchema,
+        source_schema:        conn.source_schema,
         staging_schema:       conn.staging_schema || 'staging',
         warehouse_schema:     conn.warehouse_schema || 'warehouse',
         source_tables:        derivedSourceTables,
@@ -364,7 +367,7 @@ export default function MigrationAgent() {
                         if (c) setConn({
                           host: c.host, port: String(c.port),
                           database: c.database_name, username: c.username,
-                          password: '', warehouse_schema: 'warehouse',
+                          password: '', source_schema: 'raw', staging_schema: 'staging', warehouse_schema: 'warehouse',
                           connector_type: c.connector_type
                         })
                       }}>
@@ -377,9 +380,23 @@ export default function MigrationAgent() {
                     </select>
                     {selectedConnector && (
                       <div>
-                        <label style={{ ...labelStyle, marginTop: 10 }}>Warehouse schema</label>
-                        <input style={inp} value={conn.warehouse_schema}
-                          onChange={e => setConn(c => ({ ...c, warehouse_schema: e.target.value }))} />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginTop: 10 }}>
+                          <div>
+                            <label style={labelStyle}>Source schema</label>
+                            <input style={inp} value={conn.source_schema} placeholder="raw"
+                              onChange={e => setConn(c => ({ ...c, source_schema: e.target.value }))} />
+                          </div>
+                          <div>
+                            <label style={labelStyle}>Staging schema</label>
+                            <input style={inp} value={conn.staging_schema} placeholder="staging"
+                              onChange={e => setConn(c => ({ ...c, staging_schema: e.target.value }))} />
+                          </div>
+                          <div>
+                            <label style={labelStyle}>Warehouse schema</label>
+                            <input style={inp} value={conn.warehouse_schema} placeholder="warehouse"
+                              onChange={e => setConn(c => ({ ...c, warehouse_schema: e.target.value }))} />
+                          </div>
+                        </div>
                         <label style={{ ...labelStyle, marginTop: 8 }}>Password (re-enter for security)</label>
                         <input style={inp} type="password" value={conn.password}
                           onChange={e => setConn(c => ({ ...c, password: e.target.value }))} />
@@ -427,9 +444,21 @@ export default function MigrationAgent() {
                       <input style={inp} type="password" value={conn.password}
                         onChange={e => setConn(c => ({ ...c, password: e.target.value }))} />
                     </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginTop: 10 }}>
+                    <div>
+                      <label style={labelStyle}>Source schema</label>
+                      <input style={inp} value={conn.source_schema} placeholder="raw"
+                        onChange={e => setConn(c => ({ ...c, source_schema: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Staging schema</label>
+                      <input style={inp} value={conn.staging_schema} placeholder="staging"
+                        onChange={e => setConn(c => ({ ...c, staging_schema: e.target.value }))} />
+                    </div>
                     <div>
                       <label style={labelStyle}>Warehouse schema</label>
-                      <input style={inp} value={conn.warehouse_schema}
+                      <input style={inp} value={conn.warehouse_schema} placeholder="warehouse"
                         onChange={e => setConn(c => ({ ...c, warehouse_schema: e.target.value }))} />
                     </div>
                   </div>
@@ -1001,8 +1030,8 @@ export default function MigrationAgent() {
                   </div>
                   <div>
                     <label style={labelStyle}>Source schema</label>
-                    <input style={inp} value={deploySourceSchema}
-                      onChange={e => setDeploySourceSchema(e.target.value)} placeholder="raw" />
+                    <input style={inp} value={conn.source_schema}
+                      onChange={e => setConn(c => ({ ...c, source_schema: e.target.value }))} placeholder="raw" />
                   </div>
                 </div>
                 {derivedSourceTables.length > 0 && (

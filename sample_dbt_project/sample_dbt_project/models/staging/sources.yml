@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: src_car
+      - name: src_car_make
+      - name: src_seller
+      - name: src_listing

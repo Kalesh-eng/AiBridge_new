@@ -1533,27 +1533,52 @@ def generate_migration_document(scan_result: dict, resolutions: dict = None, dom
 
     # ── 3. Column-Level Mapping & Lineage ──
     doc.add_heading("3. Column-Level Mapping & Lineage", level=1)
-    narrative(
-        "Every mapped column below traces back to its real source field and any transformation "
-        "logic applied. The Mapping and Workflow columns show exactly which object each column's "
-        "logic came from, for cross-checking against the original export if needed."
-    )
-    ml_table = doc.add_table(rows=1, cols=5)
-    ml_table.style = "Table Grid"
-    header_row(ml_table, ["Target Column", "Source", "Transformation", "Mapping", "Workflow"])
-    for m in mappings:
-        source_display = f"{m.get('source_table', '')}.{m.get('source', '')}" if m.get('source_table') else m.get('source', '')
-        if m.get("needs_review"):
+
+    # dbt mappings are table-level (a model either exists as complete SQL or
+    # it doesn't — no per-column derivation the way Informatica has) and use
+    # different fields entirely ("materialized", "description" instead of
+    # "transformation", "mapping_name", "workflow_name"). Detect by shape so
+    # this works correctly regardless of whether a "technology" field made
+    # it through to this payload.
+    is_dbt = bool(mappings) and "materialized" in mappings[0]
+
+    if is_dbt:
+        narrative(
+            "Every model below traces back to its real dependencies (via dbt's ref() and "
+            "source() references). Unlike a column-by-column mapping, each dbt model is "
+            "already complete, tested SQL \u2014 the Depends On column shows what must be "
+            "built first, in the order this migration will actually run them."
+        )
+        ml_table = doc.add_table(rows=1, cols=4)
+        ml_table.style = "Table Grid"
+        header_row(ml_table, ["Model", "Depends On", "Materialization", "Description"])
+        for m in mappings:
             data_row(ml_table, [
-                m.get("target", ""), source_display,
-                f"NEEDS REVIEW: {m.get('review_reason', 'unresolved')}",
-                m.get("mapping_name") or "\u2014", m.get("workflow_name") or "\u2014"
-            ], colors=[None, None, RED, None, None])
-        else:
-            data_row(ml_table, [
-                m.get("target", ""), source_display, m.get("transformation", ""),
-                m.get("mapping_name") or "\u2014", m.get("workflow_name") or "\u2014"
+                m.get("target", ""), m.get("source", "\u2014"),
+                m.get("materialized", "table"), m.get("description", "") or "\u2014"
             ])
+    else:
+        narrative(
+            "Every mapped column below traces back to its real source field and any transformation "
+            "logic applied. The Mapping and Workflow columns show exactly which object each column's "
+            "logic came from, for cross-checking against the original export if needed."
+        )
+        ml_table = doc.add_table(rows=1, cols=5)
+        ml_table.style = "Table Grid"
+        header_row(ml_table, ["Target Column", "Source", "Transformation", "Mapping", "Workflow"])
+        for m in mappings:
+            source_display = f"{m.get('source_table', '')}.{m.get('source', '')}" if m.get('source_table') else m.get('source', '')
+            if m.get("needs_review"):
+                data_row(ml_table, [
+                    m.get("target", ""), source_display,
+                    f"NEEDS REVIEW: {m.get('review_reason', 'unresolved')}",
+                    m.get("mapping_name") or "\u2014", m.get("workflow_name") or "\u2014"
+                ], colors=[None, None, RED, None, None])
+            else:
+                data_row(ml_table, [
+                    m.get("target", ""), source_display, m.get("transformation", ""),
+                    m.get("mapping_name") or "\u2014", m.get("workflow_name") or "\u2014"
+                ])
 
     doc.add_page_break()
 
@@ -1760,7 +1785,7 @@ def parse_dbt_model_sql(model_name: str, sql_content: str) -> dict:
     }
 
 
-def resolve_dbt_model_sql(model: dict, all_models: dict, source_lookup: dict, warehouse_schema: str) -> str:
+def resolve_dbt_model_sql(model: dict, all_models: dict, source_lookup: dict, warehouse_schema: str, source_schema: str = "raw") -> str:
     """
     Replace every {{ ref('x') }} and {{ source('a','b') }} in a model's raw
     SQL with a real, resolved table reference, producing valid standalone
@@ -1768,12 +1793,16 @@ def resolve_dbt_model_sql(model: dict, all_models: dict, source_lookup: dict, wa
 
     ref('x') -> "{warehouse_schema}.x" (assumes x is/will be deployed into
     the same warehouse schema as this model, since dbt's ref() always
-    points at another model in the same project).
+    points at another model in the same project — every dbt model, staging
+    or mart, is a real materialized output and belongs in warehouse_schema,
+    the same way every Informatica-mapped target table does).
 
     source('a','b') -> resolved from source_lookup (from sources.yml) if
-    found; otherwise falls back to "staging.stg_b" (the same source-table
-    naming convention already confirmed for Informatica migrations), with
-    a REVIEW comment since we couldn't confirm the real location.
+    found; otherwise falls back to "{source_schema}.b", using the actual
+    configured source schema (from the connection's Source schema field —
+    NOT a hardcoded guess, since every project names its schemas
+    differently), with a REVIEW comment since we couldn't confirm the real
+    table name from sources.yml.
     """
     sql = model["raw_sql"]
 
@@ -1792,7 +1821,7 @@ def resolve_dbt_model_sql(model: dict, all_models: dict, source_lookup: dict, wa
         if resolved:
             replacement = resolved
         else:
-            replacement = f"staging.stg_{tbl_name} /* REVIEW: source '{src_name}.{tbl_name}' not found in sources.yml, assumed staging convention */"
+            replacement = f"{source_schema}.{tbl_name} /* REVIEW: source '{src_name}.{tbl_name}' not found in sources.yml, using configured source schema as a fallback */"
         sql = re.sub(
             r"\{\{\s*source\(\s*['\"]" + re.escape(src_name) + r"['\"]\s*,\s*['\"]" + re.escape(tbl_name) + r"['\"]\s*\)\s*\}\}",
             replacement, sql
@@ -1933,7 +1962,7 @@ def parse_dbt_project(sql_files: dict, yml_files: dict) -> dict:
     }
 
 
-def generate_sql_from_dbt_models(parsed_project: dict, warehouse_schema: str = "warehouse") -> dict:
+def generate_sql_from_dbt_models(parsed_project: dict, warehouse_schema: str = "warehouse", source_schema: str = "raw") -> dict:
     """
     Generate deployable SQL scripts from a parsed dbt project, in the exact
     {name, label, schema, sql} shape pipeline_executor.execute_warehouse_scripts()
@@ -1946,7 +1975,11 @@ def generate_sql_from_dbt_models(parsed_project: dict, warehouse_schema: str = "
     Each script replicates dbt's own default 'table' materialization
     behavior (full refresh): DROP TABLE IF EXISTS + CREATE TABLE AS SELECT,
     using the model's actual SQL with ref()/source() resolved to real table
-    references.
+    references. Every model (staging or mart) lands in warehouse_schema —
+    dbt models are all real materialized outputs, same as every
+    Informatica-mapped target table; `source_schema` is only used as the
+    fallback location for an unresolved source() reference (see
+    resolve_dbt_model_sql).
 
     Models with materialized='incremental' are flagged rather than
     full-refreshed silently — incremental models rely on dbt's
@@ -1970,7 +2003,7 @@ def generate_sql_from_dbt_models(parsed_project: dict, warehouse_schema: str = "
 
     for name in parsed_project["deployment_order"]:
         model = models_by_name[name]
-        resolved_sql = resolve_dbt_model_sql(model, models_by_name, source_lookup, warehouse_schema)
+        resolved_sql = resolve_dbt_model_sql(model, models_by_name, source_lookup, warehouse_schema, source_schema)
 
         if model["materialized"] == "incremental":
             sql = (
