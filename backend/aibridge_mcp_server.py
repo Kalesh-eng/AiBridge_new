@@ -23,20 +23,43 @@ import os
 AIBRIDGE_BASE_URL = os.environ.get("AIBRIDGE_URL", "http://localhost:8888")
 AIBRIDGE_TOKEN    = os.environ.get("AIBRIDGE_TOKEN", "")
 
+# --- Auth -----------------------------------------------------------------
+_token_cache = {"token": os.environ.get("AIBRIDGE_TOKEN", "")}
+
+async def _ensure_token():
+    """Auto-login if no token set. Uses AIBRIDGE_EMAIL / AIBRIDGE_PASSWORD env vars."""
+    if _token_cache["token"]:
+        return
+    email    = os.environ.get("AIBRIDGE_EMAIL", "")
+    password = os.environ.get("AIBRIDGE_PASSWORD", "")
+    if not email or not password:
+        return  # No credentials — caller will get 401
+    async with httpx.AsyncClient(timeout=30) as c:
+        r = await c.post(f"{AIBRIDGE_BASE_URL}/auth/login",
+                         json={"email": email, "password": password})
+        if r.status_code == 200:
+            _token_cache["token"] = r.json().get("access_token", "")
+
 # --- HTTP helper -----------------------------------------------------------
 def _headers():
+    h = {"Content-Type": "application/json"}
+    if _token_cache["token"]:
+        h["Authorization"] = f"Bearer {_token_cache['token']}"
+    return h
     h = {"Content-Type": "application/json"}
     if AIBRIDGE_TOKEN:
         h["Authorization"] = f"Bearer {AIBRIDGE_TOKEN}"
     return h
 
 async def _get(path: str) -> dict:
+    await _ensure_token()
     async with httpx.AsyncClient(timeout=60) as c:
         r = await c.get(f"{AIBRIDGE_BASE_URL}{path}", headers=_headers())
         r.raise_for_status()
         return r.json()
 
 async def _post(path: str, body: dict = None) -> dict:
+    await _ensure_token()
     async with httpx.AsyncClient(timeout=120) as c:
         r = await c.post(f"{AIBRIDGE_BASE_URL}{path}",
                          headers=_headers(),
