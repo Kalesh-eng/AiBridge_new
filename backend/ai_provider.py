@@ -349,6 +349,71 @@ def ask_ai(prompt: str, agent_name: str = None, pipeline_id: str = None) -> dict
 
 # ── Claude (Anthropic) ────────────────────────────────────────────────────────
 
+
+def ask_ai_text(prompt: str, system_prompt: str = None, agent_name: str = None, pipeline_id: str = None) -> str:
+    """
+    Send prompt to the configured AI provider. Returns raw text (not JSON).
+    Used for chatbot, explanations, and natural language responses.
+    """
+    p = PROVIDER
+    default_system = system_prompt or "You are AIBridge Assistant, a helpful data engineering AI. Be concise and clear."
+    
+    if p in ("claude", "anthropic"):
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+            r = client.messages.create(
+                model="claude-haiku-4-5", max_tokens=2000,
+                system=default_system,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return r.content[0].text
+        except Exception as e:
+            return f"Error: {e}"
+    
+    elif p in ("openai", "deepseek"):
+        try:
+            from openai import OpenAI
+            if p == "deepseek":
+                client = OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
+                model = "deepseek-chat"
+            else:
+                client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+                model = "gpt-4o-mini"
+            r = client.chat.completions.create(
+                model=model, max_tokens=2000, temperature=0.7,
+                messages=[
+                    {"role": "system", "content": default_system},
+                    {"role": "user",   "content": prompt}
+                ]
+            )
+            return r.choices[0].message.content
+        except Exception as e:
+            return f"Error: {e}"
+    
+    elif p == "gemini":
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+            model = genai.GenerativeModel("gemini-2.5-flash", system_instruction=default_system)
+            r = model.generate_content(prompt)
+            return r.text
+        except Exception as e:
+            return f"Error: {e}"
+    
+    elif p == "ollama":
+        try:
+            import requests
+            r = requests.post(f"{OLLAMA_URL}/api/generate", json={
+                "model": OLLAMA_MODEL, "prompt": f"{default_system}\n\n{prompt}",
+                "stream": False
+            }, timeout=60)
+            return r.json().get("response", "")
+        except Exception as e:
+            return f"Error: {e}"
+    
+    return "AI provider not configured."
+
 def _ask_claude(prompt: str, agent_name: str = None, pipeline_id: str = None) -> dict:
     try:
         import anthropic
