@@ -1,0 +1,4884 @@
+{
+  "last_updated": "2026-07-18T05:54:54.783152",
+  "pipelines": {
+    "9ce672fd-3840-4a0d-9b1c-43fd8881c654": {
+      "name": "1st Pipeline 5/10/2026",
+      "id": "9ce672fd-3840-4a0d-9b1c-43fd8881c654",
+      "fact_tables": [
+        {
+          "name": "fact_sales",
+          "pipeline": "1st Pipeline 5/10/2026",
+          "grain": "one row per order line item",
+          "measures": [
+            "quantity",
+            "unit_price",
+            "line_total"
+          ],
+          "foreign_keys": [
+            "date_key",
+            "customer_key",
+            "product_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_customer",
+          "pipeline": "1st Pipeline 5/10/2026",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "customer_name",
+            "email",
+            "segment",
+            "country"
+          ]
+        },
+        {
+          "name": "dim_product",
+          "pipeline": "1st Pipeline 5/10/2026",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "product_name",
+            "category",
+            "sub_category"
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "1st Pipeline 5/10/2026",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "year",
+            "month",
+            "day",
+            "quarter"
+          ]
+        }
+      ]
+    },
+    "8ac0ffbb-3396-4c1a-acb0-4a9f8faf6953": {
+      "name": "Pipeline 5/10/2026",
+      "id": "8ac0ffbb-3396-4c1a-acb0-4a9f8faf6953",
+      "fact_tables": [
+        {
+          "name": "fact_sales",
+          "pipeline": "Pipeline 5/10/2026",
+          "grain": "one row per order line item",
+          "measures": [
+            "quantity",
+            "unit_price",
+            "line_total"
+          ],
+          "foreign_keys": [
+            "date_key",
+            "customer_key",
+            "product_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_customer",
+          "pipeline": "Pipeline 5/10/2026",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "customer_name",
+            "email",
+            "segment",
+            "country"
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "Pipeline 5/10/2026",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "year",
+            "month",
+            "day",
+            "week_day",
+            "quarter"
+          ]
+        },
+        {
+          "name": "dim_product",
+          "pipeline": "Pipeline 5/10/2026",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "category",
+            "sub_category"
+          ]
+        }
+      ]
+    },
+    "093a37e0-b75a-400b-b6d8-eb6805b83892": {
+      "name": "Pipeline1 5/10/2026",
+      "id": "093a37e0-b75a-400b-b6d8-eb6805b83892",
+      "fact_tables": [
+        {
+          "name": "fact_sales",
+          "pipeline": "Pipeline1 5/10/2026",
+          "grain": "one row per order line item",
+          "measures": [
+            "quantity",
+            "unit_price",
+            "line_total"
+          ],
+          "foreign_keys": [
+            "date_key",
+            "customer_key",
+            "product_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_customer",
+          "pipeline": "Pipeline1 5/10/2026",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "customer_name",
+            "email",
+            "segment",
+            "country"
+          ]
+        },
+        {
+          "name": "dim_order_date",
+          "pipeline": "Pipeline1 5/10/2026",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "year",
+            "quarter",
+            "month",
+            "day_of_month",
+            "week_of_year",
+            "day_of_week"
+          ]
+        },
+        {
+          "name": "dim_product",
+          "pipeline": "Pipeline1 5/10/2026",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "category",
+            "sub_category"
+          ]
+        }
+      ]
+    },
+    "62b137ad-817e-496d-bfe6-8176780c3d7d": {
+      "name": "Ecommerce DWH Pipeline",
+      "id": "62b137ad-817e-496d-bfe6-8176780c3d7d",
+      "fact_tables": [
+        {
+          "name": "fact_sales",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "grain": "one row per order line item",
+          "measures": [
+            "quantity",
+            "unit_price",
+            "line_total"
+          ],
+          "foreign_keys": [
+            "date_key",
+            "customer_key",
+            "product_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_customer",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "customer_name",
+            "email",
+            "segment",
+            "country"
+          ]
+        },
+        {
+          "name": "dim_product",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "product_name",
+            "category",
+            "subcategory"
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "year",
+            "month",
+            "day",
+            "week_of_year",
+            "quarter"
+          ]
+        }
+      ]
+    },
+    "d6640a05-47e8-4bea-83d3-fb9de3fb0456": {
+      "name": "Ecommerce DWH Pipeline 2",
+      "id": "d6640a05-47e8-4bea-83d3-fb9de3fb0456",
+      "fact_tables": [
+        {
+          "name": "fact_sales",
+          "pipeline": "Ecommerce DWH Pipeline 2",
+          "grain": "one row per order line item",
+          "measures": [
+            "quantity",
+            "unit_price",
+            "line_total"
+          ],
+          "foreign_keys": [
+            "date_key",
+            "customer_key",
+            "product_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_customer",
+          "pipeline": "Ecommerce DWH Pipeline 2",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "customer_name",
+            "email",
+            "segment",
+            "country"
+          ]
+        },
+        {
+          "name": "dim_order_date",
+          "pipeline": "Ecommerce DWH Pipeline 2",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "year",
+            "quarter",
+            "month",
+            "day_of_month",
+            "week_of_year",
+            "day_of_week"
+          ]
+        },
+        {
+          "name": "dim_product",
+          "pipeline": "Ecommerce DWH Pipeline 2",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "category",
+            "sub_category"
+          ]
+        }
+      ]
+    },
+    "3a715529-b669-4f00-bf26-b065d536af2e": {
+      "name": "Ecommerce DWH Pipeline k",
+      "id": "3a715529-b669-4f00-bf26-b065d536af2e",
+      "fact_tables": [
+        {
+          "name": "fact_orders",
+          "pipeline": "Ecommerce DWH Pipeline k",
+          "grain": "one row per order",
+          "measures": [
+            "order_id",
+            "total_amount",
+            "discount"
+          ],
+          "foreign_keys": [
+            "customer_key",
+            "product_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_customer",
+          "pipeline": "Ecommerce DWH Pipeline k",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "first_name",
+            "last_name",
+            "email",
+            "city",
+            "country",
+            "segment"
+          ]
+        },
+        {
+          "name": "dim_product",
+          "pipeline": "Ecommerce DWH Pipeline k",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "name",
+            "category",
+            "sub_category",
+            "cost_price",
+            "selling_price"
+          ]
+        },
+        {
+          "name": "dim_order_items",
+          "pipeline": "Ecommerce DWH Pipeline k",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "order_id",
+            "product_id",
+            "qty",
+            "unit_price"
+          ]
+        },
+        {
+          "name": "dim_order",
+          "pipeline": "Ecommerce DWH Pipeline k",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "customer_id",
+            "order_date",
+            "status"
+          ]
+        },
+        {
+          "name": "dim_payment",
+          "pipeline": "Ecommerce DWH Pipeline k",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "method",
+            "amount",
+            "status"
+          ]
+        }
+      ]
+    },
+    "a8cbd6e2-041b-4cf4-a7ec-74facc859c0b": {
+      "name": "Ecommerce DWH Pipelinekkk",
+      "id": "a8cbd6e2-041b-4cf4-a7ec-74facc859c0b",
+      "fact_tables": [
+        {
+          "name": "fact_sales",
+          "pipeline": "Ecommerce DWH Pipelinekkk",
+          "grain": "one row per order line item",
+          "measures": [
+            "quantity",
+            "unit_price",
+            "line_total"
+          ],
+          "foreign_keys": [
+            "date_key",
+            "customer_key",
+            "product_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_date",
+          "pipeline": "Ecommerce DWH Pipelinekkk",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "year",
+            "month",
+            "day"
+          ]
+        },
+        {
+          "name": "dim_customer",
+          "pipeline": "Ecommerce DWH Pipelinekkk",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "customer_name",
+            "email",
+            "segment",
+            "country"
+          ]
+        },
+        {
+          "name": "dim_product",
+          "pipeline": "Ecommerce DWH Pipelinekkk",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "name",
+            "category",
+            "sub_category",
+            "cost_price",
+            "selling_price"
+          ]
+        }
+      ]
+    },
+    "725613b2-5c25-47d1-b2a8-89d069692e83": {
+      "name": "Ecommerce DWH Pipeline",
+      "id": "725613b2-5c25-47d1-b2a8-89d069692e83",
+      "fact_tables": [
+        {
+          "name": "fact_sales",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "grain": "one row per order line item",
+          "measures": [
+            "quantity",
+            "unit_price",
+            "line_total"
+          ],
+          "foreign_keys": [
+            "date_key",
+            "customer_key",
+            "product_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_date",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "year",
+            "month",
+            "day"
+          ]
+        },
+        {
+          "name": "dim_customer",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "customer_name",
+            "email",
+            "segment",
+            "country"
+          ]
+        },
+        {
+          "name": "dim_product",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "category",
+            "sub_category",
+            "cost_price",
+            "selling_price"
+          ]
+        }
+      ]
+    },
+    "2e2d55b8-4f6e-4fd6-9d0d-6325a6fd34a4": {
+      "name": "Ecommerce DWH Pipeline log test",
+      "id": "2e2d55b8-4f6e-4fd6-9d0d-6325a6fd34a4",
+      "fact_tables": [
+        {
+          "name": "fact_sales",
+          "pipeline": "Ecommerce DWH Pipeline log test",
+          "grain": "one row per order line item",
+          "measures": [
+            "quantity",
+            "unit_price",
+            "line_total"
+          ],
+          "foreign_keys": [
+            "date_key",
+            "customer_key",
+            "product_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_date",
+          "pipeline": "Ecommerce DWH Pipeline log test",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "year",
+            "month",
+            "day"
+          ]
+        },
+        {
+          "name": "dim_customer",
+          "pipeline": "Ecommerce DWH Pipeline log test",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "customer_name",
+            "email",
+            "segment",
+            "country"
+          ]
+        },
+        {
+          "name": "dim_product",
+          "pipeline": "Ecommerce DWH Pipeline log test",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "category",
+            "sub_category",
+            "cost_price",
+            "selling_price"
+          ]
+        }
+      ]
+    },
+    "680393c3-ef4c-4e5a-96ba-1cadc6d73dc0": {
+      "name": "Ecommerce DWH Pipeline_testing _logs",
+      "id": "680393c3-ef4c-4e5a-96ba-1cadc6d73dc0",
+      "fact_tables": [
+        {
+          "name": "fact_sales",
+          "pipeline": "Ecommerce DWH Pipeline_testing _logs",
+          "grain": "one row per order line item",
+          "measures": [
+            "quantity",
+            "unit_price",
+            "line_total"
+          ],
+          "foreign_keys": [
+            "date_key",
+            "customer_key",
+            "product_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_date",
+          "pipeline": "Ecommerce DWH Pipeline_testing _logs",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "year",
+            "month",
+            "day"
+          ]
+        },
+        {
+          "name": "dim_customer",
+          "pipeline": "Ecommerce DWH Pipeline_testing _logs",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "customer_name",
+            "email",
+            "segment",
+            "country"
+          ]
+        },
+        {
+          "name": "dim_product",
+          "pipeline": "Ecommerce DWH Pipeline_testing _logs",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "product_name",
+            "category",
+            "sub_category",
+            "cost_price",
+            "selling_price"
+          ]
+        }
+      ]
+    },
+    "45c481e3-00fd-49f0-a245-613d90fe9c1a": {
+      "name": "Ecommerce DWH Pipeline",
+      "id": "45c481e3-00fd-49f0-a245-613d90fe9c1a",
+      "fact_tables": [
+        {
+          "name": "fact_sales",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "grain": "one row per order line item",
+          "measures": [
+            "quantity",
+            "unit_price",
+            "line_total"
+          ],
+          "foreign_keys": [
+            "date_key",
+            "customer_key",
+            "product_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_date",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "year",
+            "month",
+            "day"
+          ]
+        },
+        {
+          "name": "dim_customer",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "scd_type": "2",
+          "natural_key": "",
+          "attributes": [
+            "customer_name",
+            "email",
+            "segment",
+            "country"
+          ]
+        },
+        {
+          "name": "dim_product",
+          "pipeline": "Ecommerce DWH Pipeline",
+          "scd_type": "1",
+          "natural_key": "",
+          "attributes": [
+            "category",
+            "sub_category",
+            "cost_price",
+            "selling_price"
+          ]
+        }
+      ]
+    },
+    "34815f82-7fad-43b7-b42a-215fe3eb2255": {
+      "name": "Demo Pipeline 5/20/2026",
+      "id": "34815f82-7fad-43b7-b42a-215fe3eb2255",
+      "fact_tables": [
+        {
+          "name": "fact_orders",
+          "pipeline": "Demo Pipeline 5/20/2026",
+          "grain": "one row per order",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "customer_id_key",
+            "order_date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_customers",
+          "pipeline": "Demo Pipeline 5/20/2026",
+          "scd_type": "1",
+          "natural_key": "customer_id",
+          "attributes": [
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_orders",
+          "pipeline": "Demo Pipeline 5/20/2026",
+          "scd_type": "1",
+          "natural_key": "order_id",
+          "attributes": [
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_products",
+          "pipeline": "Demo Pipeline 5/20/2026",
+          "scd_type": "1",
+          "natural_key": "product_id",
+          "attributes": [
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "Demo Pipeline 5/20/2026",
+          "scd_type": "2",
+          "natural_key": "order_date",
+          "attributes": [
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "2a22baea-9741-4586-ab3a-966c340537e3": {
+      "name": "Demo Pipeline 5/20/2026",
+      "id": "2a22baea-9741-4586-ab3a-966c340537e3",
+      "fact_tables": [
+        {
+          "name": "fact_orders",
+          "pipeline": "Demo Pipeline 5/20/2026",
+          "grain": "one row per order",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "customer_id_key",
+            "order_date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_customers",
+          "pipeline": "Demo Pipeline 5/20/2026",
+          "scd_type": "1",
+          "natural_key": "customer_id",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_orders",
+          "pipeline": "Demo Pipeline 5/20/2026",
+          "scd_type": "1",
+          "natural_key": "order_id",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "Demo Pipeline 5/20/2026",
+          "scd_type": "1",
+          "natural_key": "date",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_products",
+          "pipeline": "Demo Pipeline 5/20/2026",
+          "scd_type": "1",
+          "natural_key": "product_id",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
+    "0ae0596a-2ac4-4478-a8fc-41722752e59d": {
+      "name": "DWH_School",
+      "id": "0ae0596a-2ac4-4478-a8fc-41722752e59d",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "DWH_School",
+          "grain": "one row per student",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "course_id_key",
+            "student_id_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_students",
+          "pipeline": "DWH_School",
+          "scd_type": "1",
+          "natural_key": "student_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_courses",
+          "pipeline": "DWH_School",
+          "scd_type": "1",
+          "natural_key": "course_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_teachers",
+          "pipeline": "DWH_School",
+          "scd_type": "1",
+          "natural_key": "teacher_name",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
+    "3383f0d9-3de9-4203-89a0-24c13af680b2": {
+      "name": "school dwh",
+      "id": "3383f0d9-3de9-4203-89a0-24c13af680b2",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "school dwh",
+          "grain": "one row per student-course",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "student_id",
+            "course_id"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "school dwh",
+          "scd_type": "1",
+          "natural_key": "student_name",
+          "attributes": [
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "school dwh",
+          "scd_type": "1",
+          "natural_key": "course_name",
+          "attributes": [
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "school dwh",
+          "scd_type": "1",
+          "natural_key": "teacher_name",
+          "attributes": [
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "f234b06c-c2d5-42ee-9fac-ae8bb5a949b5": {
+      "name": "scl dwh",
+      "id": "f234b06c-c2d5-42ee-9fac-ae8bb5a949b5",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "scl dwh",
+          "grain": "one row per enrollment",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "scl dwh",
+          "scd_type": "1",
+          "natural_key": "student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "scl dwh",
+          "scd_type": "1",
+          "natural_key": "course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "scl dwh",
+          "scd_type": "1",
+          "natural_key": "teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "scl dwh",
+          "scd_type": "1",
+          "natural_key": "enrollment_date",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
+    "b2427105-446e-4b9f-98d2-f613b0c4def1": {
+      "name": "scl test",
+      "id": "b2427105-446e-4b9f-98d2-f613b0c4def1",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "scl test",
+          "grain": "one row per student",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "course_id_key",
+            "student_id_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "scl test",
+          "scd_type": "1",
+          "natural_key": "student_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "scl test",
+          "scd_type": "1",
+          "natural_key": "course_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "scl test",
+          "scd_type": "1",
+          "natural_key": "teacher_name",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
+    "e735580d-23c9-459f-8084-57f5b4d14ac1": {
+      "name": "scl test",
+      "id": "e735580d-23c9-459f-8084-57f5b4d14ac1",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "scl test",
+          "grain": "one row per student",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "term_key",
+            "course_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "scl test",
+          "scd_type": "1",
+          "natural_key": "student_id",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_term",
+          "pipeline": "scl test",
+          "scd_type": "1",
+          "natural_key": "term_id",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "scl test",
+          "scd_type": "1",
+          "natural_key": "course_id",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
+    "a80341a5-514d-45d0-b5ae-d4e0643cd04a": {
+      "name": "test log",
+      "id": "a80341a5-514d-45d0-b5ae-d4e0643cd04a",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "test log",
+          "grain": "one row per student",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "course_id_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "test log",
+          "scd_type": "1",
+          "natural_key": "student_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "test log",
+          "scd_type": "1",
+          "natural_key": "course_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "test log",
+          "scd_type": "1",
+          "natural_key": "teacher_name",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
+    "13e33dbd-d3bd-4bc7-b625-8a8e7f44c3dc": {
+      "name": "test 2",
+      "id": "13e33dbd-d3bd-4bc7-b625-8a8e7f44c3dc",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "test 2",
+          "grain": "one row per student",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "student_id_key",
+            "course_id_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "test 2",
+          "scd_type": "1",
+          "natural_key": "student_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "test 2",
+          "scd_type": "1",
+          "natural_key": "course_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "test 2",
+          "scd_type": "1",
+          "natural_key": "teacher_name",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
+    "efe8a39e-a859-488b-92f8-55775eb0ef29": {
+      "name": "test bob",
+      "id": "efe8a39e-a859-488b-92f8-55775eb0ef29",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "test bob",
+          "grain": "one row per student",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "course_id_key"
+          ]
+        },
+        {
+          "name": "fact_grades",
+          "pipeline": "test bob",
+          "grain": "one row per student",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "course_id_key"
+          ]
+        },
+        {
+          "name": "fact_attendance",
+          "pipeline": "test bob",
+          "grain": "one row per student",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "course_id_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "test bob",
+          "scd_type": "1",
+          "natural_key": "student_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "test bob",
+          "scd_type": "1",
+          "natural_key": "course_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "test bob",
+          "scd_type": "1",
+          "natural_key": "teacher_name",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
+    "6e1b36d2-3079-4b00-ac44-233e89182765": {
+      "name": "stdt",
+      "id": "6e1b36d2-3079-4b00-ac44-233e89182765",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "stdt",
+          "grain": "one row per student",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "student_id_key",
+            "course_id_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "stdt",
+          "scd_type": "1",
+          "natural_key": "student_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "stdt",
+          "scd_type": "1",
+          "natural_key": "course_name",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "stdt",
+          "scd_type": "1",
+          "natural_key": "teacher_name",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
+    "abaf6b00-4481-49c8-a87a-6a7cdd95dfa5": {
+      "name": "anthropic_biling_test2",
+      "id": "abaf6b00-4481-49c8-a87a-6a7cdd95dfa5",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "anthropic_biling_test2",
+          "grain": "one row per student enrollment in a course per term",
+          "measures": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "enrollment_date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "anthropic_biling_test2",
+          "scd_type": 2,
+          "natural_key": "source_student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "anthropic_biling_test2",
+          "scd_type": 2,
+          "natural_key": "source_course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "anthropic_biling_test2",
+          "scd_type": 1,
+          "natural_key": "source_teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "anthropic_biling_test2",
+          "scd_type": 1,
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "17bfa2d9-3bb0-4151-b2af-1c2f722a1c21": {
+      "name": "antrhorpic",
+      "id": "17bfa2d9-3bb0-4151-b2af-1c2f722a1c21",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "antrhorpic",
+          "grain": "one row per student enrollment in a course per term",
+          "measures": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "enrollment_date_key",
+            "term_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "antrhorpic",
+          "scd_type": 2,
+          "natural_key": "source_student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "antrhorpic",
+          "scd_type": 2,
+          "natural_key": "source_course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "antrhorpic",
+          "scd_type": 1,
+          "natural_key": "source_teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "antrhorpic",
+          "scd_type": 1,
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_term",
+          "pipeline": "antrhorpic",
+          "scd_type": 1,
+          "natural_key": "source_term",
+          "attributes": [
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "f863e58d-ff40-496f-a2ef-bbd5748a30c4": {
+      "name": "removing_source_from_column_name",
+      "id": "f863e58d-ff40-496f-a2ef-bbd5748a30c4",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "removing_source_from_column_name",
+          "grain": "one row per student enrollment in a course per term",
+          "measures": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "enrollment_date_key",
+            "term_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "removing_source_from_column_name",
+          "scd_type": 2,
+          "natural_key": "student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "removing_source_from_column_name",
+          "scd_type": 1,
+          "natural_key": "teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "removing_source_from_column_name",
+          "scd_type": 2,
+          "natural_key": "course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "removing_source_from_column_name",
+          "scd_type": 1,
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_term",
+          "pipeline": "removing_source_from_column_name",
+          "scd_type": 1,
+          "natural_key": "term",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "3eb8b42d-cc47-4094-9762-995364ea5dfc": {
+      "name": "testing_billing",
+      "id": "3eb8b42d-cc47-4094-9762-995364ea5dfc",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "testing_billing",
+          "grain": "one row per enrollment per student per course per term",
+          "measures": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "enrollment_date_key",
+            "term_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "testing_billing",
+          "scd_type": 2,
+          "natural_key": "student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "testing_billing",
+          "scd_type": 1,
+          "natural_key": "course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "testing_billing",
+          "scd_type": 1,
+          "natural_key": "teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "testing_billing",
+          "scd_type": 1,
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_term",
+          "pipeline": "testing_billing",
+          "scd_type": 1,
+          "natural_key": "source_term",
+          "attributes": [
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "898a6212-e7df-4eaf-8ec6-8072decf0a86": {
+      "name": "test_with_Gemini",
+      "id": "898a6212-e7df-4eaf-8ec6-8072decf0a86",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "c1eb6b23-6734-4a44-bed2-0015b5f8da80": {
+      "name": "agents_1st_run",
+      "id": "c1eb6b23-6734-4a44-bed2-0015b5f8da80",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "agents_1st_run",
+          "grain": "one row per student enrollment in a course for a term",
+          "measures": [
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "teacher_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "agents_1st_run",
+          "scd_type": "2",
+          "natural_key": "student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "agents_1st_run",
+          "scd_type": "1",
+          "natural_key": "course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "agents_1st_run",
+          "scd_type": "1",
+          "natural_key": "teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "agents_1st_run",
+          "scd_type": "1",
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "99dd167c-3473-4d15-839e-944ae0f2252e": {
+      "name": "agents_autorecovery",
+      "id": "99dd167c-3473-4d15-839e-944ae0f2252e",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "agents_autorecovery",
+          "grain": "one row per student enrollment in a course for a term",
+          "measures": [
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "teacher_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "agents_autorecovery",
+          "scd_type": "2",
+          "natural_key": "student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "agents_autorecovery",
+          "scd_type": "1",
+          "natural_key": "course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "agents_autorecovery",
+          "scd_type": "1",
+          "natural_key": "teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "agents_autorecovery",
+          "scd_type": "1",
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "735fa96b-567f-42d2-a306-08fefd0a0036": {
+      "name": "planner_agent_test",
+      "id": "735fa96b-567f-42d2-a306-08fefd0a0036",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "planner_agent_test",
+          "grain": "one row per enrollment",
+          "measures": [
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "planner_agent_test",
+          "scd_type": "2",
+          "natural_key": "source_student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "planner_agent_test",
+          "scd_type": "2",
+          "natural_key": "source_course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "planner_agent_test",
+          "scd_type": "2",
+          "natural_key": "source_teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "planner_agent_test",
+          "scd_type": "1",
+          "natural_key": "source_date_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "81e4deae-4f16-4250-bc31-e430cdeac937": {
+      "name": "anthropic_billing_test",
+      "id": "81e4deae-4f16-4250-bc31-e430cdeac937",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "anthropic_billing_test",
+          "grain": "one row per student enrollment in a course per term",
+          "measures": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "enrollment_date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "anthropic_billing_test",
+          "scd_type": 2,
+          "natural_key": "source_student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "anthropic_billing_test",
+          "scd_type": 2,
+          "natural_key": "source_course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "anthropic_billing_test",
+          "scd_type": 1,
+          "natural_key": "source_teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "anthropic_billing_test",
+          "scd_type": 1,
+          "natural_key": "source_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "57a5b140-dc21-4307-8826-40d457bcfd28": {
+      "name": "test_term_table error",
+      "id": "57a5b140-dc21-4307-8826-40d457bcfd28",
+      "fact_tables": [
+        {
+          "name": "fact_enrollment",
+          "pipeline": "test_term_table error",
+          "grain": "one row per student enrollment in a course per term",
+          "measures": [
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "enrollment_date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "test_term_table error",
+          "scd_type": "2",
+          "natural_key": "student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "test_term_table error",
+          "scd_type": "1",
+          "natural_key": "course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "test_term_table error",
+          "scd_type": "1",
+          "natural_key": "teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "test_term_table error",
+          "scd_type": "1",
+          "natural_key": "calendar_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "a2cc4a5f-82ea-4c15-b37d-ed426f8e7f0e": {
+      "name": "doctor_1st_run",
+      "id": "a2cc4a5f-82ea-4c15-b37d-ed426f8e7f0e",
+      "fact_tables": [
+        {
+          "name": "fact_visits",
+          "pipeline": "doctor_1st_run",
+          "grain": "one row per visit",
+          "measures": [
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "patient_key",
+            "doctor_key",
+            "diagnosis_key",
+            "visit_date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_patient",
+          "pipeline": "doctor_1st_run",
+          "scd_type": 2,
+          "natural_key": "patient_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_doctor",
+          "pipeline": "doctor_1st_run",
+          "scd_type": 2,
+          "natural_key": "doctor_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_diagnosis",
+          "pipeline": "doctor_1st_run",
+          "scd_type": 1,
+          "natural_key": "diagnosis_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "doctor_1st_run",
+          "scd_type": 1,
+          "natural_key": "calendar_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "9173140c-ab81-4096-ad8d-647af06da54e": {
+      "name": "deepseek",
+      "id": "9173140c-ab81-4096-ad8d-647af06da54e",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "deepseek",
+          "grain": "one row per enrollment",
+          "measures": [
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "deepseek",
+          "scd_type": "2",
+          "natural_key": "student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "deepseek",
+          "scd_type": "1",
+          "natural_key": "course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "deepseek",
+          "scd_type": "1",
+          "natural_key": "teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "deepseek",
+          "scd_type": "1",
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "42015bcb-9a23-46de-8602-ae5444396b0d": {
+      "name": "DEEPSEEK_HOSPITAL",
+      "id": "42015bcb-9a23-46de-8602-ae5444396b0d",
+      "fact_tables": [
+        {
+          "name": "fact_visits",
+          "pipeline": "DEEPSEEK_HOSPITAL",
+          "grain": "one row per visit",
+          "measures": [
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "patient_key",
+            "doctor_key",
+            "diagnosis_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_patient",
+          "pipeline": "DEEPSEEK_HOSPITAL",
+          "scd_type": "2",
+          "natural_key": "patient_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_doctor",
+          "pipeline": "DEEPSEEK_HOSPITAL",
+          "scd_type": "1",
+          "natural_key": "doctor_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_diagnosis",
+          "pipeline": "DEEPSEEK_HOSPITAL",
+          "scd_type": "1",
+          "natural_key": "diagnosis_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "DEEPSEEK_HOSPITAL",
+          "scd_type": "1",
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "baecfd57-332a-4295-b498-9e24de3beb8a": {
+      "name": "bank",
+      "id": "baecfd57-332a-4295-b498-9e24de3beb8a",
+      "fact_tables": [
+        {
+          "name": "fact_transactions",
+          "pipeline": "bank",
+          "grain": "one row per transaction",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "account_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_account",
+          "pipeline": "bank",
+          "scd_type": "2",
+          "natural_key": "account_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_customer",
+          "pipeline": "bank",
+          "scd_type": "2",
+          "natural_key": "customer_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_branch",
+          "pipeline": "bank",
+          "scd_type": "1",
+          "natural_key": "branch_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "bank",
+          "scd_type": "1",
+          "natural_key": "date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "3709171b-6b9d-418f-998f-7569afbdaaf9": {
+      "name": "dq_test",
+      "id": "3709171b-6b9d-418f-998f-7569afbdaaf9",
+      "fact_tables": [
+        {
+          "name": "fact_transactions",
+          "pipeline": "dq_test",
+          "grain": "one row per transaction",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "account_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_account",
+          "pipeline": "dq_test",
+          "scd_type": "2",
+          "natural_key": "account_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_customer",
+          "pipeline": "dq_test",
+          "scd_type": "2",
+          "natural_key": "customer_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_branch",
+          "pipeline": "dq_test",
+          "scd_type": "1",
+          "natural_key": "branch_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "dq_test",
+          "scd_type": "1",
+          "natural_key": "date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "2e50870a-8ae0-40c7-a1d7-ac9ad0588f65": {
+      "name": "dq_test",
+      "id": "2e50870a-8ae0-40c7-a1d7-ac9ad0588f65",
+      "fact_tables": [
+        {
+          "name": "fact_transactions",
+          "pipeline": "dq_test",
+          "grain": "one row per transaction",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "account_key",
+            "customer_key",
+            "branch_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_account",
+          "pipeline": "dq_test",
+          "scd_type": "2",
+          "natural_key": "account_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_customer",
+          "pipeline": "dq_test",
+          "scd_type": "2",
+          "natural_key": "customer_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_branch",
+          "pipeline": "dq_test",
+          "scd_type": "1",
+          "natural_key": "branch_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "dq_test",
+          "scd_type": "1",
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "3fbcd01a-f3f2-48b3-bf17-c9a37660e3b8": {
+      "name": "test",
+      "id": "3fbcd01a-f3f2-48b3-bf17-c9a37660e3b8",
+      "fact_tables": [
+        {
+          "name": "fact_transactions",
+          "pipeline": "test",
+          "grain": "one row per transaction",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "account_key",
+            "customer_key",
+            "branch_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_account",
+          "pipeline": "test",
+          "scd_type": "2",
+          "natural_key": "account_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_customer",
+          "pipeline": "test",
+          "scd_type": "2",
+          "natural_key": "customer_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_branch",
+          "pipeline": "test",
+          "scd_type": "1",
+          "natural_key": "branch_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "test",
+          "scd_type": "1",
+          "natural_key": "date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "f0c140c6-ccb2-4d19-8b8f-a88b084d0b1b": {
+      "name": "dq_test",
+      "id": "f0c140c6-ccb2-4d19-8b8f-a88b084d0b1b",
+      "fact_tables": [
+        {
+          "name": "fact_transactions",
+          "pipeline": "dq_test",
+          "grain": "one row per transaction",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "account_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_account",
+          "pipeline": "dq_test",
+          "scd_type": "2",
+          "natural_key": "account_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_customer",
+          "pipeline": "dq_test",
+          "scd_type": "2",
+          "natural_key": "customer_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_branch",
+          "pipeline": "dq_test",
+          "scd_type": "1",
+          "natural_key": "branch_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "dq_test",
+          "scd_type": "1",
+          "natural_key": "date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "2cd33252-c2d1-4c6b-81d8-1c6f25300cec": {
+      "name": "bank_db_testing",
+      "id": "2cd33252-c2d1-4c6b-81d8-1c6f25300cec",
+      "fact_tables": [
+        {
+          "name": "fact_transactions",
+          "pipeline": "bank_db_testing",
+          "grain": "one row per transaction",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "account_key",
+            "customer_key",
+            "branch_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_account",
+          "pipeline": "bank_db_testing",
+          "scd_type": "2",
+          "natural_key": "account_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_customer",
+          "pipeline": "bank_db_testing",
+          "scd_type": "2",
+          "natural_key": "customer_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_branch",
+          "pipeline": "bank_db_testing",
+          "scd_type": "1",
+          "natural_key": "branch_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "bank_db_testing",
+          "scd_type": "1",
+          "natural_key": "date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "8a1b1d58-ebb2-465e-969a-f8a65b929fc2": {
+      "name": "vcl test",
+      "id": "8a1b1d58-ebb2-465e-969a-f8a65b929fc2",
+      "fact_tables": [
+        {
+          "name": "fact_car_listings",
+          "pipeline": "vcl test",
+          "grain": "one row per car listing",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "car_key",
+            "seller_key",
+            "location_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_car",
+          "pipeline": "vcl test",
+          "scd_type": "2",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "vcl test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "vcl test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "vcl test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "5c176779-15c4-4ea5-89d7-6250e76ad482": {
+      "name": "testing",
+      "id": "5c176779-15c4-4ea5-89d7-6250e76ad482",
+      "fact_tables": [
+        {
+          "name": "fact_car_listings",
+          "pipeline": "testing",
+          "grain": "one row per car listing",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "car_key",
+            "seller_key",
+            "location_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_car",
+          "pipeline": "testing",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "testing",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "testing",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "testing",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "bd09fab3-9ad9-42ca-804b-1e7472509241": {
+      "name": "Migration - migrated",
+      "id": "bd09fab3-9ad9-42ca-804b-1e7472509241",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "99f93197-8ed5-409b-ba8a-caf8f3e85d66": {
+      "name": "car_test",
+      "id": "99f93197-8ed5-409b-ba8a-caf8f3e85d66",
+      "fact_tables": [
+        {
+          "name": "fact_car_listings",
+          "pipeline": "car_test",
+          "grain": "one row per car listing",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "car_key",
+            "seller_key",
+            "location_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_car",
+          "pipeline": "car_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "car_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "car_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "car_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "7b4688c0-953a-40f1-a15d-056f40ac7e1f": {
+      "name": "roll",
+      "id": "7b4688c0-953a-40f1-a15d-056f40ac7e1f",
+      "fact_tables": [
+        {
+          "name": "fact_car_listing",
+          "pipeline": "roll",
+          "grain": "one row per car listing",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "date_key",
+            "car_key",
+            "seller_key",
+            "location_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_date",
+          "pipeline": "roll",
+          "scd_type": "1",
+          "natural_key": "date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_car",
+          "pipeline": "roll",
+          "scd_type": "1",
+          "natural_key": "brand",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "roll",
+          "scd_type": "1",
+          "natural_key": "owner_type",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "roll",
+          "scd_type": "1",
+          "natural_key": "city",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
+    "f0702778-a051-4b52-93e1-17ab15058cb3": {
+      "name": "Migration - migrated",
+      "id": "f0702778-a051-4b52-93e1-17ab15058cb3",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "79e5fb28-27c7-4ce6-8774-fbeb6d467ad3": {
+      "name": "Migration - migrated",
+      "id": "79e5fb28-27c7-4ce6-8774-fbeb6d467ad3",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "1b345ec9-8f83-4068-a632-0e0c0dc47aab": {
+      "name": "rollback_test",
+      "id": "1b345ec9-8f83-4068-a632-0e0c0dc47aab",
+      "fact_tables": [
+        {
+          "name": "fact_car_listings",
+          "pipeline": "rollback_test",
+          "grain": "one row per car listing",
+          "measures": [
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "car_key",
+            "seller_key",
+            "location_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_car",
+          "pipeline": "rollback_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "rollback_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "rollback_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "rollback_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "94bb12c0-e448-4c6c-b7d4-36b0ef72547f": {
+      "name": "Migration: automotive \u2014 7/11/2026",
+      "id": "94bb12c0-e448-4c6c-b7d4-36b0ef72547f",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "67073e27-9c45-4fe1-ae07-082e4989d7e6": {
+      "name": "remove_pg_hardcode",
+      "id": "67073e27-9c45-4fe1-ae07-082e4989d7e6",
+      "fact_tables": [
+        {
+          "name": "fact_car_listing",
+          "pipeline": "remove_pg_hardcode",
+          "grain": "one row per car listing",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "car_key",
+            "location_key",
+            "seller_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_car",
+          "pipeline": "remove_pg_hardcode",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "remove_pg_hardcode",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "remove_pg_hardcode",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "remove_pg_hardcode",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "13265679-92a1-4d61-870b-03886a73eb47": {
+      "name": "Migration: automotive retail \u2014 7/11/2026",
+      "id": "13265679-92a1-4d61-870b-03886a73eb47",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "ab6db1aa-6eaa-4596-a972-44c4a1f3392c": {
+      "name": "car_test_final",
+      "id": "ab6db1aa-6eaa-4596-a972-44c4a1f3392c",
+      "fact_tables": [
+        {
+          "name": "fact_car_listing",
+          "pipeline": "car_test_final",
+          "grain": "one row per car listing",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "car_key",
+            "location_key",
+            "seller_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_car",
+          "pipeline": "car_test_final",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "car_test_final",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "car_test_final",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "car_test_final",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "87e29b67-a39e-4023-a9ba-3b259c8fa78b": {
+      "name": "flatfile_stg_tables",
+      "id": "87e29b67-a39e-4023-a9ba-3b259c8fa78b",
+      "fact_tables": [
+        {
+          "name": "fact_car_listing",
+          "pipeline": "flatfile_stg_tables",
+          "grain": "one row per car listing",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "date_key",
+            "car_key",
+            "location_key",
+            "seller_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_date",
+          "pipeline": "flatfile_stg_tables",
+          "scd_type": "1",
+          "natural_key": "date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_car",
+          "pipeline": "flatfile_stg_tables",
+          "scd_type": "1",
+          "natural_key": "brand, model, year",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "flatfile_stg_tables",
+          "scd_type": "1",
+          "natural_key": "city",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "flatfile_stg_tables",
+          "scd_type": "1",
+          "natural_key": "owner_type",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
+    "7bd268bd-cda9-4c10-93e1-08a4aaa84190": {
+      "name": "Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_dim_car",
+      "id": "7bd268bd-cda9-4c10-93e1-08a4aaa84190",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "08fd2531-9139-4fc2-bea6-7ab29534d9c8": {
+      "name": "Migration: automotive retail \u2014 7/12/2026 \u2014 dim_date",
+      "id": "08fd2531-9139-4fc2-bea6-7ab29534d9c8",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "edc8b674-c284-4192-8da0-a8c8b3997d6f": {
+      "name": "Migration: automotive retail \u2014 7/12/2026 \u2014 dim_location",
+      "id": "edc8b674-c284-4192-8da0-a8c8b3997d6f",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "df391190-e8ab-4359-b949-2dacf2df88e7": {
+      "name": "stg_table_test",
+      "id": "df391190-e8ab-4359-b949-2dacf2df88e7",
+      "fact_tables": [
+        {
+          "name": "fact_car_listing",
+          "pipeline": "stg_table_test",
+          "grain": "one row per car listing",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "car_key",
+            "location_key",
+            "seller_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_car",
+          "pipeline": "stg_table_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "stg_table_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "stg_table_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "stg_table_test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "ecbcc380-4e22-495b-8886-4ed418ebd97e": {
+      "name": "stg_Test",
+      "id": "ecbcc380-4e22-495b-8886-4ed418ebd97e",
+      "fact_tables": [
+        {
+          "name": "fact_car_listings",
+          "pipeline": "stg_Test",
+          "grain": "one row per car listing",
+          "measures": [
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "car_key",
+            "location_key",
+            "seller_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_car",
+          "pipeline": "stg_Test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "stg_Test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "stg_Test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "stg_Test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "9f3eb5c4-d56e-4ae6-ae6e-1135183fc829": {
+      "name": "Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_dim_seller",
+      "id": "9f3eb5c4-d56e-4ae6-ae6e-1135183fc829",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "0c1699ff-a38c-46cc-afd9-2384dd01acbe": {
+      "name": "Migration: automotive retail \u2014 7/12/2026 \u2014 fact_car_listing",
+      "id": "0c1699ff-a38c-46cc-afd9-2384dd01acbe",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "814c5af9-af17-49ed-869a-4a3dd2c69977": {
+      "name": "Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_fact_car_listings",
+      "id": "814c5af9-af17-49ed-869a-4a3dd2c69977",
+      "fact_tables": [],
+      "dimension_tables": []
+    },
+    "f8728cd4-1320-4f19-930a-f45d619e1b0d": {
+      "name": "fltfile_stg_table_Test",
+      "id": "f8728cd4-1320-4f19-930a-f45d619e1b0d",
+      "fact_tables": [
+        {
+          "name": "fact_car_listings",
+          "pipeline": "fltfile_stg_table_Test",
+          "grain": "one row per car listing",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "car_key",
+            "location_key",
+            "seller_key",
+            "date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_car",
+          "pipeline": "fltfile_stg_table_Test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "fltfile_stg_table_Test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "fltfile_stg_table_Test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "fltfile_stg_table_Test",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "c916dcf1-d588-4314-8920-89106a242fd9": {
+      "name": "scd_pipeline",
+      "id": "c916dcf1-d588-4314-8920-89106a242fd9",
+      "fact_tables": [
+        {
+          "name": "fact_car_listings",
+          "pipeline": "scd_pipeline",
+          "grain": "one row per car listing",
+          "measures": [
+            ""
+          ],
+          "foreign_keys": [
+            "car_key",
+            "location_key",
+            "seller_key",
+            "date_key"
+          ],
+          "columns": [
+            "car_listing_key (integer)",
+            "period_id (bigint)",
+            "car_key (integer)",
+            "location_key (integer)",
+            "seller_key (integer)",
+            "date_key (integer)",
+            "price (numeric)",
+            "km_driven (numeric)",
+            "loaded_at (timestamp without time zone)"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_car",
+          "pipeline": "scd_pipeline",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "columns": [
+            "car_key (integer)",
+            "brand (character varying)",
+            "model (character varying)",
+            "year (integer)",
+            "fuel_type (character varying)",
+            "transmission (character varying)",
+            "engine_cc (numeric)",
+            "mileage_kmpl (numeric)",
+            "seats (integer)",
+            "updated_at (timestamp without time zone)",
+            "test (character varying)"
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "scd_pipeline",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ],
+          "columns": [
+            "location_key (integer)",
+            "city (character varying)",
+            "updated_at (timestamp without time zone)"
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "scd_pipeline",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            ""
+          ],
+          "columns": [
+            "seller_key (integer)",
+            "owner_type (character varying)",
+            "updated_at (timestamp without time zone)"
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "scd_pipeline",
+          "scd_type": "1",
+          "natural_key": null,
+          "attributes": [
+            "",
+            "",
+            "",
+            ""
+          ],
+          "columns": [
+            "date_key (integer)",
+            "full_date (date)",
+            "year (integer)",
+            "quarter (integer)",
+            "month (integer)",
+            "day (integer)",
+            "day_of_week (integer)",
+            "month_name (character varying)"
+          ]
+        }
+      ]
+    },
+    "67032919-38f9-4a2f-8457-74ad1d439243": {
+      "name": "Migration: automotive \u2014 7/13/2026 \u2014 dbt project (7 models)",
+      "id": "67032919-38f9-4a2f-8457-74ad1d439243",
+      "fact_tables": [],
+      "dimension_tables": []
+    }
+  },
+  "warehouse_tables": {
+    "fact_sales": {
+      "name": "fact_sales",
+      "pipeline": "Ecommerce DWH Pipeline",
+      "grain": "one row per order line item",
+      "measures": [
+        "quantity",
+        "unit_price",
+        "line_total"
+      ],
+      "foreign_keys": [
+        "date_key",
+        "customer_key",
+        "product_key"
+      ]
+    },
+    "dim_customer": {
+      "name": "dim_customer",
+      "pipeline": "bank_db_testing",
+      "scd_type": "2",
+      "natural_key": "customer_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "dim_product": {
+      "name": "dim_product",
+      "pipeline": "Ecommerce DWH Pipeline",
+      "scd_type": "1",
+      "natural_key": "",
+      "attributes": [
+        "category",
+        "sub_category",
+        "cost_price",
+        "selling_price"
+      ]
+    },
+    "dim_date": {
+      "name": "dim_date",
+      "pipeline": "scd_pipeline",
+      "scd_type": "1",
+      "natural_key": null,
+      "attributes": [
+        "",
+        "",
+        "",
+        ""
+      ],
+      "columns": [
+        "date_key (integer)",
+        "full_date (date)",
+        "year (integer)",
+        "quarter (integer)",
+        "month (integer)",
+        "day (integer)",
+        "day_of_week (integer)",
+        "month_name (character varying)"
+      ]
+    },
+    "dim_order_date": {
+      "name": "dim_order_date",
+      "pipeline": "Ecommerce DWH Pipeline 2",
+      "scd_type": "1",
+      "natural_key": "",
+      "attributes": [
+        "year",
+        "quarter",
+        "month",
+        "day_of_month",
+        "week_of_year",
+        "day_of_week"
+      ]
+    },
+    "fact_orders": {
+      "name": "fact_orders",
+      "pipeline": "Demo Pipeline 5/20/2026",
+      "grain": "one row per order",
+      "measures": [
+        ""
+      ],
+      "foreign_keys": [
+        "customer_id_key",
+        "order_date_key"
+      ]
+    },
+    "dim_order_items": {
+      "name": "dim_order_items",
+      "pipeline": "Ecommerce DWH Pipeline k",
+      "scd_type": "1",
+      "natural_key": "",
+      "attributes": [
+        "order_id",
+        "product_id",
+        "qty",
+        "unit_price"
+      ]
+    },
+    "dim_order": {
+      "name": "dim_order",
+      "pipeline": "Ecommerce DWH Pipeline k",
+      "scd_type": "1",
+      "natural_key": "",
+      "attributes": [
+        "customer_id",
+        "order_date",
+        "status"
+      ]
+    },
+    "dim_payment": {
+      "name": "dim_payment",
+      "pipeline": "Ecommerce DWH Pipeline k",
+      "scd_type": "1",
+      "natural_key": "",
+      "attributes": [
+        "method",
+        "amount",
+        "status"
+      ]
+    },
+    "dim_customers": {
+      "name": "dim_customers",
+      "pipeline": "Demo Pipeline 5/20/2026",
+      "scd_type": "1",
+      "natural_key": "customer_id",
+      "attributes": [
+        ""
+      ]
+    },
+    "dim_orders": {
+      "name": "dim_orders",
+      "pipeline": "Demo Pipeline 5/20/2026",
+      "scd_type": "1",
+      "natural_key": "order_id",
+      "attributes": [
+        ""
+      ]
+    },
+    "dim_products": {
+      "name": "dim_products",
+      "pipeline": "Demo Pipeline 5/20/2026",
+      "scd_type": "1",
+      "natural_key": "product_id",
+      "attributes": [
+        ""
+      ]
+    },
+    "fact_enrollments": {
+      "name": "fact_enrollments",
+      "pipeline": "deepseek",
+      "grain": "one row per enrollment",
+      "measures": [
+        "",
+        ""
+      ],
+      "foreign_keys": [
+        "student_key",
+        "course_key",
+        "date_key"
+      ]
+    },
+    "dim_students": {
+      "name": "dim_students",
+      "pipeline": "DWH_School",
+      "scd_type": "1",
+      "natural_key": "student_name",
+      "attributes": [
+        ""
+      ]
+    },
+    "dim_courses": {
+      "name": "dim_courses",
+      "pipeline": "DWH_School",
+      "scd_type": "1",
+      "natural_key": "course_name",
+      "attributes": [
+        ""
+      ]
+    },
+    "dim_teachers": {
+      "name": "dim_teachers",
+      "pipeline": "DWH_School",
+      "scd_type": "1",
+      "natural_key": "teacher_name",
+      "attributes": [
+        ""
+      ]
+    },
+    "dim_student": {
+      "name": "dim_student",
+      "pipeline": "deepseek",
+      "scd_type": "2",
+      "natural_key": "student_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "dim_course": {
+      "name": "dim_course",
+      "pipeline": "deepseek",
+      "scd_type": "1",
+      "natural_key": "course_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "dim_teacher": {
+      "name": "dim_teacher",
+      "pipeline": "deepseek",
+      "scd_type": "1",
+      "natural_key": "teacher_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "dim_term": {
+      "name": "dim_term",
+      "pipeline": "testing_billing",
+      "scd_type": 1,
+      "natural_key": "source_term",
+      "attributes": [
+        "",
+        "",
+        ""
+      ]
+    },
+    "fact_grades": {
+      "name": "fact_grades",
+      "pipeline": "test bob",
+      "grain": "one row per student",
+      "measures": [
+        ""
+      ],
+      "foreign_keys": [
+        "course_id_key"
+      ]
+    },
+    "fact_attendance": {
+      "name": "fact_attendance",
+      "pipeline": "test bob",
+      "grain": "one row per student",
+      "measures": [
+        ""
+      ],
+      "foreign_keys": [
+        "course_id_key"
+      ]
+    },
+    "fact_enrollment": {
+      "name": "fact_enrollment",
+      "pipeline": "test_term_table error",
+      "grain": "one row per student enrollment in a course per term",
+      "measures": [
+        "",
+        "",
+        ""
+      ],
+      "foreign_keys": [
+        "student_key",
+        "course_key",
+        "enrollment_date_key"
+      ]
+    },
+    "fact_visits": {
+      "name": "fact_visits",
+      "pipeline": "DEEPSEEK_HOSPITAL",
+      "grain": "one row per visit",
+      "measures": [
+        "",
+        ""
+      ],
+      "foreign_keys": [
+        "patient_key",
+        "doctor_key",
+        "diagnosis_key",
+        "date_key"
+      ]
+    },
+    "dim_patient": {
+      "name": "dim_patient",
+      "pipeline": "DEEPSEEK_HOSPITAL",
+      "scd_type": "2",
+      "natural_key": "patient_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "dim_doctor": {
+      "name": "dim_doctor",
+      "pipeline": "DEEPSEEK_HOSPITAL",
+      "scd_type": "1",
+      "natural_key": "doctor_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "dim_diagnosis": {
+      "name": "dim_diagnosis",
+      "pipeline": "DEEPSEEK_HOSPITAL",
+      "scd_type": "1",
+      "natural_key": "diagnosis_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "fact_transactions": {
+      "name": "fact_transactions",
+      "pipeline": "bank_db_testing",
+      "grain": "one row per transaction",
+      "measures": [
+        ""
+      ],
+      "foreign_keys": [
+        "account_key",
+        "customer_key",
+        "branch_key",
+        "date_key"
+      ]
+    },
+    "dim_account": {
+      "name": "dim_account",
+      "pipeline": "bank_db_testing",
+      "scd_type": "2",
+      "natural_key": "account_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "dim_branch": {
+      "name": "dim_branch",
+      "pipeline": "bank_db_testing",
+      "scd_type": "1",
+      "natural_key": "branch_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "fact_car_listings": {
+      "name": "fact_car_listings",
+      "pipeline": "scd_pipeline",
+      "grain": "one row per car listing",
+      "measures": [
+        ""
+      ],
+      "foreign_keys": [
+        "car_key",
+        "location_key",
+        "seller_key",
+        "date_key"
+      ],
+      "columns": [
+        "car_listing_key (integer)",
+        "period_id (bigint)",
+        "car_key (integer)",
+        "location_key (integer)",
+        "seller_key (integer)",
+        "date_key (integer)",
+        "price (numeric)",
+        "km_driven (numeric)",
+        "loaded_at (timestamp without time zone)"
+      ]
+    },
+    "dim_car": {
+      "name": "dim_car",
+      "pipeline": "scd_pipeline",
+      "scd_type": "1",
+      "natural_key": null,
+      "attributes": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "columns": [
+        "car_key (integer)",
+        "brand (character varying)",
+        "model (character varying)",
+        "year (integer)",
+        "fuel_type (character varying)",
+        "transmission (character varying)",
+        "engine_cc (numeric)",
+        "mileage_kmpl (numeric)",
+        "seats (integer)",
+        "updated_at (timestamp without time zone)",
+        "test (character varying)"
+      ]
+    },
+    "dim_seller": {
+      "name": "dim_seller",
+      "pipeline": "scd_pipeline",
+      "scd_type": "1",
+      "natural_key": null,
+      "attributes": [
+        ""
+      ],
+      "columns": [
+        "seller_key (integer)",
+        "owner_type (character varying)",
+        "updated_at (timestamp without time zone)"
+      ]
+    },
+    "dim_location": {
+      "name": "dim_location",
+      "pipeline": "scd_pipeline",
+      "scd_type": "1",
+      "natural_key": null,
+      "attributes": [
+        ""
+      ],
+      "columns": [
+        "location_key (integer)",
+        "city (character varying)",
+        "updated_at (timestamp without time zone)"
+      ]
+    },
+    "fact_car_listing": {
+      "name": "fact_car_listing",
+      "pipeline": "stg_table_test",
+      "grain": "one row per car listing",
+      "measures": [
+        ""
+      ],
+      "foreign_keys": [
+        "car_key",
+        "location_key",
+        "seller_key",
+        "date_key"
+      ]
+    },
+    "dq_audit_log": {
+      "name": "dq_audit_log",
+      "pipeline": "unknown",
+      "columns": [
+        "audit_id (integer)",
+        "check_date (timestamp without time zone)",
+        "pipeline_id (character varying)",
+        "run_id (character varying)",
+        "table_name (character varying)",
+        "column_name (character varying)",
+        "issue_type (character varying)",
+        "reason (text)",
+        "row_data (jsonb)",
+        "check_type (character varying)",
+        "created_at (timestamp without time zone)"
+      ]
+    }
+  },
+  "relationships": [
+    {
+      "from": "fact_sales.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_sales.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_sales.product_key",
+      "to": "dim_product.product_key"
+    },
+    {
+      "from": "fact_sales.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_sales.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_sales.product_key",
+      "to": "dim_product.product_key"
+    },
+    {
+      "from": "fact_sales.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_sales.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_sales.product_key",
+      "to": "dim_product.product_key"
+    },
+    {
+      "from": "fact_sales.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_sales.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_sales.product_key",
+      "to": "dim_product.product_key"
+    },
+    {
+      "from": "fact_sales.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_sales.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_sales.product_key",
+      "to": "dim_product.product_key"
+    },
+    {
+      "from": "fact_orders.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_orders.product_key",
+      "to": "dim_product.product_key"
+    },
+    {
+      "from": "fact_sales.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_sales.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_sales.product_key",
+      "to": "dim_product.product_key"
+    },
+    {
+      "from": "fact_sales.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_sales.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_sales.product_key",
+      "to": "dim_product.product_key"
+    },
+    {
+      "from": "fact_sales.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_sales.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_sales.product_key",
+      "to": "dim_product.product_key"
+    },
+    {
+      "from": "fact_sales.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_sales.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_sales.product_key",
+      "to": "dim_product.product_key"
+    },
+    {
+      "from": "fact_sales.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_sales.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_sales.product_key",
+      "to": "dim_product.product_key"
+    },
+    {
+      "from": "fact_orders.customer_id_key",
+      "to": "dim_customer_id.customer_id_key"
+    },
+    {
+      "from": "fact_orders.order_date_key",
+      "to": "dim_order_date.order_date_key"
+    },
+    {
+      "from": "fact_orders.customer_id_key",
+      "to": "dim_customer_id.customer_id_key"
+    },
+    {
+      "from": "fact_orders.order_date_key",
+      "to": "dim_order_date.order_date_key"
+    },
+    {
+      "from": "fact_enrollments.course_id_key",
+      "to": "dim_course_id.course_id_key"
+    },
+    {
+      "from": "fact_enrollments.student_id_key",
+      "to": "dim_student_id.student_id_key"
+    },
+    {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.course_id_key",
+      "to": "dim_course_id.course_id_key"
+    },
+    {
+      "from": "fact_enrollments.student_id_key",
+      "to": "dim_student_id.student_id_key"
+    },
+    {
+      "from": "fact_enrollments.term_key",
+      "to": "dim_term.term_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.course_id_key",
+      "to": "dim_course_id.course_id_key"
+    },
+    {
+      "from": "fact_enrollments.student_id_key",
+      "to": "dim_student_id.student_id_key"
+    },
+    {
+      "from": "fact_enrollments.course_id_key",
+      "to": "dim_course_id.course_id_key"
+    },
+    {
+      "from": "fact_enrollments.course_id_key",
+      "to": "dim_course_id.course_id_key"
+    },
+    {
+      "from": "fact_grades.course_id_key",
+      "to": "dim_course_id.course_id_key"
+    },
+    {
+      "from": "fact_attendance.course_id_key",
+      "to": "dim_course_id.course_id_key"
+    },
+    {
+      "from": "fact_enrollments.student_id_key",
+      "to": "dim_student_id.student_id_key"
+    },
+    {
+      "from": "fact_enrollments.course_id_key",
+      "to": "dim_course_id.course_id_key"
+    },
+    {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.enrollment_date_key",
+      "to": "dim_enrollment_date.enrollment_date_key"
+    },
+    {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.enrollment_date_key",
+      "to": "dim_enrollment_date.enrollment_date_key"
+    },
+    {
+      "from": "fact_enrollments.term_key",
+      "to": "dim_term.term_key"
+    },
+    {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.enrollment_date_key",
+      "to": "dim_enrollment_date.enrollment_date_key"
+    },
+    {
+      "from": "fact_enrollments.term_key",
+      "to": "dim_term.term_key"
+    },
+    {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.enrollment_date_key",
+      "to": "dim_enrollment_date.enrollment_date_key"
+    },
+    {
+      "from": "fact_enrollments.term_key",
+      "to": "dim_term.term_key"
+    },
+    {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.teacher_key",
+      "to": "dim_teacher.teacher_key"
+    },
+    {
+      "from": "fact_enrollments.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.teacher_key",
+      "to": "dim_teacher.teacher_key"
+    },
+    {
+      "from": "fact_enrollments.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.enrollment_date_key",
+      "to": "dim_enrollment_date.enrollment_date_key"
+    },
+    {
+      "from": "fact_enrollment.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollment.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollment.enrollment_date_key",
+      "to": "dim_enrollment_date.enrollment_date_key"
+    },
+    {
+      "from": "fact_visits.patient_key",
+      "to": "dim_patient.patient_key"
+    },
+    {
+      "from": "fact_visits.doctor_key",
+      "to": "dim_doctor.doctor_key"
+    },
+    {
+      "from": "fact_visits.diagnosis_key",
+      "to": "dim_diagnosis.diagnosis_key"
+    },
+    {
+      "from": "fact_visits.visit_date_key",
+      "to": "dim_visit_date.visit_date_key"
+    },
+    {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_visits.patient_key",
+      "to": "dim_patient.patient_key"
+    },
+    {
+      "from": "fact_visits.doctor_key",
+      "to": "dim_doctor.doctor_key"
+    },
+    {
+      "from": "fact_visits.diagnosis_key",
+      "to": "dim_diagnosis.diagnosis_key"
+    },
+    {
+      "from": "fact_visits.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_transactions.account_key",
+      "to": "dim_account.account_key"
+    },
+    {
+      "from": "fact_transactions.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_transactions.account_key",
+      "to": "dim_account.account_key"
+    },
+    {
+      "from": "fact_transactions.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_transactions.account_key",
+      "to": "dim_account.account_key"
+    },
+    {
+      "from": "fact_transactions.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_transactions.branch_key",
+      "to": "dim_branch.branch_key"
+    },
+    {
+      "from": "fact_transactions.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_transactions.account_key",
+      "to": "dim_account.account_key"
+    },
+    {
+      "from": "fact_transactions.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_transactions.branch_key",
+      "to": "dim_branch.branch_key"
+    },
+    {
+      "from": "fact_transactions.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_transactions.account_key",
+      "to": "dim_account.account_key"
+    },
+    {
+      "from": "fact_transactions.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_transactions.account_key",
+      "to": "dim_account.account_key"
+    },
+    {
+      "from": "fact_transactions.customer_key",
+      "to": "dim_customer.customer_key"
+    },
+    {
+      "from": "fact_transactions.branch_key",
+      "to": "dim_branch.branch_key"
+    },
+    {
+      "from": "fact_transactions.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listings.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listings.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listings.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listings.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listings.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listings.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listings.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listings.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listings.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listings.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listings.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listings.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listing.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listing.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listing.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listing.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listings.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listings.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listings.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listings.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listing.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listing.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listing.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listing.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listing.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listing.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listing.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listing.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listing.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listing.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listing.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listing.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listing.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listing.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listing.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listing.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listings.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listings.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listings.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listings.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listings.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listings.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listings.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listings.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listings.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listings.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listings.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listings.date_key",
+      "to": "dim_date.date_key"
+    }
+  ],
+  "schema_context": "=== AIBridge Warehouse Knowledge Graph ===\n\n\nPipeline: 1st Pipeline 5/10/2026\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n  DIM: dim_product (SCD Type 2)\n    Attributes: product_name, category, sub_category\n  DIM: dim_date (SCD Type 1)\n    Attributes: year, month, day, quarter\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Pipeline 5/10/2026\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n  DIM: dim_date (SCD Type 1)\n    Attributes: year, month, day, week_day, quarter\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category\n\nPipeline: Pipeline1 5/10/2026\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n  DIM: dim_order_date (SCD Type 1)\n    Attributes: year, quarter, month, day_of_month, week_of_year, day_of_week\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category\n\nPipeline: Ecommerce DWH Pipeline\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n  DIM: dim_product (SCD Type 2)\n    Attributes: product_name, category, subcategory\n  DIM: dim_date (SCD Type 1)\n    Attributes: year, month, day, week_of_year, quarter\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Ecommerce DWH Pipeline 2\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n  DIM: dim_order_date (SCD Type 1)\n    Attributes: year, quarter, month, day_of_month, week_of_year, day_of_week\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category\n\nPipeline: Ecommerce DWH Pipeline k\n  FACT: fact_orders\n    Grain: one row per order\n    Measures: order_id, total_amount, discount\n    FK keys: customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: first_name, last_name, email, city, country, segment\n  DIM: dim_product (SCD Type 1)\n    Attributes: name, category, sub_category, cost_price, selling_price\n  DIM: dim_order_items (SCD Type 1)\n    Attributes: order_id, product_id, qty, unit_price\n  DIM: dim_order (SCD Type 1)\n    Attributes: customer_id, order_date, status\n  DIM: dim_payment (SCD Type 1)\n    Attributes: method, amount, status\n\nPipeline: Ecommerce DWH Pipelinekkk\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n  DIM: dim_product (SCD Type 2)\n    Attributes: name, category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline log test\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline_testing _logs\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n  DIM: dim_product (SCD Type 2)\n    Attributes: product_name, category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n  DIM: dim_product (SCD Type 1)\n    Attributes: category, sub_category, cost_price, selling_price\n\nPipeline: Demo Pipeline 5/20/2026\n  FACT: fact_orders\n    Grain: one row per order\n    Measures: \n    FK keys: customer_id_key, order_date_key\n  DIM: dim_customers (SCD Type 1)\n    Attributes: , \n  DIM: dim_orders (SCD Type 1)\n    Attributes: , \n  DIM: dim_products (SCD Type 1)\n    Attributes: , \n  DIM: dim_date (SCD Type 2)\n    Attributes: , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Demo Pipeline 5/20/2026\n  FACT: fact_orders\n    Grain: one row per order\n    Measures: \n    FK keys: customer_id_key, order_date_key\n  DIM: dim_customers (SCD Type 1)\n    Attributes: \n  DIM: dim_orders (SCD Type 1)\n    Attributes: \n  DIM: dim_date (SCD Type 1)\n    Attributes: \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_products (SCD Type 1)\n    Attributes: \n\nPipeline: DWH_School\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key, student_id_key\n  DIM: dim_students (SCD Type 1)\n    Attributes: \n  DIM: dim_courses (SCD Type 1)\n    Attributes: \n  DIM: dim_teachers (SCD Type 1)\n    Attributes: \n\nPipeline: school dwh\n  FACT: fact_enrollments\n    Grain: one row per student-course\n    Measures: \n    FK keys: student_id, course_id\n  DIM: dim_student (SCD Type 1)\n    Attributes: , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , \n\nPipeline: scl dwh\n  FACT: fact_enrollments\n    Grain: one row per enrollment\n    Measures: \n    FK keys: student_key, course_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: scl test\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key, student_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: scl test\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: term_key, course_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_term (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n\nPipeline: test log\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: test 2\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: student_id_key, course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: test bob\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  FACT: fact_grades\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  FACT: fact_attendance\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: stdt\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: student_id_key, course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: anthropic_biling_test2\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: antrhorpic\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key, term_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_term (SCD Type 1)\n    Attributes: , , \n\nPipeline: removing_source_from_column_name\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key, term_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_term (SCD Type 1)\n    Attributes: , , , , \n\nPipeline: testing_billing\n  FACT: fact_enrollments\n    Grain: one row per enrollment per student per course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key, term_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_term (SCD Type 1)\n    Attributes: , , \n\nPipeline: test_with_Gemini\n\nPipeline: agents_1st_run\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course for a term\n    Measures: , , \n    FK keys: student_key, course_key, teacher_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: agents_autorecovery\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course for a term\n    Measures: , , \n    FK keys: student_key, course_key, teacher_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: planner_agent_test\n  FACT: fact_enrollments\n    Grain: one row per enrollment\n    Measures: , \n    FK keys: student_key, course_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 2)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: anthropic_billing_test\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: test_term_table error\n  FACT: fact_enrollment\n    Grain: one row per student enrollment in a course per term\n    Measures: , , \n    FK keys: student_key, course_key, enrollment_date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: doctor_1st_run\n  FACT: fact_visits\n    Grain: one row per visit\n    Measures: , , \n    FK keys: patient_key, doctor_key, diagnosis_key, visit_date_key\n  DIM: dim_patient (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_doctor (SCD Type 2)\n    Attributes: , , , , \n  DIM: dim_diagnosis (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: deepseek\n  FACT: fact_enrollments\n    Grain: one row per enrollment\n    Measures: , \n    FK keys: student_key, course_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: DEEPSEEK_HOSPITAL\n  FACT: fact_visits\n    Grain: one row per visit\n    Measures: , \n    FK keys: patient_key, doctor_key, diagnosis_key, date_key\n  DIM: dim_patient (SCD Type 2)\n    Attributes: , , , , , , \n  DIM: dim_doctor (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_diagnosis (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: bank\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, date_key\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , \n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: dq_test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, date_key\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , \n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: dq_test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: dq_test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, date_key\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: bank_db_testing\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: vcl test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, seller_key, location_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), km_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: testing\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, seller_key, location_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), km_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration - migrated\n\nPipeline: car_test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, seller_key, location_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), km_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: roll\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: date_key, car_key, seller_key, location_key\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n\nPipeline: Migration - migrated\n\nPipeline: Migration - migrated\n\nPipeline: rollback_test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, seller_key, location_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), km_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive \u2014 7/11/2026\n\nPipeline: remove_pg_hardcode\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive retail \u2014 7/11/2026\n\nPipeline: car_test_final\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: flatfile_stg_tables\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: date_key, car_key, location_key, seller_key\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_dim_car\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 dim_date\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 dim_location\n\nPipeline: stg_table_test\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: stg_Test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), km_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_dim_seller\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 fact_car_listing\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_fact_car_listings\n\nPipeline: fltfile_stg_table_Test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), km_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: scd_pipeline\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), km_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (integer), fuel_type (character varying), transmission (character varying), engine_cc (numeric), mileage_kmpl (numeric)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive \u2014 7/13/2026 \u2014 dbt project (7 models)\n\nRelationships (FK joins):\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_orders.customer_key \u2192 dim_customer.customer_key\n  fact_orders.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_orders.customer_id_key \u2192 dim_customer_id.customer_id_key\n  fact_orders.order_date_key \u2192 dim_order_date.order_date_key\n  fact_orders.customer_id_key \u2192 dim_customer_id.customer_id_key\n  fact_orders.order_date_key \u2192 dim_order_date.order_date_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_grades.course_id_key \u2192 dim_course_id.course_id_key\n  fact_attendance.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.teacher_key \u2192 dim_teacher.teacher_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.teacher_key \u2192 dim_teacher.teacher_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollment.student_key \u2192 dim_student.student_key\n  fact_enrollment.course_key \u2192 dim_course.course_key\n  fact_enrollment.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_visits.patient_key \u2192 dim_patient.patient_key\n  fact_visits.doctor_key \u2192 dim_doctor.doctor_key\n  fact_visits.diagnosis_key \u2192 dim_diagnosis.diagnosis_key\n  fact_visits.visit_date_key \u2192 dim_visit_date.visit_date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_visits.patient_key \u2192 dim_patient.patient_key\n  fact_visits.doctor_key \u2192 dim_doctor.doctor_key\n  fact_visits.diagnosis_key \u2192 dim_diagnosis.diagnosis_key\n  fact_visits.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key"
+}

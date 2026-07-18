@@ -1701,6 +1701,13 @@ def execute_pipeline_async(pipeline_id: str, req: ExecuteOverrideRequest = None,
             final_status = "stopped" if (run and run.get("cancel_requested")) or result.get("stopped") \
                            else ("success" if result.get("success") else "failed")
             run_registry.finish_run(run_id, final_status, result=result)
+            # Refresh warehouse knowledge graph after successful pipeline run
+            if final_status == "success":
+                try:
+                    from warehouse_knowledge import refresh_warehouse_knowledge
+                    refresh_warehouse_knowledge(thread_db)
+                except Exception as _ke:
+                    print(f"[Knowledge] Refresh warning: {_ke}")
         except Exception as e:
             import traceback
             err_text = f"{e}\n{traceback.format_exc()}"
@@ -3759,24 +3766,31 @@ def chat(req: ChatRequest, current_user=Depends(get_current_user), db: Session =
     schema_context = ""
     pipeline_summary = ""
     try:
+        from warehouse_knowledge import get_warehouse_knowledge, refresh_warehouse_knowledge
         import sqlalchemy as _sa_chat
         from database import engine as _chat_engine
-        with _chat_engine.connect() as _chat_conn:
-            _schema_r = _chat_conn.execute(_sa_chat.text(
-                "SELECT table_name, column_name, data_type "
-                "FROM information_schema.columns "
-                "WHERE table_schema = 'warehouse' "
-                "ORDER BY table_name, ordinal_position"
-            ))
-            rows = _schema_r.fetchall()
-        if rows:
-            tables = {}
-            for tbl, col, dtype in rows:
-                tables.setdefault(tbl, []).append(f"{col} ({dtype})")
-            schema_lines = []
-            for tbl, cols in tables.items():
-                schema_lines.append(f"  {tbl}: {chr(44).join(cols)}")
-            schema_context = "Warehouse schema (table: columns):\n" + "\n".join(schema_lines)
+        # Try knowledge graph first (rich context with relationships)
+        knowledge = get_warehouse_knowledge(db)
+        if knowledge.get("schema_context"):
+            schema_context = knowledge["schema_context"]
+        else:
+            # Fallback: direct schema query
+            with _chat_engine.connect() as _chat_conn:
+                _schema_r = _chat_conn.execute(_sa_chat.text(
+                    "SELECT table_name, column_name, data_type "
+                    "FROM information_schema.columns "
+                    "WHERE table_schema = 'warehouse' "
+                    "ORDER BY table_name, ordinal_position"
+                ))
+                rows = _schema_r.fetchall()
+            if rows:
+                tables = {}
+                for tbl, col, dtype in rows:
+                    tables.setdefault(tbl, []).append(f"{col} ({dtype})")
+                schema_lines = []
+                for tbl, cols in tables.items():
+                    schema_lines.append(f"  {tbl}: {chr(44).join(cols)}")
+                schema_context = "Warehouse schema (table: columns):\n" + "\n".join(schema_lines)
         # Get pipeline summary
         if req.pipeline_id:
             pipeline = db.query(Pipeline).filter(Pipeline.id == req.pipeline_id).first()
