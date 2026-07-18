@@ -3834,19 +3834,29 @@ If generating SQL, prefix it with: EXECUTE_SQL:"""
     if "EXECUTE_SQL:" in ai_response or ("SELECT" in ai_response.upper() and "FROM" in ai_response.upper() and ("warehouse." in ai_response.lower() or "fact_" in ai_response.lower() or "dim_" in ai_response.lower())):
         try:
             # Extract SQL
-            # Extract SQL from EXECUTE_SQL: prefix or markdown code block
+            # Extract SQL — robust extraction from any response format
+            import re as _re_sql
+            sql_part = ""
             if "EXECUTE_SQL:" in ai_response:
                 sql_part = ai_response.split("EXECUTE_SQL:")[1].strip()
             else:
-                import re as _re_sql
-                _sql_blocks = _re_sql.findall(r'```(?:sql)?\s*\n?(.*?)```', ai_response, _re_sql.DOTALL | _re_sql.IGNORECASE)
-                # Try code block first, then direct SELECT search
-                if _sql_blocks:
-                    sql_part = _sql_blocks[0].strip()
-                else:
-                    import re as _re_sel
-                    _sel = _re_sel.search(r'(SELECT[\s\S]+?(?:LIMIT\s+\d+|;|$))', ai_response, _re_sel.IGNORECASE)
-                    sql_part = _sel.group(1).strip() if _sel else ""
+                # Try ```sql blocks first
+                _blocks = _re_sql.findall(r'```(?:sql)?[\s\S]*?\n([\s\S]*?)```', ai_response, _re_sql.IGNORECASE)
+                if _blocks:
+                    # Pick the block with SELECT
+                    for b in _blocks:
+                        if 'SELECT' in b.upper():
+                            sql_part = b.strip()
+                            break
+                if not sql_part:
+                    # Extract SELECT...to end of SQL (LIMIT, semicolon or newline after last keyword)
+                    _sel = _re_sql.search(
+                        r'(SELECT\b[\s\S]*?(?:LIMIT\s+\d+|ORDER\s+BY[\s\S]*?(?:LIMIT\s+\d+)?))(?:\s*;|\s*$|\s*\n\s*\n)',
+                        ai_response, _re_sql.IGNORECASE
+                    )
+                    if _sel:
+                        sql_part = _sel.group(1).strip()
+            # Clean up markdown
             # Clean up markdown
             sql = sql_part.replace("```sql", "").replace("```", "").strip()
             # Extract just the SELECT statement
