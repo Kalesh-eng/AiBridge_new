@@ -3734,3 +3734,169 @@ def migration_export_docs(
         headers={"Content-Disposition": 'attachment; filename="migration_requirements.docx"'}
     )
 
+
+# ── Chat Endpoint ──────────────────────────────────────────────────────────
+class ChatMessage(BaseModel):
+    role:    str  # "user" or "assistant"
+    content: str
+
+class ChatRequest(BaseModel):
+    message:  str
+    history:  list = []  # list of ChatMessage dicts
+    pipeline_id: str = ""  # optional — scope to specific pipeline
+
+@app.post("/chat")
+def chat(req: ChatRequest, current_user=Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Conversational AI endpoint for AIBridge.
+    Privacy-safe: AI only sees schema, never raw warehouse data.
+    AI generates SQL → AIBridge executes → results returned as natural language.
+    """
+    from ai_provider import ask_ai_text
+    import psycopg2
+
+    # 1. Get warehouse schema (no raw data)
+    schema_context = ""
+    pipeline_summary = ""
+    try:
+        import sqlalchemy as _sa_chat
+        from database import engine as _chat_engine
+        with _chat_engine.connect() as _chat_conn:
+            _schema_r = _chat_conn.execute(_sa_chat.text(
+                "SELECT table_name, column_name, data_type "
+                "FROM information_schema.columns "
+                "WHERE table_schema = 'warehouse' "
+                "ORDER BY table_name, ordinal_position"
+            ))
+            rows = _schema_r.fetchall()
+        if rows:
+            tables = {}
+            for tbl, col, dtype in rows:
+                tables.setdefault(tbl, []).append(f"{col} ({dtype})")
+            schema_lines = []
+            for tbl, cols in tables.items():
+                schema_lines.append(f"  {tbl}: {chr(44).join(cols)}")
+            schema_context = "Warehouse schema (table: columns):\n" + "\n".join(schema_lines)
+        # Get pipeline summary
+        if req.pipeline_id:
+            pipeline = db.query(Pipeline).filter(Pipeline.id == req.pipeline_id).first()
+            if pipeline:
+                pipeline_summary = f"\nActive pipeline: {pipeline.name}"
+    except Exception as e:
+        schema_context = f"(Schema not available: {e})"
+
+    # 2. Build conversation history
+    history_text = ""
+    for msg in req.history[-6:]:  # last 6 messages for context
+        role = msg.get("role", "user")
+        content = msg.get("content", "")
+        history_text += f"\n{role.capitalize()}: {content}"
+
+    # 3. Build system prompt — privacy-safe
+    system_prompt = """You are AIBridge Assistant, an expert data engineering AI embedded in the AIBridge ETL platform.
+
+PRIVACY RULES (CRITICAL):
+- You NEVER see or request raw row-level data
+- You only have access to schema (table/column names and types)
+- When querying data, generate aggregated SQL only (COUNT, AVG, SUM, MIN, MAX, GROUP BY)
+- Never generate SELECT * or queries that return individual rows
+
+YOUR CAPABILITIES:
+- Answer questions about pipeline health and status
+- Generate safe aggregated SQL queries against the warehouse
+- Explain data models, ETL flows, and transformations
+- Help troubleshoot pipeline failures
+- Suggest analytics and KPIs based on the schema
+
+RESPONSE FORMAT:
+- Be concise and helpful
+- If generating SQL, wrap it in ```sql blocks
+- If you need to query data to answer, say "Let me check..." and provide the SQL
+- Always explain what the SQL does before showing it"""
+
+    # 4. Build user prompt
+    user_prompt = f"""{schema_context}{pipeline_summary}
+
+Conversation history:{history_text}
+
+User: {req.message}
+
+Respond helpfully. If the question requires querying warehouse data, generate safe aggregated SQL.
+If generating SQL, prefix it with: EXECUTE_SQL:"""
+
+    # 5. Get AI response
+    ai_response = ask_ai_text(user_prompt, system_prompt=system_prompt, agent_name="ChatAgent")
+
+    # 6. Check if AI wants to execute SQL
+    sql_result = None
+    final_response = ai_response
+
+    if "EXECUTE_SQL:" in ai_response or ("SELECT" in ai_response.upper() and "FROM" in ai_response.upper() and ("warehouse." in ai_response.lower() or "fact_" in ai_response.lower() or "dim_" in ai_response.lower())):
+        try:
+            # Extract SQL
+            # Extract SQL from EXECUTE_SQL: prefix or markdown code block
+            if "EXECUTE_SQL:" in ai_response:
+                sql_part = ai_response.split("EXECUTE_SQL:")[1].strip()
+            else:
+                import re as _re_sql
+                _sql_blocks = _re_sql.findall(r'```(?:sql)?\s*\n?(.*?)```', ai_response, _re_sql.DOTALL | _re_sql.IGNORECASE)
+                # Try code block first, then direct SELECT search
+                if _sql_blocks:
+                    sql_part = _sql_blocks[0].strip()
+                else:
+                    import re as _re_sel
+                    _sel = _re_sel.search(r'(SELECT[\s\S]+?(?:LIMIT\s+\d+|;|$))', ai_response, _re_sel.IGNORECASE)
+                    sql_part = _sel.group(1).strip() if _sel else ""
+            # Clean up markdown
+            sql = sql_part.replace("```sql", "").replace("```", "").strip()
+            # Extract just the SELECT statement
+            import re
+            sql_match = re.search(r'(SELECT\s+.+?)(?:;|$)', sql, re.IGNORECASE | re.DOTALL)
+            if sql_match:
+                sql = sql_match.group(1).strip()
+                # Add warehouse. prefix to bare fact_/dim_ table names
+                import re as _re_pfx
+                sql = _re_pfx.sub(r'(?<![.\w])(fact_\w+|dim_\w+)(?![\w])', r'warehouse.\1', sql)
+                sql = sql.replace('warehouse.warehouse.', 'warehouse.')  # avoid double prefix
+                print(f"[ChatAgent] Executing SQL: {sql[:100]}")
+
+                # Safety check — only allow aggregated queries
+                sql_upper = sql.upper()
+                has_aggregate = any(fn in sql_upper for fn in ['COUNT(', 'AVG(', 'SUM(', 'MIN(', 'MAX(', 'GROUP BY'])
+                has_select_star = 'SELECT *' in sql_upper or 'SELECT\n*' in sql_upper
+
+                if has_aggregate and not has_select_star:
+                    with _chat_engine.connect() as _exec_conn:
+                        _exec_r = _exec_conn.execute(_sa_chat.text(sql))
+                        columns = list(_exec_r.keys())
+                        results = _exec_r.fetchmany(50)
+
+                    # Format results
+                    result_text = " | ".join(columns) + "\n"
+                    result_text += "-" * 40 + "\n"
+                    for row in results:
+                        result_text += " | ".join(str(v) for v in row) + "\n"
+
+                    sql_result = {"sql": sql, "columns": columns, "rows": [[str(v) for v in r] for r in results]}
+
+                    # Ask AI to interpret results
+                    interpret_prompt = f"""The user asked: {req.message}
+
+I ran this SQL: {sql}
+
+Results:
+{result_text}
+
+Please provide a clear, concise natural language summary of these results. Be specific with numbers."""
+                    final_response = ask_ai_text(interpret_prompt, system_prompt=system_prompt, agent_name="ChatAgent")
+                else:
+                    final_response = ai_response.replace("EXECUTE_SQL:", "\n```sql\n") + "\n```"
+        except Exception as e:
+            final_response = ai_response.replace("EXECUTE_SQL:", "").strip()
+            sql_result = {"error": str(e)}
+
+    return {
+        "response": final_response,
+        "sql_result": sql_result,
+        "schema_available": bool(schema_context and "not available" not in schema_context)
+    }

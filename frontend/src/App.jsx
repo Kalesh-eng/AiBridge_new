@@ -28,7 +28,7 @@ import Scheduler       from './pages/Scheduler'
 import Logs            from './pages/Logs'
 import Cost            from './pages/Cost'
 // import ExportImport    from './pages/ExportImport'
-// import AiBridgeChat    from './pages/AiBridgeChat'
+import AiBridgeChat    from './pages/AiBridgeChat'
 import Help            from './pages/Help'
 import MigrationAgent  from './pages/MigrationAgent'
 
@@ -95,6 +95,7 @@ function AppRoutes() {
       <Route path="/help"           element={<PrivateRoute><Help /></PrivateRoute>} />
       <Route path="/migration"      element={<PrivateRoute><MigrationAgent /></PrivateRoute>} />
       <Route path="/connectors"     element={<PrivateRoute><Connectors /></PrivateRoute>} />
+      <Route path="/chat"           element={<PrivateRoute><AiBridgeChat /></PrivateRoute>} />
       <Route path="/team"           element={<PrivateRoute><Team /></PrivateRoute>} />
       <Route path="/settings"       element={<PrivateRoute><Stub name="AI provider settings" /></PrivateRoute>} />
       <Route path="*"               element={<Navigate to="/" replace />} />
