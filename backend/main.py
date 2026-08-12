@@ -1920,8 +1920,13 @@ def run_sql(req: SQLRunRequest, current_user=Depends(get_current_user),
             rows    = cur.fetchall() if cur.description else []
             columns = [d[0] for d in cur.description] if cur.description else []
             conn.close()
+            import math
+            def _safe(v):
+                if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+                    return None
+                return v
             return {"success": True, "columns": columns,
-                    "rows": [list(r.values()) for r in rows], "row_count": len(rows)}
+                    "rows": [[_safe(v) for v in r.values()] for r in rows], "row_count": len(rows)}
         else:
             con    = duckdb.connect(os.getenv("DUCKDB_PATH", "./aibridge.duckdb"))
             result = con.execute(req.sql).fetchdf(); con.close()
