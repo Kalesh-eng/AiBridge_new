@@ -859,6 +859,11 @@ def run_phase_1(req: PipelineRequest, current_user=Depends(get_current_user),
             if dm_result.success and ctx.data_model:
                 data_model      = ctx.data_model.get("data_model", {})
                 schema_analysis = ctx.data_model.get("schema_analysis", {})
+                # Fix source column names using enriched schema_text
+                # DataModelAgent may invent column names (e.g. Accident_History vs Accidents)
+                if schema_text:
+                    from nlm_engine import _fix_source_column_names
+                    data_model = _fix_source_column_names(data_model, schema_text)
             else:
                 print("[Phase 1] DataModelAgent failed — falling back to nlm_engine")
                 try:

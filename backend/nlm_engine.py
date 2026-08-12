@@ -923,6 +923,32 @@ WRONG (✗):
 ╔══════════════════════════════════════════════════════════════════════╗
 ║ ABSOLUTE NAMING RULES — VIOLATING THESE BREAKS THE PIPELINE          ║
 ╠══════════════════════════════════════════════════════════════════════╣
+
+║ 0. NEVER use the same name for surrogate key and any attribute  ║
+║    (case-insensitive). PostgreSQL treats Brand/brand as identical! ║
+║    Surrogate key MUST be: <table>_key SERIAL PRIMARY KEY           ║
+║    Example: car_key SERIAL PRIMARY KEY, brand VARCHAR(100)         ║
+║    NEVER: Brand INTEGER UNIQUE, brand VARCHAR -- DUPLICATE ERROR!  ║
+║                                                                    ║
+║ 0c. USE EXACT SOURCE COLUMN NAMES in warehouse schema:          ║
+║     Source has 'Accidents' -> warehouse column MUST be 'accidents'║
+║     Source has 'Horsepower' -> warehouse column MUST be 'horsepower'║
+║     NEVER rename: Accident_History, MaxPower, HorsePower, etc.   ║
+║     warehouse column name = lowercase(source column name)         ║
+║     SQL SELECT must use exact source name: s."Accidents"          ║
+║                                                                   ║
+║ 0c. USE EXACT SOURCE COLUMN NAMES in warehouse schema:          ║
+║     Source has 'Accidents' -> warehouse column MUST be 'accidents'║
+║     Source has 'Horsepower' -> warehouse column MUST be 'horsepower'║
+║     NEVER rename: Accident_History, MaxPower, HorsePower, etc.   ║
+║     warehouse column name = lowercase(source column name)         ║
+║     SQL SELECT must use exact source name: s."Accidents"          ║
+║                                                                   ║
+║ 0b. ALWAYS double-quote ALL source column refs in SELECT:         ║
+║     CORRECT: s."Brand", s."City", s."Owner_Type"                   ║
+║     WRONG:   s.Brand, s.City, s.Owner_Type (folds to lowercase!) ║
+║     RULE: Every staging column reference MUST be s."ColumnName"  ║
+║                                                                   ║
 ║ 1. STAGING tables ALWAYS have stg_ prefix:                           ║
 ║    ✓ FROM staging.stg_students                                       ║
 ║    ✗ FROM staging.students         ← BROKEN                          ║
@@ -1551,6 +1577,7 @@ def run_phase_1_model_design(source_description, raw_schema,
     # AI sometimes invents source column names (e.g. Accident_History vs Accidents)
     # Post-process data model to correct source column names from actual schema
     if raw_schema:
+        print(f'[ModelFix] DEBUG: raw_schema present={bool(raw_schema)}, len={len(raw_schema) if raw_schema else 0}')
         model = _fix_source_column_names(model, raw_schema)
     # ─────────────────────────────────────────────────────────────────────────
 
@@ -1871,7 +1898,17 @@ def run_phase_2_sql_generation(schema_analysis: dict,
         # Generate CREATE TABLE scripts for each individual staging table
         for _target_stg, _cols_used in sorted(_created_stg_tables.items()):
             # Use ALL columns from raw staging — simpler and more reliable
-            _cols_sql = "*"
+            # Use only the columns this entity needs - deduped
+            if _cols_used:
+                _seen_cols = set()
+                _deduped_cols = []
+                for _c in sorted(_cols_used):
+                    if _c.lower() not in _seen_cols:
+                        _seen_cols.add(_c.lower())
+                        _deduped_cols.append('"' + _c + '"')
+                _cols_sql = ", ".join(_deduped_cols)
+            else:
+                _cols_sql = "*"
             _inject_sql = (
                 f'DROP TABLE IF EXISTS {staging_schema}.{_target_stg} CASCADE; '
                 f'CREATE TABLE {staging_schema}.{_target_stg} AS '
