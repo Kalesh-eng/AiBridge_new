@@ -616,15 +616,80 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
                 sql = re.sub(r',\s*\)', ')', sql)
                 log(f"[SQLPatch] ✓ src.None/business_key removed")
 
-            # Fix: ON CONFLICT DO UPDATE → WHERE NOT EXISTS is too complex to inject generically.
-            # Simply strip DO UPDATE (which requires UNIQUE constraint) — leave DO NOTHING as-is.
-            # The WHERE NOT EXISTS patch below handles dim idempotency for existing WHERE NOT EXISTS blocks.
+            # Fix: Convert ON CONFLICT (col) DO UPDATE to WHERE NOT EXISTS
+            # Generic: extracts the conflict column and builds IS NOT DISTINCT FROM conditions
+            # Works for any dim table, any column name
             if script.get("name", "").startswith("dim_") and "ON CONFLICT" in sql.upper() and "DO UPDATE" in sql.upper():
-                sql = re.sub(
-                    r'\s*ON\s+CONFLICT\s*(?:\([^)]*\))?\s*DO\s+UPDATE[^;]*',
-                    '', sql, flags=re.IGNORECASE | re.DOTALL
-                )
-                log(f"[SQLPatch] Stripped ON CONFLICT DO UPDATE from dim: {script.get('name')}")
+                import re as _re_wne
+                # Extract conflict column name: ON CONFLICT (brand) DO UPDATE...
+                _conf_m = _re_wne.search(r'ON\s+CONFLICT\s*\(([^)]+)\)\s*DO\s+UPDATE', sql, _re_wne.IGNORECASE)
+                # Extract INSERT column list to build WHERE NOT EXISTS conditions
+                _ins_m = _re_wne.search(r'INSERT\s+INTO\s+\S+\s*\(([^)]+)\)', sql, _re_wne.IGNORECASE)
+                _from_m = _re_wne.search(r'FROM\s+(staging\.\w+)\s+(\w+)', sql, _re_wne.IGNORECASE)
+                _wh_tbl_m = _re_wne.search(r'INSERT\s+INTO\s+(warehouse\.\w+)', sql, _re_wne.IGNORECASE)
+
+                if _ins_m and _from_m and _wh_tbl_m:
+                    _ins_cols = [c.strip() for c in _ins_m.group(1).split(',')]
+                    _alias = _from_m.group(2)
+                    _wh_tbl = _wh_tbl_m.group(1)
+                    # Skip system/surrogate columns
+                    _skip = {'updated_at','created_at','loaded_at','is_current','valid_from','valid_to'}
+                    _skip_sfx = {'_key'}
+                    _biz_cols = [c for c in _ins_cols
+                                 if c.lower() not in _skip
+                                 and not any(c.lower().endswith(s) for s in _skip_sfx)]
+                    # Build IS NOT DISTINCT FROM conditions for each business column
+                    # Match warehouse col to staging col via position in SELECT
+                    _sel_m = _re_wne.search(
+                        r'SELECT\s+(?:DISTINCT\s+)?(.+?)\s+FROM\s+staging',
+                        sql, _re_wne.IGNORECASE | _re_wne.DOTALL
+                    )
+                    _sel_vals = []
+                    if _sel_m:
+                        _sv_str = _sel_m.group(1)
+                        _d = 0; _cur = []
+                        for _ch in _sv_str:
+                            if _ch == '(': _d += 1; _cur.append(_ch)
+                            elif _ch == ')': _d -= 1; _cur.append(_ch)
+                            elif _ch == ',' and _d == 0: _sel_vals.append(''.join(_cur).strip()); _cur = []
+                            else: _cur.append(_ch)
+                        if _cur: _sel_vals.append(''.join(_cur).strip())
+
+                    _conditions = []
+                    for _idx, _wc in enumerate(_biz_cols):
+                        if _idx < len(_sel_vals):
+                            _sv = _sel_vals[_idx].strip()
+                            _conditions.append(f'd.{_wc} IS NOT DISTINCT FROM {_sv}')
+                        else:
+                            _conditions.append(f'd.{_wc} IS NOT DISTINCT FROM {_alias}."{_wc}"')
+
+                    if _conditions:
+                        _wne = ' AND '.join(_conditions)
+                        # Remove ON CONFLICT DO UPDATE block
+                        sql = _re_wne.sub(
+                            r'\s*ON\s+CONFLICT\s*\([^)]+\)\s*DO\s+UPDATE[^;]*',
+                            '', sql, flags=_re_wne.IGNORECASE | _re_wne.DOTALL
+                        )
+                        # Add WHERE NOT EXISTS before the semicolon at end of INSERT
+                        sql = _re_wne.sub(
+                            r'(FROM\s+staging\.\w+\s+\w+)(\s*;)',
+                            f'\1 WHERE NOT EXISTS (SELECT 1 FROM {_wh_tbl} d WHERE {_wne})\2',
+                            sql, count=1, flags=_re_wne.IGNORECASE
+                        )
+                        log(f"[SQLPatch] Converted ON CONFLICT to WHERE NOT EXISTS for dim: {script.get('name')} ({len(_conditions)} cols)")
+                    else:
+                        sql = _re_wne.sub(
+                            r'\s*ON\s+CONFLICT\s*\([^)]+\)\s*DO\s+UPDATE[^;]*',
+                            '', sql, flags=_re_wne.IGNORECASE | _re_wne.DOTALL
+                        )
+                        log(f"[SQLPatch] Stripped ON CONFLICT DO UPDATE from dim: {script.get('name')}")
+                else:
+                    sql = re.sub(
+                        r'\s*ON\s+CONFLICT\s*(?:\([^)]*\))?\s*DO\s+UPDATE[^;]*',
+                        '', sql, flags=re.IGNORECASE | re.DOTALL
+                    )
+                    log(f"[SQLPatch] Stripped ON CONFLICT DO UPDATE from dim: {script.get('name')}")
+
             # Fix 0b: SERIAL PRIMARY KEY INTEGER → always fix regardless of src.None
             if re.search(r'SERIAL\s+PRIMARY\s+KEY\s+INTEGER', sql, re.IGNORECASE):
                 log(f"[SQLPatch] Fixing SERIAL PRIMARY KEY syntax in {script.get('name')}")

@@ -557,34 +557,55 @@ TABLE: warehouse.{name}  (SCD Type 1 — flat file source, no natural key)
       SELECT 1 FROM warehouse.{name} d WHERE {first_two}
     );"""
 
-        else:  # SCD Type 1 — UPSERT
+        else:  # SCD Type 1 - WHERE NOT EXISTS on all business attributes
+            # Use IS NOT DISTINCT FROM for null-safe comparison
+            # This handles both cases: with and without natural key
+            all_attr_conditions = " AND ".join([
+                f'd."{a.get("column") if isinstance(a, dict) else a}" IS NOT DISTINCT FROM s."{a.get("source", a.get("column")) if isinstance(a, dict) else a}"'
+                for a in attrs
+                if (a.get("column") if isinstance(a, dict) else a) not in (
+                    "is_current", "valid_from", "valid_to", "updated_at", "created_at", "loaded_at"
+                )
+            ]) if attrs else "1=0"
+
             if has_nat and nat_key:
-                update_sets = ", ".join([f"{c} = EXCLUDED.{c}" for c in attr_cols_only])
                 spec = f"""
-TABLE: warehouse.{name}  (SCD Type 1 — UPSERT)
-  -- Source: staging.{src_table}  (must start with stg_)
+TABLE: warehouse.{name}  (SCD Type 1 - upsert by natural key)
+  -- Source: staging.{src_table}
   -- COLUMN MAPPING (use EXACTLY these source column names):
 {col_mapping_hint}
   CREATE TABLE IF NOT EXISTS warehouse.{name} (
     {sur_key} SERIAL PRIMARY KEY,
-    {nat_key} INTEGER UNIQUE NOT NULL,
     {attrs_sql},
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
   CREATE INDEX IF NOT EXISTS idx_{name}_natkey ON warehouse.{name}({nat_key});
 
-  INSERT INTO warehouse.{name} ({nat_key}, {attr_cols_csv}, updated_at)
-    SELECT s.{nat_key}, {attr_src_csv}, CURRENT_TIMESTAMP
+  INSERT INTO warehouse.{name} ({attr_cols_csv}, updated_at)
+    SELECT DISTINCT {attr_src_csv}, CURRENT_TIMESTAMP
     FROM staging.{src_table} s
-    ON CONFLICT ({nat_key}) DO UPDATE SET
-      {update_sets},
-      updated_at = CURRENT_TIMESTAMP;"""
+    WHERE NOT EXISTS (
+      SELECT 1 FROM warehouse.{name} d WHERE {all_attr_conditions}
+    );"""
             else:
-                # Flat file — no natural key
-                first_two = " AND ".join(
-                    [f'd."{a.get("column") if isinstance(a, dict) else a}" = s."{a.get("source", a.get("column")) if isinstance(a, dict) else a}"'
-                     for a in attrs[:2]]
-                ) if attrs else "1=0"
+                spec = f"""
+TABLE: warehouse.{name}  (SCD Type 1 - composite business key)
+  -- Source: staging.{src_table}
+  -- COLUMN MAPPING (use EXACTLY these source column names):
+{col_mapping_hint}
+  CREATE TABLE IF NOT EXISTS warehouse.{name} (
+    {sur_key} SERIAL PRIMARY KEY,
+    {attrs_sql},
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  INSERT INTO warehouse.{name} ({attr_cols_csv}, updated_at)
+    SELECT DISTINCT {attr_src_csv}, CURRENT_TIMESTAMP
+    FROM staging.{src_table} s
+    WHERE NOT EXISTS (
+      SELECT 1 FROM warehouse.{name} d WHERE {all_attr_conditions}
+    );"""
+
                 spec = f"""
 TABLE: warehouse.{name}  (SCD Type 1 — flat file source, no natural key)
   -- Source: staging.{src_table}  (no ID columns in CSV — surrogate key only)
