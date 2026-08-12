@@ -1,10 +1,7 @@
-& e:/AIBRIDGE_Claude/venv/Scripts/python.exe -c "
-import sys
-sys.path.insert(0, '.')
-from warehouse_knowledge import refresh_warehouse_knowledge
-from database import SessionLocal
-db = SessionLocal()
-k = refresh_warehouse_knowledge(db)
-db.close()
-print('Tables:', len(k.get('warehouse_tables', {})))
-print(k.get('schema_context', '')[:500])
+import difflib
+key = 'accidenthistory'
+actual_key = 'accidents'
+score = difflib.SequenceMatcher(None, key, actual_key).ratio()
+print(f'Score: {score:.3f}')
+print(f'Threshold: 0.55')
+print(f'Match: {score >= 0.55}')

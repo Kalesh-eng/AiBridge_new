@@ -389,10 +389,48 @@ def _expand_composite_joins(sql_scripts: list, target_config: dict,
                         if col.endswith('_key') or col in skip_cols or col not in all_cols:
                             continue
                         key = col.lower().replace('_', '')
-                        if key not in src_col_lookup:
+                        src_col = src_col_lookup.get(key)
+                        # Also try fuzzy match for renamed columns
+                        # e.g. max_power -> Horsepower, accident_history -> Accidents
+                        if not src_col:
+                            best = None
+                            best_score = 0
+                            for sc in all_staging_cols:
+                                sc_key = sc.lower().replace('_', '')
+                                # containment check
+                                if key in sc_key or sc_key in key:
+                                    score = len(set(key) & set(sc_key)) / max(len(key), len(sc_key), 1)
+                                    if score > best_score:
+                                        best_score = score
+                                        best = sc
+                                # partial word match (first 4 chars)
+                                elif len(key) >= 4 and len(sc_key) >= 4:
+                                    if key[:4] == sc_key[:4]:
+                                        score = 0.4
+                                        if score > best_score:
+                                            best_score = score
+                                            best = sc
+                            if best and best_score > 0.3:
+                                src_col = best
+                        if not src_col:
                             missing.append(col)
                             continue
-                        src_col = src_col_lookup[key]
+                        # Skip columns that are entirely NULL in the dim table
+                        # (e.g. accident_history=NULL because stg_car had no Accidents col)
+                        # A NULL JOIN condition would return 0 rows
+                        try:
+                            _null_chk_cur = conn.cursor()
+                            _null_chk_cur.execute(
+                                f"SELECT COUNT(*) FROM {warehouse_schema}.{dim_table} "
+                                f"WHERE {col} IS NOT NULL LIMIT 1"
+                            )
+                            _non_null_count = _null_chk_cur.fetchone()[0]
+                            _null_chk_cur.close()
+                            if _non_null_count == 0:
+                                missing.append(col)
+                                continue
+                        except Exception:
+                            pass
                         if 'numeric' in dtype.lower() or 'decimal' in dtype.lower():
                             # dim column is rounded (e.g. NUMERIC(10,2)) but the
                             # staging source column often has higher raw precision
@@ -404,28 +442,30 @@ def _expand_composite_joins(sql_scripts: list, target_config: dict,
                                 f'ROUND({alias}.{col}, {scale}) = ROUND(src."{src_col}"::numeric, {scale})'
                             )
                         elif 'char' in dtype.lower() or 'text' in dtype.lower():
-                            # Text columns from CSV sources frequently carry stray
-                            # leading/trailing whitespace ("Toyota " vs "Toyota").
-                            # TRIM both sides by default so this never silently
-                            # breaks the JOIN.
+                            # Cast both sides to text to handle source columns that may
+                            # be integer/bigint (e.g. Accidents=BIGINT, accident_history=VARCHAR)
+                            # TRIM(bigint) causes "function btrim(bigint) does not exist"
                             new_conditions.append(
-                                f'TRIM({alias}.{col}) = TRIM(src."{src_col}")'
+                                f'TRIM({alias}.{col}::text) = TRIM(src."{src_col}"::text)'
                             )
                         else:
                             new_conditions.append(f'{alias}.{col} = src."{src_col}"')
 
-                    # Only expand if we resolved ALL dim columns against real staging columns
-                    if new_conditions and not missing:
+                    # Expand JOIN with whatever columns we resolved
+                    # If some dim columns are missing from source, use the ones we have
+                    # This prevents row explosion from partial JOINs
+                    if new_conditions:
+                        if missing:
+                            log(f"[SQLPatch] Partial JOIN expand on {dim_table} "
+                                f"— skipping missing source cols: {missing}. "
+                                f"Using {len(new_conditions)} available columns.")
+                        else:
+                            log(f"[SQLPatch] Expanding JOIN on {dim_table} from "
+                                f"{referenced} to {len(new_conditions)} columns "
+                                f"(prevents row multiplication, numeric columns rounded "
+                                f"to match precision)")
                         new_cond_str = " AND ".join(new_conditions)
-                        log(f"[SQLPatch] Expanding JOIN on {dim_table} from "
-                            f"{referenced} to {len(new_conditions)} columns "
-                            f"(prevents row multiplication, numeric columns rounded "
-                            f"to match precision)")
                         return f"JOIN warehouse.{dim_table} {alias} ON {new_cond_str}"
-                    elif missing:
-                        log(f"[SQLPatch] ⚠ Could not fully expand JOIN on {dim_table} — "
-                            f"missing source columns for: {missing}. "
-                            f"JOIN left as-is (risk of row multiplication).")
 
                 return m.group(0)
 
@@ -592,6 +632,165 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
                     r'SERIAL\s+PRIMARY\s+KEY\s+INTEGER\s+(?:UNIQUE\s+)?(?:NOT\s+NULL\s+)?',
                     'SERIAL PRIMARY KEY ',
                     sql, flags=re.IGNORECASE
+                )
+
+            # Fix 0c0: Remove duplicate column definitions in CREATE TABLE
+            # AI generates e.g. "Brand INTEGER UNIQUE" AND "brand VARCHAR" -> duplicate error
+            if 'CREATE TABLE' in sql.upper():
+                def fix_create_table_dedup(m):
+                    full = m.group(0)
+                    paren_start = full.index('(')
+                    depth = 0
+                    paren_end = paren_start
+                    for i2, ch in enumerate(full[paren_start:], paren_start):
+                        if ch == '(':
+                            depth += 1
+                        elif ch == ')':
+                            depth -= 1
+                            if depth == 0:
+                                paren_end = i2
+                                break
+                    cols_block = full[paren_start+1:paren_end]
+                    cols = []
+                    depth2 = 0
+                    current = []
+                    for ch in cols_block:
+                        if ch == '(':
+                            depth2 += 1
+                            current.append(ch)
+                        elif ch == ')':
+                            depth2 -= 1
+                            current.append(ch)
+                        elif ch == ',' and depth2 == 0:
+                            cols.append(''.join(current).strip())
+                            current = []
+                        else:
+                            current.append(ch)
+                    if current:
+                        cols.append(''.join(current).strip())
+                    seen = {}
+                    kept = []
+                    changed = False
+                    for col_def in cols:
+                        tokens = col_def.split()
+                        if not tokens:
+                            continue
+                        col_name_raw = tokens[0].strip('"').lower()
+                        if col_name_raw.upper() in ('PRIMARY', 'UNIQUE', 'FOREIGN', 'CHECK', 'CONSTRAINT'):
+                            kept.append(col_def)
+                            continue
+                        if col_name_raw not in seen:
+                            seen[col_name_raw] = len(kept)
+                            kept.append(col_def)
+                        else:
+                            existing_idx = seen[col_name_raw]
+                            existing = kept[existing_idx]
+                            eu = existing.upper()
+                            nu = col_def.upper()
+                            changed = True
+                            if ('INTEGER' in eu or 'SERIAL' in eu) and ('VARCHAR' in nu or 'TEXT' in nu or 'CHAR' in nu):
+                                kept[existing_idx] = col_def
+                            # else drop the duplicate silently
+                    if changed:
+                        return full[:paren_start+1] + ', '.join(kept) + full[paren_end:]
+                    return full
+                sql = re.sub(
+                    r'CREATE TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+\S+\s*\([^;]+\)',
+                    fix_create_table_dedup,
+                    sql,
+                    flags=re.IGNORECASE | re.DOTALL
+                )
+                if sql != original:
+                    log(f"[SQLPatch] Dedup CREATE TABLE columns in {script.get('name')}")
+
+            # Fix 0c0b: Remove duplicate column names from INSERT column list
+            def dedup_insert_cols(m):
+                cols_str = m.group(1)
+                orig_cols = [c.strip() for c in cols_str.split(',')]
+                seen_ins = set()
+                kept_ins = []
+                for orig in orig_cols:
+                    normalized = orig.strip('"').lower()
+                    if normalized not in seen_ins:
+                        seen_ins.add(normalized)
+                        kept_ins.append(orig)
+                if len(kept_ins) < len(orig_cols):
+                    log(f"[SQLPatch] Dedup INSERT cols in {script.get('name')}: removed {len(orig_cols)-len(kept_ins)} duplicate(s)")
+                    return m.group(0).replace(cols_str, ', '.join(kept_ins))
+                return m.group(0)
+            sql = re.sub(
+                r'INSERT\s+INTO\s+\S+\s*\(([^)]+)\)',
+                dedup_insert_cols,
+                sql,
+                flags=re.IGNORECASE
+            )
+            # Fix 0c0c: Dedup SELECT values to match deduped INSERT col count
+            try:
+                import re as _re3
+                # Find ALL INSERT...SELECT pairs (handles multi-statement SQL)
+                for _m in list(_re3.finditer(
+                    r'INSERT\s+INTO\s+\S+\s*\(([^)]+)\)\s*SELECT\s+(?:DISTINCT\s+)?(.+?)\s+FROM\s+',
+                    sql, _re3.IGNORECASE | _re3.DOTALL
+                )):
+                    _icols = [c.strip() for c in _m.group(1).split(',')]
+                    _svals_str = _m.group(2)
+                    _svals = []
+                    _d = 0; _cur = []
+                    for _ch in _svals_str:
+                        if _ch == '(': _d += 1; _cur.append(_ch)
+                        elif _ch == ')': _d -= 1; _cur.append(_ch)
+                        elif _ch == ',' and _d == 0: _svals.append(''.join(_cur).strip()); _cur = []
+                        else: _cur.append(_ch)
+                    if _cur: _svals.append(''.join(_cur).strip())
+                    _seen_s = set()
+                    _kept_s = []
+                    for _sv in _svals:
+                        _key = _sv.strip()
+                        for _pfx in ['src."', 's."', 'src.', 's.']:
+                            if _key.lower().startswith(_pfx.lower()):
+                                _key = _key[len(_pfx):]
+                                break
+                        _key = _key.strip('"').lower()
+                        if _key not in _seen_s:
+                            _seen_s.add(_key)
+                            _kept_s.append(_sv)
+                    _kept_s = _kept_s[:len(_icols)]
+                    if len(_kept_s) < len(_svals):
+                        log(f"[SQLPatch] Dedup SELECT values in {script.get('name')}: removed {len(_svals)-len(_kept_s)} duplicate(s)")
+                        sql = sql.replace(
+                            f"SELECT {_svals_str} FROM",
+                            f"SELECT {', '.join(_kept_s)} FROM",
+                            1
+                        )
+            except Exception:
+                pass
+
+            # Fix 0c0e: Quote all unquoted alias.Column references in SELECT
+            # e.g. s.Brand -> s."Brand", s.City -> s."City"
+            # Unquoted refs are folded to lowercase by PostgreSQL, causing column not found
+            if 'INSERT INTO' in sql.upper() and 'SELECT' in sql.upper():
+                import re as _re5
+                def _quote_col_ref(m):
+                    alias = m.group(1)
+                    col = m.group(2)
+                    return f'{alias}."{col}"'
+                sql = _re5.sub(
+                    r'\b([a-z]+)\.([A-Z][A-Za-z0-9_]*)(?!")',
+                    _quote_col_ref,
+                    sql
+                )
+
+            # Fix 0c0d: Add DISTINCT to dim INSERT SELECT DISTINCT
+            # dim_seller should have 4 rows not 9998
+            if script.get("name", "").startswith("dim_") and "INSERT INTO" in sql.upper():
+                import re as _re4
+                # Replace SELECT (not already DISTINCT) with SELECT DISTINCT
+                sql = _re4.sub(
+                    r'SELECT(?!\s+DISTINCT)',
+                    'SELECT DISTINCT',
+                    sql,
+                    count=1,
+                    flags=_re4.IGNORECASE
                 )
 
             # Fix 0c1: fact tables are append-only with no uniqueness
@@ -1003,7 +1202,8 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
 
 def _auto_create_intermediate_staging(target_config: dict, staging_schema: str,
                                        sql_scripts: list, log,
-                                       data_model: dict = None) -> None:
+                                       data_model: dict = None,
+                                       pipeline_id: str = None) -> None:
     """
     Generically detect staging tables referenced in SQL scripts that don't exist
     and auto-create them via SELECT DISTINCT from the raw staging table.
@@ -1097,19 +1297,31 @@ def _auto_create_intermediate_staging(target_config: dict, staging_schema: str,
                 stg_name_exact = f"stg_{entity}"               # stg_car (without s)
 
                 # Collect all attribute column names from dim definition
+                # Data model uses {"column": "brand", "source": "Brand"} format
                 attrs = []
+                seen_attrs = set()
                 for attr in dim.get("attributes", []):
-                    col = attr if isinstance(attr, str) else attr.get("name", "")
+                    if isinstance(attr, str):
+                        col = attr
+                        src = attr
+                    else:
+                        # Try "source" first (actual raw column name), then "column"
+                        src = attr.get("source", attr.get("name", attr.get("column", "")))
+                        col = attr.get("column", attr.get("name", ""))
                     # Skip surrogate keys and system columns
                     if col and not col.endswith("_key") and col not in (
                         "is_current", "valid_from", "valid_to", "updated_at",
                         "created_at", "loaded_at"
                     ):
-                        attrs.append(col.lower())
+                        # Use source column name (actual raw name) for lookup
+                        lookup = src.lower() if src else col.lower()
+                        if lookup not in seen_attrs:
+                            seen_attrs.add(lookup)
+                            attrs.append(lookup)
 
                 # Also add natural key
                 nat_key = dim.get("natural_key_column", "")
-                if nat_key and nat_key.lower() not in attrs:
+                if nat_key and nat_key.lower() not in seen_attrs:
                     attrs.append(nat_key.lower())
 
                 dim_col_map[stg_name]       = attrs
@@ -1135,11 +1347,36 @@ def _auto_create_intermediate_staging(target_config: dict, staging_schema: str,
                     if attr in raw_col_lower:
                         select_cols.append(raw_col_lower[attr])
                     else:
-                        # Try fuzzy match (e.g. fuel_type → Fuel_Type)
+                        # Try fuzzy match — normalize and compare
+                        attr_norm = attr.replace("_", "").lower()
+                        best_match = None
+                        best_score = 0
                         for raw_lower, raw_actual in raw_col_lower.items():
-                            if attr.replace("_", "") == raw_lower.replace("_", ""):
-                                select_cols.append(raw_actual)
+                            raw_norm = raw_lower.replace("_", "")
+                            # Exact normalized match
+                            if attr_norm == raw_norm:
+                                best_match = raw_actual
+                                best_score = 1.0
                                 break
+                        # Containment or common-prefix match
+                        # e.g. accident_history -> accidents (share "accident" prefix)
+                        if attr_norm in raw_norm or raw_norm in attr_norm:
+                            score = len(set(attr_norm) & set(raw_norm)) / max(len(attr_norm), len(raw_norm), 1)
+                            if score > best_score:
+                                best_score = score
+                                best_match = raw_actual
+                        else:
+                            # Common prefix match (accident_history vs accidents)
+                            min_len = min(len(attr_norm), len(raw_norm))
+                            common = sum(1 for i in range(min_len) if attr_norm[i] == raw_norm[i])
+                            if common >= 6:  # at least 6 chars in common prefix
+                                score = common / max(len(attr_norm), len(raw_norm), 1)
+                                if score > best_score:
+                                    best_score = score
+                                    best_match = raw_actual
+
+                        if best_match and best_score > 0.3:
+                            select_cols.append(best_match)
 
             if not select_cols:
                 # Fallback: scan SQL for s.column_name patterns
@@ -1328,7 +1565,8 @@ def execute_warehouse_scripts(
             staging_schema = staging_schema,
             sql_scripts    = sql_scripts,
             data_model     = data_model,
-            log            = log
+            log            = log,
+            pipeline_id    = pipeline_id
         )
     except Exception as e:
         log(f"⚠ Intermediate staging creation warning: {e}")
