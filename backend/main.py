@@ -755,6 +755,14 @@ def run_phase_1(req: PipelineRequest, current_user=Depends(get_current_user),
                         _cur2.close(); _con2.close()
                 except Exception as e2:
                     print(f"[Phase 1] Staging schema enrichment warning: {e2}")
+        # Pass enriched schema_text back to ctx so DataModelAgent gets real columns
+        # Without this, DataModelAgent only sees 23-char table name, not 20 columns
+        if schema_text and len(schema_text) > 30:
+            ctx.raw_schema = schema_text
+            if ctx.schema_result:
+                ctx.schema_result["schema_text"] = schema_text
+            print(f"[Phase 1] Schema propagated to ctx: {len(schema_text)} chars")
+
         schema_hash = compute_schema_hash(schema_text, src_tables, req.business_requirements)
         print(f"[SchemaCache] Schema hash: {schema_hash}")
 

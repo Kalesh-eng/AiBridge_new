@@ -659,9 +659,9 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
                     for _idx, _wc in enumerate(_biz_cols):
                         if _idx < len(_sel_vals):
                             _sv = _sel_vals[_idx].strip()
-                            _conditions.append(f'd.{_wc} IS NOT DISTINCT FROM {_sv}')
+                            _conditions.append(f'd.{_wc.lower()}::text IS NOT DISTINCT FROM ({_sv})::text')
                         else:
-                            _conditions.append(f'd.{_wc} IS NOT DISTINCT FROM {_alias}."{_wc}"')
+                            _conditions.append(f'd.{_wc.lower()}::text IS NOT DISTINCT FROM {_alias}."{_wc}"::text')
 
                     if _conditions:
                         _wne = ' AND '.join(_conditions)
@@ -673,10 +673,9 @@ def _patch_sql_column_names(sql_scripts: list, target_config: dict,
                         # Add WHERE NOT EXISTS before the semicolon at end of INSERT
                         sql = _re_wne.sub(
                             r'(FROM\s+staging\.\w+\s+\w+)(\s*;)',
-                            f'\1 WHERE NOT EXISTS (SELECT 1 FROM {_wh_tbl} d WHERE {_wne})\2',
+                            lambda m, t=_wh_tbl, w=_wne: m.group(1) + ' WHERE NOT EXISTS (SELECT 1 FROM ' + t + ' d WHERE ' + w + ')' + m.group(2),
                             sql, count=1, flags=_re_wne.IGNORECASE
                         )
-                        log(f"[SQLPatch] Converted ON CONFLICT to WHERE NOT EXISTS for dim: {script.get('name')} ({len(_conditions)} cols)")
                     else:
                         sql = _re_wne.sub(
                             r'\s*ON\s+CONFLICT\s*\([^)]+\)\s*DO\s+UPDATE[^;]*',
