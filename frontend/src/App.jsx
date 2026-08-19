@@ -27,10 +27,7 @@ import DataQuality     from './pages/DataQuality'
 import Scheduler       from './pages/Scheduler'
 import Logs            from './pages/Logs'
 import Cost            from './pages/Cost'
-// import ExportImport    from './pages/ExportImport'
-import AiBridgeChat    from './pages/AiBridgeChat'
-import Help            from './pages/Help'
-import MigrationAgent  from './pages/MigrationAgent'
+import AIBridgeNeonBI  from './pages/AIBridgeNeonBI'
 
 const Stub = ({ name }) => (
   <div style={{ padding: 40, fontFamily: 'system-ui' }}>
@@ -86,16 +83,14 @@ function AppRoutes() {
       <Route path="/sql"            element={<PrivateRoute><SqlScripts /></PrivateRoute>} />
       <Route path="/evolution"      element={<PrivateRoute><SchemaEvolution /></PrivateRoute>} />
       <Route path="/analytics"      element={<PrivateRoute><Analytics /></PrivateRoute>} />
+      <Route path="/neon-bi"        element={<PrivateRoute><AIBridgeNeonBI /></PrivateRoute>} />
       <Route path="/pipelines"      element={<PrivateRoute><Pipelines /></PrivateRoute>} />
       <Route path="/quality"        element={<PrivateRoute><DataQuality /></PrivateRoute>} />
       <Route path="/scheduler"      element={<PrivateRoute><Scheduler /></PrivateRoute>} />
       <Route path="/logs"           element={<PrivateRoute><Logs /></PrivateRoute>} />
       <Route path="/recovery-logs"  element={<PrivateRoute><RecoveryLogs /></PrivateRoute>} />
       <Route path="/cost"           element={<PrivateRoute><Cost /></PrivateRoute>} />
-      <Route path="/help"           element={<PrivateRoute><Help /></PrivateRoute>} />
-      <Route path="/migration"      element={<PrivateRoute><MigrationAgent /></PrivateRoute>} />
       <Route path="/connectors"     element={<PrivateRoute><Connectors /></PrivateRoute>} />
-      <Route path="/chat"           element={<PrivateRoute><AiBridgeChat /></PrivateRoute>} />
       <Route path="/team"           element={<PrivateRoute><Team /></PrivateRoute>} />
       <Route path="/settings"       element={<PrivateRoute><Stub name="AI provider settings" /></PrivateRoute>} />
       <Route path="*"               element={<Navigate to="/" replace />} />
