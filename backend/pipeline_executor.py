@@ -1494,7 +1494,7 @@ def _auto_create_intermediate_staging(target_config: dict, staging_schema: str,
             def _col_expr(c):
                 dtype = _col_types.get(c, "")
                 if any(t in dtype.lower() for t in ("float","double","real","numeric","decimal")):
-                    return f'ROUND("{c}"::NUMERIC, 2) AS "{c}"'
+                    return f'ROUND(NULLIF("{c}"::NUMERIC, \'NaN\'::NUMERIC), 2) AS "{c}"'
                 return f'"{c}"'
             cols_sql = ", ".join(_col_expr(c) for c in select_cols)
             create_sql = f"""
