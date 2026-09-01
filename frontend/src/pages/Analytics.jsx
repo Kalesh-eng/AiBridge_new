@@ -1,11 +1,7 @@
 /**
  * Analytics.jsx — BI / Analytics tab
- * v1.5: Voice Mode added — speak your question, hear the answer back.
- *   - Microphone button next to the question textarea
- *   - Web Speech API (no external service, works in Chrome/Edge)
- *   - Text-to-Speech reads back the AI summary after query runs
- *   - Language: en-IN (configurable)
- *
+ * v1.6: Connection Mode added — query any DB directly without a pipeline.
+ * v1.5: Voice Mode — speak questions, hear answers back.
  * v1.4: Report re-run + download (CSV/Excel/PDF) + schedule reports.
  * v1.3: Interactive query refinement with conversation chain + rollback.
  */
@@ -25,12 +21,12 @@ const REFINEMENT_SUGGESTIONS = [
   'Group by year', 'Limit to 50 rows',
 ]
 const FREQUENCY_OPTIONS = [
-  { value: 'daily',       label: 'Daily',       desc: 'Every day at custom time',    hasTime: true  },
-  { value: 'weekly',      label: 'Weekly',      desc: 'Every selected day',          hasTime: true, hasDay: true },
-  { value: 'monthly',     label: 'Monthly',     desc: 'Selected date each month',    hasTime: true, hasDate: true },
-  { value: 'quarterly',   label: 'Quarterly',   desc: 'Every 3 months',              hasTime: true },
-  { value: 'halfyearly',  label: 'Half Yearly', desc: 'Every 6 months',              hasTime: true },
-  { value: 'yearly',      label: 'Yearly',      desc: 'Once a year',                 hasTime: true },
+  { value: 'daily',       label: 'Daily',       desc: 'Every day at custom time',   hasTime: true  },
+  { value: 'weekly',      label: 'Weekly',      desc: 'Every selected day',         hasTime: true, hasDay: true },
+  { value: 'monthly',     label: 'Monthly',     desc: 'Selected date each month',   hasTime: true, hasDate: true },
+  { value: 'quarterly',   label: 'Quarterly',   desc: 'Every 3 months',             hasTime: true },
+  { value: 'halfyearly',  label: 'Half Yearly', desc: 'Every 6 months',             hasTime: true },
+  { value: 'yearly',      label: 'Yearly',      desc: 'Once a year',                hasTime: true },
 ]
 const DAYS_OF_WEEK = [
   { value: '0', label: 'Sunday' },  { value: '1', label: 'Monday' },
@@ -77,11 +73,11 @@ function buildSchedulePreview(cfg) {
   }
 }
 
-// ── Voice hook ───────────────────────────────────────────────────────────────
+// ── Voice hook ────────────────────────────────────────────────────────────────
 function useVoice(onResult) {
-  const [listening,  setListening]  = useState(false)
-  const [supported,  setSupported]  = useState(false)
-  const [voiceOn,    setVoiceOn]    = useState(true)   // text-to-speech toggle
+  const [listening, setListening] = useState(false)
+  const [supported, setSupported] = useState(false)
+  const [voiceOn,   setVoiceOn]   = useState(true)
   const recogRef = useRef(null)
 
   useEffect(() => {
@@ -89,61 +85,49 @@ function useVoice(onResult) {
     if (!SR) return
     setSupported(true)
     const r = new SR()
-    r.continuous      = false
-    r.interimResults  = false
-    r.lang            = 'en-IN'
-    r.onresult = (e) => {
-      const text = e.results[0][0].transcript
-      onResult(text)
-      setListening(false)
-    }
-    r.onend   = () => setListening(false)
+    r.continuous = false; r.interimResults = false; r.lang = 'en-IN'
+    r.onresult = (e) => { onResult(e.results[0][0].transcript); setListening(false) }
+    r.onend = () => setListening(false)
     r.onerror = () => setListening(false)
     recogRef.current = r
   }, [onResult])
 
   const toggleListen = useCallback(() => {
     if (!recogRef.current) return
-    if (listening) {
-      recogRef.current.stop()
-      setListening(false)
-    } else {
-      try { recogRef.current.start(); setListening(true) } catch {}
-    }
+    if (listening) { recogRef.current.stop(); setListening(false) }
+    else { try { recogRef.current.start(); setListening(true) } catch {} }
   }, [listening])
 
   const speak = useCallback((text) => {
     if (!voiceOn || !window.speechSynthesis) return
     window.speechSynthesis.cancel()
-    const clean = text
-      .replace(/```[\s\S]*?```/g, '')
-      .replace(/[#*_`>]/g, '')
-      .replace(/\n+/g, ' ')
-      .trim()
-      .slice(0, 400)
-    const utt    = new SpeechSynthesisUtterance(clean)
-    utt.lang     = 'en-IN'
-    utt.rate     = 0.93
-    utt.pitch    = 1
+    const utt = new SpeechSynthesisUtterance(
+      text.replace(/```[\s\S]*?```/g,'').replace(/[#*_`>]/g,'').replace(/\n+/g,' ').trim().slice(0,400)
+    )
+    utt.lang = 'en-IN'; utt.rate = 0.93; utt.pitch = 1
     window.speechSynthesis.speak(utt)
   }, [voiceOn])
 
-  const stopSpeaking = useCallback(() => {
-    if (window.speechSynthesis) window.speechSynthesis.cancel()
-  }, [])
+  const stopSpeaking = useCallback(() => { window.speechSynthesis?.cancel() }, [])
 
   return { listening, supported, voiceOn, setVoiceOn, toggleListen, speak, stopSpeaking }
 }
 
 export default function Analytics() {
+  // Pipeline mode
   const [pipelines,        setPipelines]        = useState([])
   const [connectors,       setConnectors]       = useState([])
   const [selectedPipeline, setSelectedPipeline] = useState(null)
-  const [question,         setQuestion]         = useState('')
-  const [loading,          setLoading]          = useState(false)
-  const [executing,        setExecuting]        = useState(false)
-  const [error,            setError]            = useState(null)
   const [warehouseInfo,    setWarehouseInfo]    = useState(null)
+  // Connection mode
+  const [mode,           setMode]           = useState('pipeline')
+  const [allConnectors,  setAllConnectors]  = useState([])
+  const [selectedConnId, setSelectedConnId] = useState('')
+  // Query
+  const [question,      setQuestion]      = useState('')
+  const [loading,       setLoading]       = useState(false)
+  const [executing,     setExecuting]     = useState(false)
+  const [error,         setError]         = useState(null)
   const [queryChain,    setQueryChain]    = useState([])
   const [activeStep,    setActiveStep]    = useState(-1)
   const [results,       setResults]       = useState(null)
@@ -154,6 +138,7 @@ export default function Analytics() {
   const [chartType,     setChartType]     = useState('bar')
   const [xAxis,         setXAxis]         = useState('')
   const [yAxis,         setYAxis]         = useState('')
+  // Reports
   const [savedReports,  setSavedReports]  = useState([])
   const [reportName,    setReportName]    = useState('')
   const [saving,        setSaving]        = useState(false)
@@ -162,57 +147,50 @@ export default function Analytics() {
   const [rerunResults,  setRerunResults]  = useState({})
   const [rerunError,    setRerunError]    = useState({})
   const [downloading,   setDownloading]   = useState(null)
+  // Schedule
   const [scheduleModal, setScheduleModal] = useState(null)
   const [schedConfig,   setSchedConfig]   = useState({ ...DEFAULT_SCHED_CONFIG })
-  const setSchedC = (key, val) => setSchedConfig(prev => ({ ...prev, [key]: val }))
+  const setSchedC = (k, v) => setSchedConfig(p => ({ ...p, [k]: v }))
   const [scheduling,    setScheduling]    = useState(false)
   const [scheduleMsg,   setScheduleMsg]   = useState('')
-  // Voice state
-  const [voiceStatus,   setVoiceStatus]   = useState('')  // status message shown near mic
+  // Voice
+  const [voiceStatus,   setVoiceStatus]   = useState('')
+  const refinementRef  = useRef(null)
+  const voiceSubmitRef = useRef(null)
 
-  const refinementRef = useRef(null)
-
-  // Voice hook — onResult sets the question and auto-submits
   const handleVoiceResult = useCallback((text) => {
     setQuestion(text)
     setVoiceStatus(`Heard: "${text}"`)
     setTimeout(() => setVoiceStatus(''), 3000)
-    // Auto-submit after brief delay so user sees what was heard
-    setTimeout(() => {
-      setQuestion(text)
-      // trigger generateSql via ref pattern
-      voiceSubmitRef.current?.(text)
-    }, 600)
+    setTimeout(() => voiceSubmitRef.current?.(text), 600)
   }, [])
 
   const { listening, supported, voiceOn, setVoiceOn, toggleListen, speak, stopSpeaking } = useVoice(handleVoiceResult)
-  const voiceSubmitRef = useRef(null)
 
   useEffect(() => {
-    Promise.all([
-      api.get('/pipeline/list'),
-      api.get('/connector/list')
-    ]).then(([pRes, cRes]) => {
-      const list  = pRes.data.pipelines || []
-      const conns = cRes.data.connectors || []
-      setPipelines(list)
-      setConnectors(conns)
-      if (list.length > 0) selectPipeline(list[0], conns)
-    }).catch(() => {})
-    const saved = JSON.parse(localStorage.getItem('aibridge_reports') || '[]')
-    setSavedReports(saved)
+    Promise.all([api.get('/pipeline/list'), api.get('/connector/list')])
+      .then(([pRes, cRes]) => {
+        const list  = pRes.data.pipelines || []
+        const conns = cRes.data.connectors || []
+        setPipelines(list); setConnectors(conns)
+        if (list.length > 0) selectPipeline(list[0], conns)
+        const dbConns = conns.filter(c => c.connector_type !== 'duckdb')
+        setAllConnectors(dbConns)
+        if (dbConns.length > 0) setSelectedConnId(dbConns[0].id)
+      }).catch(() => {})
+    setSavedReports(JSON.parse(localStorage.getItem('aibridge_reports') || '[]'))
   }, [])
 
   const resolveWarehouseConnector = (pipeline, conns) => {
     if (!pipeline) return null
-    const allConns = conns || connectors
+    const all = conns || connectors
     if (pipeline.target_connector_id) {
-      const tgt = allConns.find(c => c.id === pipeline.target_connector_id)
+      const tgt = all.find(c => c.id === pipeline.target_connector_id)
       if (tgt) return tgt
     }
-    const src = allConns.find(c => c.id === pipeline.connector_id)
+    const src = all.find(c => c.id === pipeline.connector_id)
     if (src?.connector_type === 'duckdb') {
-      const pg = allConns.find(c => c.connector_type === 'postgres' && c.is_active !== false)
+      const pg = all.find(c => c.connector_type === 'postgres' && c.is_active !== false)
       if (pg) return pg
     }
     return src || null
@@ -224,15 +202,19 @@ export default function Analytics() {
     reset()
   }
 
-  // ── SQL generation ──────────────────────────────────────────────────────
+  // Active connector ID — depends on mode
+  const activeConnId = () => mode === 'connection' ? selectedConnId : warehouseInfo?.id
+
+  // ── SQL generation ─────────────────────────────────────────────────────────
   const generateSql = async (questionOverride) => {
     const q = questionOverride || question
     if (!q.trim()) { setError('Enter a question first'); return }
-    if (!selectedPipeline) { setError('Select a pipeline first'); return }
-    if (!warehouseInfo) { setError('Could not resolve warehouse connector.'); return }
+    if (mode === 'pipeline' && !selectedPipeline) { setError('Select a pipeline first'); return }
+    if (mode === 'pipeline' && !warehouseInfo) { setError('Could not resolve warehouse connector.'); return }
+    if (mode === 'connection' && !selectedConnId) { setError('Select a connection first'); return }
     setError(null); setLoading(true); setResults(null); setQueryChain([])
     try {
-      const r = await api.post('/nl/to-sql', { question: q, connector_id: warehouseInfo.id })
+      const r = await api.post('/nl/to-sql', { question: q, connector_id: activeConnId() })
       if (!r.data.success) { setError(r.data.error || 'AI could not generate SQL'); setLoading(false); return }
       if (r.data.safety?.blocked) {
         setError(`SQL blocked: ${r.data.safety.violations?.map(v => v.message).join(', ')}`)
@@ -247,23 +229,19 @@ export default function Analytics() {
     setLoading(false)
   }
 
-  // Wire voice submit ref
-  useEffect(() => {
-    voiceSubmitRef.current = generateSql
-  }, [selectedPipeline, warehouseInfo])
+  useEffect(() => { voiceSubmitRef.current = generateSql }, [selectedPipeline, warehouseInfo, mode, selectedConnId])
 
-  // ── Refinement ──────────────────────────────────────────────────────────
+  // ── Refinement ─────────────────────────────────────────────────────────────
   const applyRefinement = async (instruction) => {
     const text = instruction || refinement
-    if (!text.trim()) return
-    if (queryChain.length === 0) { setError('Generate a query first'); return }
+    if (!text.trim() || queryChain.length === 0) return
     setRefining(true); setError(null)
     const currentSql = editedSql || queryChain[activeStep]?.sql || ''
     const history = queryChain.slice(0, activeStep).map(s => ({ instruction: s.instruction, sql: s.sql }))
     try {
       const r = await api.post('/nl/refine-sql', {
         current_sql: currentSql, refinement: text,
-        connector_id: warehouseInfo?.id || '', history
+        connector_id: activeConnId() || '', history
       })
       if (!r.data.success) { setError(r.data.error || 'Could not refine SQL'); setRefining(false); return }
       const newStep = { instruction: text, sql: r.data.sql, explanation: r.data.explanation }
@@ -272,19 +250,17 @@ export default function Analytics() {
       setEditedSql(r.data.sql); setEditingSql(false); setRefinement('')
       await runSql(r.data.sql)
       setTimeout(() => refinementRef.current?.focus(), 100)
-    } catch (e) {
-      setError(e.response?.data?.detail || e.message || 'Refinement failed')
-    }
+    } catch (e) { setError(e.response?.data?.detail || e.message || 'Refinement failed') }
     setRefining(false)
   }
 
-  // ── SQL execution ───────────────────────────────────────────────────────
+  // ── SQL execution ──────────────────────────────────────────────────────────
   const runSql = async (sqlToRun, questionCtx) => {
     const sql = sqlToRun || editedSql || queryChain[activeStep]?.sql
-    if (!sql || !warehouseInfo) return
+    if (!sql) return
     setExecuting(true); setError(null)
     try {
-      const r = await api.post('/sql/run', { sql, connector_id: warehouseInfo.id })
+      const r = await api.post('/sql/run', { sql, connector_id: activeConnId() })
       if (!r.data.success) { setError(r.data.error || 'SQL execution failed'); setExecuting(false); return }
       const cols = r.data.columns || []; const rows = r.data.rows || []
       setResults({ columns: cols, rows })
@@ -294,13 +270,9 @@ export default function Analytics() {
       })
       setXAxis(cols.filter(c => !numericCols.includes(c))[0] || cols[0] || '')
       setYAxis(numericCols[0] || cols[1] || '')
-
-      // 🔊 Speak a summary of the results
       if (rows.length > 0) {
         const q = questionCtx || question
-        const top = rows.slice(0, 3).map(row =>
-          cols.map((c, i) => `${c}: ${row[i]}`).join(', ')
-        ).join('; ')
+        const top = rows.slice(0,3).map(row => cols.map((c,i) => `${c}: ${row[i]}`).join(', ')).join('; ')
         speak(`Found ${rows.length} results for "${q}". Top results are: ${top}`)
       }
     } catch (e) { setError(e.response?.data?.detail || e.message || 'Execution failed') }
@@ -319,59 +291,47 @@ export default function Analytics() {
     stopSpeaking()
   }
 
-  // ── Download ────────────────────────────────────────────────────────────
-  const downloadResults = async (format, reportNameOverride, sqlOverride, questionOverride) => {
-    const sql   = sqlOverride   || editedSql || queryChain[activeStep]?.sql
-    const rName = reportNameOverride || reportName || question || 'report'
-    const q     = questionOverride   || question
-    if (!sql || !warehouseInfo) { setError('No SQL to export'); return }
+  // ── Download ───────────────────────────────────────────────────────────────
+  const downloadResults = async (format, rNameOverride, sqlOverride, qOverride) => {
+    const sql   = sqlOverride || editedSql || queryChain[activeStep]?.sql
+    const rName = rNameOverride || reportName || question || 'report'
+    const q     = qOverride || question
+    if (!sql) { setError('No SQL to export'); return }
     setDownloading(format)
     try {
       const res = await api.post('/report/export', {
-        sql, connector_id: warehouseInfo.id, format, report_name: rName, question: q
+        sql, connector_id: activeConnId(), format, report_name: rName, question: q
       }, { responseType: 'blob' })
-      const ext  = format === 'excel' ? 'xlsx' : format
-      const url  = URL.createObjectURL(new Blob([res.data]))
-      const a    = document.createElement('a')
-      a.href     = url
-      a.download = `${rName.replace(/\s+/g, '_')}.${ext}`
+      const url = URL.createObjectURL(new Blob([res.data]))
+      const a   = document.createElement('a')
+      a.href = url; a.download = `${rName.replace(/\s+/g,'_')}.${format==='excel'?'xlsx':format}`
       document.body.appendChild(a); a.click(); document.body.removeChild(a)
       URL.revokeObjectURL(url)
     } catch (e) { setError('Download failed: ' + (e.response?.data?.detail || e.message)) }
     setDownloading(null)
   }
 
-  // ── Re-run saved report ─────────────────────────────────────────────────
+  // ── Re-run ────────────────────────────────────────────────────────────────
   const rerunReport = async (report) => {
-    if (!warehouseInfo) { setError('Could not resolve warehouse connector'); return }
-    setRerunning(report.id); setRerunError(prev => ({ ...prev, [report.id]: null }))
+    setRerunning(report.id); setRerunError(p => ({ ...p, [report.id]: null }))
     try {
-      const r = await api.post('/sql/run', { sql: report.sql, connector_id: warehouseInfo.id })
-      if (!r.data.success) {
-        setRerunError(prev => ({ ...prev, [report.id]: r.data.error }))
-      } else {
-        setRerunResults(prev => ({ ...prev, [report.id]: { columns: r.data.columns, rows: r.data.rows } }))
-      }
-    } catch (e) {
-      setRerunError(prev => ({ ...prev, [report.id]: e.response?.data?.detail || e.message }))
-    }
+      const r = await api.post('/sql/run', { sql: report.sql, connector_id: activeConnId() })
+      if (!r.data.success) setRerunError(p => ({ ...p, [report.id]: r.data.error }))
+      else setRerunResults(p => ({ ...p, [report.id]: { columns: r.data.columns, rows: r.data.rows } }))
+    } catch (e) { setRerunError(p => ({ ...p, [report.id]: e.response?.data?.detail || e.message })) }
     setRerunning(null)
   }
 
-  // ── Schedule ────────────────────────────────────────────────────────────
+  // ── Schedule ──────────────────────────────────────────────────────────────
   const scheduleReport = async () => {
-    if (!scheduleModal || !warehouseInfo) return
+    if (!scheduleModal) return
     setScheduling(true); setScheduleMsg('')
     try {
       await api.post('/report/schedule', {
-        report_id:    String(scheduleModal.id),
-        report_name:  scheduleModal.name,
-        sql:          scheduleModal.sql,
-        question:     scheduleModal.question,
-        connector_id: warehouseInfo.id,
-        schedule:     buildScheduleString(schedConfig),
-        schedule_config: schedConfig,
-        export_format:'csv',
+        report_id: String(scheduleModal.id), report_name: scheduleModal.name,
+        sql: scheduleModal.sql, question: scheduleModal.question,
+        connector_id: activeConnId(), schedule: buildScheduleString(schedConfig),
+        schedule_config: schedConfig, export_format: 'csv',
       })
       setScheduleMsg(`✓ "${scheduleModal.name}" scheduled — ${buildSchedulePreview(schedConfig)}`)
       setTimeout(() => { setScheduleModal(null); setScheduleMsg('') }, 2500)
@@ -379,7 +339,7 @@ export default function Analytics() {
     setScheduling(false)
   }
 
-  // ── Saved reports ───────────────────────────────────────────────────────
+  // ── Saved reports ─────────────────────────────────────────────────────────
   const saveReport = () => {
     if (!reportName.trim()) { setError('Enter a report name'); return }
     setSaving(true)
@@ -388,8 +348,7 @@ export default function Analytics() {
       pipeline_id: selectedPipeline?.id, pipeline_name: selectedPipeline?.name,
       question, sql: editedSql || queryChain[activeStep]?.sql || '',
       chart_type: chartType, x_axis: xAxis, y_axis: yAxis,
-      chain: queryChain.map(s => s.instruction),
-      saved_at: new Date().toISOString()
+      chain: queryChain.map(s => s.instruction), saved_at: new Date().toISOString()
     }
     const updated = [report, ...savedReports]
     setSavedReports(updated)
@@ -420,13 +379,10 @@ export default function Analytics() {
             else setXAxis(cols[0] || '')
             if (report.y_axis && cols.includes(report.y_axis)) setYAxis(report.y_axis)
             else {
-              const numericCols = cols.filter(c => {
-                const v = rows[0]?.[cols.indexOf(c)]
-                return typeof v === 'number' || (!isNaN(Number(v)) && v !== null && v !== '')
-              })
-              setYAxis(numericCols[0] || cols[1] || '')
+              const nc = cols.filter(c => { const v = rows[0]?.[cols.indexOf(c)]; return typeof v==='number'||(!isNaN(Number(v))&&v!==null&&v!=='') })
+              setYAxis(nc[0] || cols[1] || '')
             }
-          } else { setError(r.data.error || 'Could not re-execute report SQL') }
+          } else setError(r.data.error || 'Could not re-execute report SQL')
         } catch (e) { setError(e.response?.data?.detail || e.message || 'Execution failed') }
         setExecuting(false)
       }
@@ -437,10 +393,10 @@ export default function Analytics() {
     const updated = savedReports.filter(r => r.id !== id)
     setSavedReports(updated)
     localStorage.setItem('aibridge_reports', JSON.stringify(updated))
-    setRerunResults(prev => { const n = {...prev}; delete n[id]; return n })
+    setRerunResults(p => { const n={...p}; delete n[id]; return n })
   }
 
-  // ── Chart ───────────────────────────────────────────────────────────────
+  // ── Chart ─────────────────────────────────────────────────────────────────
   const makeChartData = (res) => res ? res.rows.map(row => {
     const obj = {}; res.columns.forEach((col, i) => { obj[col] = row[i] }); return obj
   }) : []
@@ -452,9 +408,9 @@ export default function Analytics() {
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={xA} tick={{ fontSize: 11 }} />
-          <YAxis tick={{ fontSize: 11 }} /><Tooltip /><Legend />
-          <Bar dataKey={yA}>{data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Bar>
+          <XAxis dataKey={xA} tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} />
+          <Tooltip /><Legend />
+          <Bar dataKey={yA}>{data.map((_,i) => <Cell key={i} fill={COLORS[i%COLORS.length]} />)}</Bar>
         </BarChart>
       </ResponsiveContainer>
     )
@@ -471,9 +427,8 @@ export default function Analytics() {
     if (cType === 'pie') return (
       <ResponsiveContainer width="100%" height={260}>
         <PieChart>
-          <Pie data={data} dataKey={yA} nameKey={xA} cx="50%" cy="50%" outerRadius={100}
-            label={e => e[xA]}>
-            {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+          <Pie data={data} dataKey={yA} nameKey={xA} cx="50%" cy="50%" outerRadius={100} label={e => e[xA]}>
+            {data.map((_,i) => <Cell key={i} fill={COLORS[i%COLORS.length]} />)}
           </Pie><Tooltip /><Legend />
         </PieChart>
       </ResponsiveContainer>
@@ -489,21 +444,20 @@ export default function Analytics() {
         { fmt: 'pdf',   label: '⬇ PDF',   color: '#854F0B' },
       ].map(({ fmt, label, color }) => (
         <button key={fmt}
-          style={{ padding: small ? '3px 8px' : '5px 10px', fontSize: small ? 9 : 10,
+          style={{ padding: small?'3px 8px':'5px 10px', fontSize: small?9:10,
             borderRadius: 6, cursor: 'pointer', fontWeight: 500,
-            background: downloading === fmt ? color : '#fff',
-            color: downloading === fmt ? '#fff' : color,
-            border: `1px solid ${color}`, opacity: downloading && downloading !== fmt ? 0.5 : 1 }}
+            background: downloading===fmt ? color : '#fff',
+            color: downloading===fmt ? '#fff' : color,
+            border: `1px solid ${color}`, opacity: downloading&&downloading!==fmt?0.5:1 }}
           onClick={() => downloadResults(fmt, reportName, sql, question)}
           disabled={!!downloading}>
-          {downloading === fmt ? '⏳' : label}
+          {downloading===fmt ? '⏳' : label}
         </button>
       ))}
     </div>
   )
 
-  const warehouseSchema = selectedPipeline?.warehouse_schema
-    || selectedPipeline?.artifacts?.warehouse_schema || 'warehouse'
+  const warehouseSchema = selectedPipeline?.warehouse_schema || selectedPipeline?.artifacts?.warehouse_schema || 'warehouse'
   const currentSql = editedSql || queryChain[activeStep]?.sql || ''
   const hasQuery   = queryChain.length > 0
 
@@ -512,53 +466,79 @@ export default function Analytics() {
       <PageHeader title="BI / Analytics"
         subtitle="Ask questions in plain English — AI generates SQL, you see charts instantly" />
       <PageBody>
-        <div style={{ display: 'grid',
-          gridTemplateColumns: savedReports.length > 0 ? '1fr 240px' : '1fr', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: savedReports.length > 0 ? '1fr 240px' : '1fr', gap: 16 }}>
           <div>
             {error && (
               <div style={errBox}>{error}
-                <button style={{ float:'right', background:'none', border:'none',
-                  cursor:'pointer', color:'#991b1b' }} onClick={() => setError(null)}>✕</button>
+                <button style={{ float:'right', background:'none', border:'none', cursor:'pointer', color:'#991b1b' }}
+                  onClick={() => setError(null)}>✕</button>
               </div>
             )}
 
-            {/* Pipeline selector */}
+            {/* ── Selector card ── */}
             <div style={card}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <div style={sectionTitle}>Select pipeline (warehouse to query)</div>
-                {/* 🔊 Voice controls bar */}
-                {supported && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 10, color: '#888' }}>🔊 Voice</span>
-                    <button
-                      title={voiceOn ? 'Mute AI voice' : 'Unmute AI voice'}
+              {/* Header row: title + voice + mode toggle */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <div style={sectionTitle}>
+                  {mode === 'connection' ? '🔌 Connection Mode — query any database directly' : '📊 Pipeline Mode — query warehouse schema'}
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  {supported && (
+                    <button title={voiceOn ? 'Mute AI voice' : 'Unmute AI voice'}
                       onClick={() => { setVoiceOn(!voiceOn); stopSpeaking() }}
-                      style={{ fontSize: 14, background: 'none', border: 'none', cursor: 'pointer',
-                        opacity: voiceOn ? 1 : 0.4, padding: 0 }}>
+                      style={{ fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', opacity: voiceOn?1:0.4, padding: 0 }}>
                       {voiceOn ? '🔊' : '🔇'}
                     </button>
-                  </div>
-                )}
-              </div>
-              {pipelines.length === 0 ? (
-                <div style={{ fontSize: 12, color: '#888' }}>No pipelines yet. Run the ETL Agent first.</div>
-              ) : (
-                <>
-                  <select style={inp} value={selectedPipeline?.id || ''}
-                    onChange={e => { const p = pipelines.find(p => p.id === e.target.value); if (p) selectPipeline(p, connectors) }}>
-                    {pipelines.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                  {warehouseInfo && (
-                    <div style={{ fontSize: 10, color: '#3B6D11', marginTop: 5 }}>
-                      ✓ Querying schema: <span style={{ fontFamily: 'monospace' }}>{warehouseSchema}</span>
-                      {' '}on <span style={{ fontFamily: 'monospace' }}>{warehouseInfo.host}:{warehouseInfo.port}/{warehouseInfo.database_name}</span>
-                    </div>
                   )}
-                </>
+                  <button onClick={() => setMode(mode === 'pipeline' ? 'connection' : 'pipeline')} style={{
+                    padding: '4px 12px', borderRadius: 12, fontSize: 10, cursor: 'pointer', fontWeight: 600,
+                    background: mode === 'connection' ? '#0B5D73' : '#EBF4FF',
+                    color: mode === 'connection' ? '#fff' : '#185FA5',
+                    border: `1px solid ${mode === 'connection' ? '#0B5D73' : '#185FA5'}`,
+                  }}>
+                    {mode === 'connection' ? 'Switch to Pipeline Mode' : 'Switch to Connection Mode'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Connection mode selector */}
+              {mode === 'connection' && (
+                <div>
+                  <select style={inp} value={selectedConnId} onChange={e => setSelectedConnId(e.target.value)}>
+                    {allConnectors.map(c => (
+                      <option key={c.id} value={c.id}>{c.name} — {c.database_name} ({c.connector_type})</option>
+                    ))}
+                  </select>
+                  <div style={{ fontSize: 10, color: '#0B5D73', marginTop: 5 }}>
+                    ✓ AI will query this database directly — no pipeline needed. Works on any existing DB.
+                  </div>
+                </div>
+              )}
+
+              {/* Pipeline mode selector */}
+              {mode === 'pipeline' && (
+                <div>
+                  {pipelines.length === 0 ? (
+                    <div style={{ fontSize: 12, color: '#888' }}>No pipelines yet. Run the ETL Agent first.</div>
+                  ) : (
+                    <>
+                      <select style={inp} value={selectedPipeline?.id || ''}
+                        onChange={e => { const p = pipelines.find(p => p.id === e.target.value); if (p) selectPipeline(p, connectors) }}>
+                        {pipelines.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                      </select>
+                      {warehouseInfo && (
+                        <div style={{ fontSize: 10, color: '#3B6D11', marginTop: 5 }}>
+                          ✓ Querying schema: <span style={{ fontFamily: 'monospace' }}>{warehouseSchema}</span>
+                          {' '}on <span style={{ fontFamily: 'monospace' }}>{warehouseInfo.host}:{warehouseInfo.port}/{warehouseInfo.database_name}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               )}
             </div>
 
-            {/* Initial question — with voice button */}
+            {/* ── Question input ── */}
             {!hasQuery && (
               <div style={card}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -569,20 +549,16 @@ export default function Analytics() {
                     </span>
                   )}
                 </div>
-
-                {/* Textarea + mic button row */}
                 <div style={{ position: 'relative' }}>
                   <textarea
                     style={{ ...ta, minHeight: 70, paddingRight: supported ? 48 : 12 }}
                     value={question}
-                    placeholder="e.g. Average price by brand / Top 10 cars by mileage / Price by fuel type"
+                    placeholder="e.g. Total transactions by channel / Top 5 customers by balance / Revenue by branch"
                     onChange={e => setQuestion(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter' && e.metaKey) generateSql() }}
                   />
-                  {/* Microphone button — inside textarea */}
                   {supported && (
-                    <button
-                      onClick={toggleListen}
+                    <button onClick={toggleListen}
                       title={listening ? 'Stop listening' : 'Speak your question'}
                       style={{
                         position: 'absolute', right: 8, top: 8,
@@ -598,37 +574,28 @@ export default function Analytics() {
                     </button>
                   )}
                 </div>
-
-                {/* Voice status */}
                 {voiceStatus && (
                   <div style={{ fontSize: 11, color: '#185FA5', marginTop: 6, fontStyle: 'italic' }}>
                     {voiceStatus}
                   </div>
                 )}
-
                 <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center' }}>
                   <button style={btnPrimary} onClick={() => generateSql()}
-                    disabled={loading || !selectedPipeline || !warehouseInfo}>
+                    disabled={loading || (mode==='pipeline' && (!selectedPipeline || !warehouseInfo)) || (mode==='connection' && !selectedConnId)}>
                     {loading ? '⏳ Generating...' : '🚀 Generate SQL'}
                   </button>
-                  {supported && (
-                    <span style={{ fontSize: 10, color: '#aaa' }}>
-                      or press 🎤 and speak your question
-                    </span>
-                  )}
+                  {supported && <span style={{ fontSize: 10, color: '#aaa' }}>or press 🎤 and speak</span>}
                 </div>
-
-                {/* Pulse animation */}
                 <style>{`
                   @keyframes pulse-mic {
-                    0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+                    0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
                     50% { box-shadow: 0 0 0 8px rgba(220,38,38,0); }
                   }
                 `}</style>
               </div>
             )}
 
-            {/* Query chain */}
+            {/* ── Query chain ── */}
             {hasQuery && (
               <>
                 <div style={card}>
@@ -638,16 +605,16 @@ export default function Analytics() {
                   </div>
                   {queryChain.map((step, idx) => (
                     <div key={idx} style={{ display: 'flex', gap: 10, alignItems: 'flex-start',
-                      padding: '8px 0', borderBottom: idx < queryChain.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
+                      padding: '8px 0', borderBottom: idx < queryChain.length-1 ? '1px solid #f3f4f6' : 'none' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
                         <div style={{ width: 22, height: 22, borderRadius: '50%', display: 'flex',
                           alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700,
                           background: idx === activeStep ? '#185FA5' : '#e5e7eb',
                           color: idx === activeStep ? '#fff' : '#888' }}>{idx + 1}</div>
-                        {idx < queryChain.length - 1 && <div style={{ width: 2, height: 20, background: '#e5e7eb', marginTop: 2 }} />}
+                        {idx < queryChain.length-1 && <div style={{ width: 2, height: 20, background: '#e5e7eb', marginTop: 2 }} />}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: idx === 0 ? 600 : 400,
+                        <div style={{ fontSize: 12, fontWeight: idx===0?600:400,
                           color: idx === activeStep ? '#185FA5' : '#374151' }}>
                           {idx === 0 ? '🔍 ' : '✦ '}{step.instruction}
                         </div>
@@ -693,7 +660,7 @@ export default function Analytics() {
                   <div style={sectionTitle}>✦ Refine this query</div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <input ref={refinementRef} style={{ ...inp, flex: 1 }} value={refinement}
-                      placeholder="e.g. only petrol cars / top 10 / sort by price descending"
+                      placeholder="e.g. only last 30 days / top 10 / sort by amount descending"
                       onChange={e => setRefinement(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') applyRefinement() }} />
                     <button style={btnPrimary} onClick={() => applyRefinement()}
@@ -712,7 +679,7 @@ export default function Analytics() {
               </>
             )}
 
-            {/* Results */}
+            {/* ── Results ── */}
             {results && (
               <div style={card}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
@@ -721,28 +688,23 @@ export default function Analytics() {
                     {executing && <span style={{ color: '#888', fontWeight: 400 }}> (refreshing…)</span>}
                   </div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    {/* 🔊 Re-read button */}
                     {supported && voiceOn && (
-                      <button
-                        title="Read results aloud"
+                      <button title="Read results aloud"
                         onClick={() => {
-                          const top = results.rows.slice(0, 3).map(row =>
-                            results.columns.map((c, i) => `${c}: ${row[i]}`).join(', ')
-                          ).join('; ')
+                          const top = results.rows.slice(0,3).map(row => results.columns.map((c,i) => `${c}: ${row[i]}`).join(', ')).join('; ')
                           speak(`${results.rows.length} results. Top entries: ${top}`)
                         }}
-                        style={{ fontSize: 16, background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px' }}
-                      >🔊</button>
+                        style={{ fontSize: 16, background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px' }}>🔊</button>
                     )}
                     <DownloadBar reportName={question} sql={currentSql} question={question} />
                     <div style={{ display: 'flex', gap: 4 }}>
                       {['bar','line','pie','table'].map(t => (
                         <button key={t} onClick={() => setChartType(t)}
                           style={{ padding: '4px 8px', fontSize: 10, borderRadius: 6, cursor: 'pointer',
-                            background: chartType === t ? '#185FA5' : '#fff',
-                            color: chartType === t ? '#fff' : '#555',
-                            border: `1px solid ${chartType === t ? '#185FA5' : '#d1d5db'}` }}>
-                          {t === 'bar' ? '▥' : t === 'line' ? '📈' : t === 'pie' ? '🥧' : '⊞'}
+                            background: chartType===t ? '#185FA5' : '#fff',
+                            color: chartType===t ? '#fff' : '#555',
+                            border: `1px solid ${chartType===t ? '#185FA5' : '#d1d5db'}` }}>
+                          {t==='bar'?'▥':t==='line'?'📈':t==='pie'?'🥧':'⊞'}
                         </button>
                       ))}
                     </div>
@@ -772,12 +734,12 @@ export default function Analytics() {
                         borderBottom: '1px solid #e5e7eb', fontWeight: 600, color: '#555',
                         fontSize: 10, textTransform: 'uppercase' }}>{c}</th>
                     ))}</tr></thead>
-                    <tbody>{results.rows.slice(0, 100).map((row, i) => (
-                      <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#f9fafb' }}>
-                        {row.map((cell, j) => (
+                    <tbody>{results.rows.slice(0,100).map((row,i) => (
+                      <tr key={i} style={{ background: i%2===0?'#fff':'#f9fafb' }}>
+                        {row.map((cell,j) => (
                           <td key={j} style={{ padding: '5px 10px', borderBottom: '1px solid #f3f4f6',
-                            color: '#333', fontFamily: typeof cell === 'number' ? 'monospace' : 'inherit' }}>
-                            {cell === null ? <span style={{ color: '#aaa' }}>null</span> : String(cell)}
+                            color: '#333', fontFamily: typeof cell==='number'?'monospace':'inherit' }}>
+                            {cell===null?<span style={{color:'#aaa'}}>null</span>:String(cell)}
                           </td>
                         ))}
                       </tr>
@@ -798,7 +760,7 @@ export default function Analytics() {
             )}
           </div>
 
-          {/* ── SAVED REPORTS ── */}
+          {/* ── Saved Reports ── */}
           {savedReports.length > 0 && (
             <div>
               <div style={{ fontSize: 11, fontWeight: 600, color: '#555',
@@ -827,42 +789,31 @@ export default function Analytics() {
                     </button>
                     <button style={btnGhostSmall} onClick={() => loadReport(r)}>✎ Edit</button>
                   </div>
-                  {rerunError[r.id] && (
-                    <div style={{ fontSize: 10, color: '#991b1b', marginBottom: 6 }}>✗ {rerunError[r.id]}</div>
-                  )}
+                  {rerunError[r.id] && <div style={{ fontSize: 10, color: '#991b1b', marginBottom: 6 }}>✗ {rerunError[r.id]}</div>}
                   {rerunResults[r.id] && (
-                    <div style={{ marginTop: 6, border: '1px solid #EAF3DE', borderRadius: 6,
-                      padding: '8px 10px', background: '#f9fafb' }}>
+                    <div style={{ marginTop: 6, border: '1px solid #EAF3DE', borderRadius: 6, padding: '8px 10px', background: '#f9fafb' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                        <div style={{ fontSize: 10, fontWeight: 600, color: '#3B6D11' }}>
-                          ✓ {rerunResults[r.id].rows.length} rows
-                        </div>
+                        <div style={{ fontSize: 10, fontWeight: 600, color: '#3B6D11' }}>✓ {rerunResults[r.id].rows.length} rows</div>
                         <DownloadBar reportName={r.name} sql={r.sql} question={r.question} small />
                       </div>
-                      {renderChart(rerunResults[r.id], rerunResults[r.id].columns[0],
-                        rerunResults[r.id].columns[1], r.chart_type || 'bar')}
+                      {renderChart(rerunResults[r.id], rerunResults[r.id].columns[0], rerunResults[r.id].columns[1], r.chart_type || 'bar')}
                       <div style={{ overflowX: 'auto', marginTop: 8 }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10 }}>
                           <thead><tr>{rerunResults[r.id].columns.map(c => (
-                            <th key={c} style={{ background: '#f3f4f6', padding: '4px 8px',
-                              textAlign: 'left', borderBottom: '1px solid #e5e7eb',
-                              fontSize: 9, color: '#555', textTransform: 'uppercase' }}>{c}</th>
+                            <th key={c} style={{ background: '#f3f4f6', padding: '4px 8px', textAlign: 'left',
+                              borderBottom: '1px solid #e5e7eb', fontSize: 9, color: '#555', textTransform: 'uppercase' }}>{c}</th>
                           ))}</tr></thead>
-                          <tbody>{rerunResults[r.id].rows.slice(0, 20).map((row, i) => (
-                            <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#f9fafb' }}>
-                              {row.map((cell, j) => (
+                          <tbody>{rerunResults[r.id].rows.slice(0,20).map((row,i) => (
+                            <tr key={i} style={{ background: i%2===0?'#fff':'#f9fafb' }}>
+                              {row.map((cell,j) => (
                                 <td key={j} style={{ padding: '3px 8px', borderBottom: '1px solid #f3f4f6', color: '#333' }}>
-                                  {cell === null ? <span style={{ color: '#aaa' }}>null</span> : String(cell)}
+                                  {cell===null?<span style={{color:'#aaa'}}>null</span>:String(cell)}
                                 </td>
                               ))}
                             </tr>
                           ))}</tbody>
                         </table>
-                        {rerunResults[r.id].rows.length > 20 && (
-                          <div style={{ fontSize: 9, color: '#888', padding: '4px 8px' }}>
-                            Showing 20 of {rerunResults[r.id].rows.length} rows
-                          </div>
-                        )}
+                        {rerunResults[r.id].rows.length > 20 && <div style={{ fontSize: 9, color: '#888', padding: '4px 8px' }}>Showing 20 of {rerunResults[r.id].rows.length} rows</div>}
                       </div>
                     </div>
                   )}
@@ -887,21 +838,18 @@ export default function Analytics() {
               <div style={{ fontSize: 11, color: '#888', marginBottom: 16 }}>
                 {scheduleModal.name}{scheduleModal.question && ` — "${scheduleModal.question}"`}
               </div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: '#888',
-                textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Frequency</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Frequency</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 16 }}>
                 {FREQUENCY_OPTIONS.map(opt => (
                   <label key={opt.value} style={{ display: 'flex', alignItems: 'flex-start', gap: 8,
                     padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
-                    border: `1.5px solid ${schedConfig.frequency === opt.value ? '#185FA5' : '#e5e7eb'}`,
-                    background: schedConfig.frequency === opt.value ? '#EBF4FF' : '#fff' }}>
+                    border: `1.5px solid ${schedConfig.frequency===opt.value?'#185FA5':'#e5e7eb'}`,
+                    background: schedConfig.frequency===opt.value?'#EBF4FF':'#fff' }}>
                     <input type="radio" name="sched_freq" value={opt.value}
-                      checked={schedConfig.frequency === opt.value}
-                      onChange={() => setSchedC('frequency', opt.value)}
-                      style={{ marginTop: 2 }} />
+                      checked={schedConfig.frequency===opt.value}
+                      onChange={() => setSchedC('frequency', opt.value)} style={{ marginTop: 2 }} />
                     <div>
-                      <div style={{ fontSize: 11, fontWeight: 600,
-                        color: schedConfig.frequency === opt.value ? '#185FA5' : '#374151' }}>{opt.label}</div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: schedConfig.frequency===opt.value?'#185FA5':'#374151' }}>{opt.label}</div>
                       <div style={{ fontSize: 9, color: '#888', marginTop: 1 }}>{opt.desc}</div>
                     </div>
                   </label>
@@ -909,64 +857,47 @@ export default function Analytics() {
               </div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
                 <div>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: '#888',
-                    textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Run Time</div>
-                  <input type="time" value={schedConfig.time}
-                    onChange={e => setSchedC('time', e.target.value)}
-                    style={{ padding: '6px 10px', fontSize: 13, fontWeight: 600,
-                      border: '1px solid #d1d5db', borderRadius: 6, color: '#185FA5' }} />
+                  <div style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Run Time</div>
+                  <input type="time" value={schedConfig.time} onChange={e => setSchedC('time', e.target.value)}
+                    style={{ padding: '6px 10px', fontSize: 13, fontWeight: 600, border: '1px solid #d1d5db', borderRadius: 6, color: '#185FA5' }} />
                 </div>
                 {schedConfig.frequency === 'weekly' && (
                   <div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: '#888',
-                      textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Day of Week</div>
-                    <select value={schedConfig.day_of_week}
-                      onChange={e => setSchedC('day_of_week', e.target.value)} style={selStyle}>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Day of Week</div>
+                    <select value={schedConfig.day_of_week} onChange={e => setSchedC('day_of_week', e.target.value)} style={selStyle}>
                       {DAYS_OF_WEEK.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
                     </select>
                   </div>
                 )}
                 {['monthly','quarterly','halfyearly','yearly'].includes(schedConfig.frequency) && (
                   <div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: '#888',
-                      textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Day of Month</div>
-                    <select value={schedConfig.day_of_month}
-                      onChange={e => setSchedC('day_of_month', e.target.value)} style={selStyle}>
-                      {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
-                        <option key={d} value={String(d)}>{d}</option>
-                      ))}
+                    <div style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Day of Month</div>
+                    <select value={schedConfig.day_of_month} onChange={e => setSchedC('day_of_month', e.target.value)} style={selStyle}>
+                      {Array.from({ length: 28 }, (_,i) => i+1).map(d => <option key={d} value={String(d)}>{d}</option>)}
                     </select>
                   </div>
                 )}
                 {schedConfig.frequency === 'yearly' && (
                   <div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: '#888',
-                      textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Month</div>
-                    <select value={schedConfig.month}
-                      onChange={e => setSchedC('month', e.target.value)} style={selStyle}>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Month</div>
+                    <select value={schedConfig.month} onChange={e => setSchedC('month', e.target.value)} style={selStyle}>
                       {MONTHS_OF_YEAR.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                     </select>
                   </div>
                 )}
               </div>
-              <div style={{ background: '#EBF4FF', borderRadius: 6, padding: '8px 12px',
-                marginBottom: 14, fontSize: 11, color: '#185FA5', fontWeight: 600 }}>
+              <div style={{ background: '#EBF4FF', borderRadius: 6, padding: '8px 12px', marginBottom: 14, fontSize: 11, color: '#185FA5', fontWeight: 600 }}>
                 ⏱ {buildSchedulePreview(schedConfig)}
               </div>
-              <div style={{ fontSize: 10, color: '#888', marginBottom: 14, padding: '8px 10px',
-                background: '#f9fafb', borderRadius: 6 }}>
+              <div style={{ fontSize: 10, color: '#888', marginBottom: 14, padding: '8px 10px', background: '#f9fafb', borderRadius: 6 }}>
                 💡 On each scheduled run: SQL executes against the warehouse, result is logged. $0 AI cost per run.
               </div>
-              {scheduleMsg && (
-                <div style={{ fontSize: 11, marginBottom: 10,
-                  color: scheduleMsg.startsWith('✓') ? '#3B6D11' : '#991b1b' }}>{scheduleMsg}</div>
-              )}
+              {scheduleMsg && <div style={{ fontSize: 11, marginBottom: 10, color: scheduleMsg.startsWith('✓')?'#3B6D11':'#991b1b' }}>{scheduleMsg}</div>}
               <div style={{ display: 'flex', gap: 8 }}>
                 <button style={btnPrimary} onClick={scheduleReport} disabled={scheduling}>
                   {scheduling ? '⏳ Scheduling...' : '⏰ Save Schedule'}
                 </button>
-                <button style={btnGhost}
-                  onClick={() => { setScheduleModal(null); setScheduleMsg(''); setSchedConfig({ ...DEFAULT_SCHED_CONFIG }) }}>
+                <button style={btnGhost} onClick={() => { setScheduleModal(null); setScheduleMsg(''); setSchedConfig({ ...DEFAULT_SCHED_CONFIG }) }}>
                   Cancel
                 </button>
               </div>
@@ -978,12 +909,12 @@ export default function Analytics() {
   )
 }
 
-const inp           = { width: '100%', padding: '7px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, boxSizing: 'border-box' }
-const ta            = { width: '100%', padding: '8px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, fontFamily: 'system-ui', resize: 'vertical', boxSizing: 'border-box' }
-const card          = { border: '1px solid #e5e7eb', borderRadius: 8, padding: '12px 14px', marginBottom: 12 }
-const errBox        = { background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 6, padding: '8px 12px', fontSize: 12, color: '#991b1b', marginBottom: 10 }
-const sectionTitle  = { fontSize: 10, fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 8 }
-const btnPrimary    = { padding: '7px 14px', background: '#185FA5', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontWeight: 500 }
-const btnGhost      = { padding: '7px 14px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 11, cursor: 'pointer' }
-const btnGhostSmall = { padding: '4px 10px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 10, cursor: 'pointer' }
-const selStyle      = { padding: '6px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', cursor: 'pointer', minWidth: 130 }
+const inp          = { width: '100%', padding: '7px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, boxSizing: 'border-box' }
+const ta           = { width: '100%', padding: '8px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, fontFamily: 'system-ui', resize: 'vertical', boxSizing: 'border-box' }
+const card         = { border: '1px solid #e5e7eb', borderRadius: 8, padding: '12px 14px', marginBottom: 12 }
+const errBox       = { background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 6, padding: '8px 12px', fontSize: 12, color: '#991b1b', marginBottom: 10 }
+const sectionTitle = { fontSize: 10, fontWeight: 600, color: '#555', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 8 }
+const btnPrimary   = { padding: '7px 14px', background: '#185FA5', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, cursor: 'pointer', fontWeight: 500 }
+const btnGhost     = { padding: '7px 14px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 11, cursor: 'pointer' }
+const btnGhostSmall= { padding: '4px 10px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 10, cursor: 'pointer' }
+const selStyle     = { padding: '6px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', cursor: 'pointer', minWidth: 130 }

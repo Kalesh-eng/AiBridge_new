@@ -1,7 +1,8 @@
 import requests, json
 login = requests.post('http://localhost:8888/auth/login', json={'email': 'kaleshvenna@gmail.com', 'password': 'Kalesh@123456'})
 token = login.json().get('access_token')
-r = requests.post('http://localhost:8888/chat',
-    json={'message': 'top 5 brands by average price', 'pipeline_id': '67b29244-bdf1-4b0d-8b97-46eae637be45', 'history': []},
+r = requests.post('http://localhost:8888/dwh/introspect',
+    json={'connector_id': '9754ff6d-63d2-45ca-b1ea-1a6946bbf9b1', 'schemas': ['bank']},
     headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'})
-print(json.dumps(r.json(), indent=2))
+print('Status:', r.status_code)
+print(json.dumps(r.json(), indent=2)[:500])

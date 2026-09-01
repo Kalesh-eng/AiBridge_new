@@ -3760,6 +3760,65 @@ def migration_export_docs(
     )
 
 
+
+
+# ── Plug & Play: DWH Introspection ──────────────────────────────────────────
+class DWHIntrospectRequest(BaseModel):
+    connector_id: str
+    schemas: list = None
+
+@app.post("/dwh/introspect")
+def dwh_introspect(req: DWHIntrospectRequest, current_user=Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Plug & Play: Connect to any existing DWH and auto-discover schema.
+    Returns table classifications, relationships, and business context.
+    """
+    from dwh_introspector import introspect_connector
+
+    # Get connector config
+    connector = db.query(Connector).filter(
+        Connector.id == req.connector_id,
+        Connector.workspace_id == get_user_workspace(current_user.id, db).get("id")
+    ).first()
+    if not connector:
+        raise HTTPException(status_code=404, detail="Connector not found")
+
+    config = {
+        "connector_type": connector.connector_type or "postgres",
+        "host":           connector.host or "localhost",
+        "port":           connector.port or 5432,
+        "database_name":  connector.database_name or "postgres",
+        "username":       connector.username or "postgres",
+        "password":       connector.password or "",
+        "schemas":        req.schemas or ([connector.source_schema] if connector.source_schema else None),
+    }
+
+    result = introspect_connector(config)
+    return result
+
+@app.get("/dwh/knowledge/{connector_id}")
+def dwh_knowledge(connector_id: str, current_user=Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get cached knowledge graph for a connector."""
+    from dwh_introspector import introspect_connector
+
+    connector = db.query(Connector).filter(
+        Connector.id == connector_id,
+        Connector.workspace_id == get_user_workspace(current_user.id, db).get("id")
+    ).first()
+    if not connector:
+        raise HTTPException(status_code=404, detail="Connector not found")
+
+    config = {
+        "connector_type": connector.connector_type or "postgres",
+        "host":           connector.host or "localhost",
+        "port":           connector.port or 5432,
+        "database_name":  connector.database_name or "postgres",
+        "username":       connector.username or "postgres",
+        "password":       connector.password or "",
+    }
+    return introspect_connector(config)
+
+
 # ── Chat Endpoint ──────────────────────────────────────────────────────────
 class ChatMessage(BaseModel):
     role:    str  # "user" or "assistant"
@@ -3942,3 +4001,4 @@ Please provide a clear, concise natural language summary of these results. Be sp
         "sql_result": sql_result,
         "schema_available": bool(schema_context and "not available" not in schema_context)
     }
+

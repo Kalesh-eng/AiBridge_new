@@ -13,6 +13,7 @@ const NAV = [
   { path: '/mapping',        label: 'ETL mapping',         color: '#0F6E56' },
   { path: '/sql',            label: 'SQL scripts',         color: '#993C1D' },
   { path: '/evolution',      label: 'Schema evolution',    color: '#534AB7' },
+  { path: '/plug-and-play',  label: '🔌 Plug & Play',       color: '#0B5D73', section: 'Analytics' },
   { path: '/analytics',      label: 'BI / Analytics',      color: '#3B6D11', section: 'Analytics' },
   { path: '/neon-bi',        label: '⚡ Neon BI',           color: '#00aa88' },
   { path: '/pipelines',      label: 'Pipelines',           color: '#185FA5' },

@@ -27,6 +27,7 @@ import DataQuality     from './pages/DataQuality'
 import Scheduler       from './pages/Scheduler'
 import Logs            from './pages/Logs'
 import Cost            from './pages/Cost'
+import PlugAndPlay     from './pages/PlugAndPlay'
 import AIBridgeNeonBI  from './pages/AIBridgeNeonBI'
 
 const Stub = ({ name }) => (
@@ -83,6 +84,7 @@ function AppRoutes() {
       <Route path="/sql"            element={<PrivateRoute><SqlScripts /></PrivateRoute>} />
       <Route path="/evolution"      element={<PrivateRoute><SchemaEvolution /></PrivateRoute>} />
       <Route path="/analytics"      element={<PrivateRoute><Analytics /></PrivateRoute>} />
+      <Route path="/plug-and-play"   element={<PrivateRoute><PlugAndPlay /></PrivateRoute>} />
       <Route path="/neon-bi"        element={<PrivateRoute><AIBridgeNeonBI /></PrivateRoute>} />
       <Route path="/pipelines"      element={<PrivateRoute><Pipelines /></PrivateRoute>} />
       <Route path="/quality"        element={<PrivateRoute><DataQuality /></PrivateRoute>} />
