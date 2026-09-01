@@ -157,12 +157,22 @@ export default function Analytics() {
   const [voiceStatus,   setVoiceStatus]   = useState('')
   const refinementRef  = useRef(null)
   const voiceSubmitRef = useRef(null)
+  const voiceRefineRef = useRef(null)
+  const voiceChainRef  = useRef([])
 
   const handleVoiceResult = useCallback((text) => {
-    setQuestion(text)
     setVoiceStatus(`Heard: "${text}"`)
     setTimeout(() => setVoiceStatus(''), 3000)
-    setTimeout(() => voiceSubmitRef.current?.(text), 600)
+    setTimeout(() => {
+      // If query chain exists, treat as refinement
+      if (voiceChainRef.current && voiceChainRef.current.length > 0) {
+        setRefinement(text)
+        voiceRefineRef.current?.(text)
+      } else {
+        setQuestion(text)
+        voiceSubmitRef.current?.(text)
+      }
+    }, 600)
   }, [])
 
   const { listening, supported, voiceOn, setVoiceOn, toggleListen, speak, stopSpeaking } = useVoice(handleVoiceResult)
@@ -230,6 +240,8 @@ export default function Analytics() {
   }
 
   useEffect(() => { voiceSubmitRef.current = generateSql }, [selectedPipeline, warehouseInfo, mode, selectedConnId])
+  useEffect(() => { voiceRefineRef.current = applyRefinement }, [queryChain, activeStep, editedSql])
+  useEffect(() => { voiceChainRef.current = queryChain }, [queryChain])
 
   // ── Refinement ─────────────────────────────────────────────────────────────
   const applyRefinement = async (instruction) => {
@@ -659,15 +671,37 @@ export default function Analytics() {
                 <div style={{ ...card, borderColor: '#185FA5', borderWidth: 2 }}>
                   <div style={sectionTitle}>✦ Refine this query</div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <input ref={refinementRef} style={{ ...inp, flex: 1 }} value={refinement}
+                    <div style={{ position: 'relative', flex: 1 }}>
+                    <input ref={refinementRef} style={{ ...inp, paddingRight: supported ? 44 : 12 }} value={refinement}
                       placeholder="e.g. only last 30 days / top 10 / sort by amount descending"
                       onChange={e => setRefinement(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') applyRefinement() }} />
+                    {supported && (
+                      <button onClick={toggleListen}
+                        title={listening ? 'Stop' : 'Speak refinement'}
+                        style={{
+                          position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
+                          width: 28, height: 28, borderRadius: '50%',
+                          border: listening ? '2px solid #dc2626' : '2px solid #185FA5',
+                          background: listening ? '#fef2f2' : '#EBF4FF',
+                          cursor: 'pointer', fontSize: 13,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          animation: listening ? 'pulse-mic 1.2s infinite' : 'none',
+                        }}>
+                        {listening ? '⏹' : '🎤'}
+                      </button>
+                    )}
+                  </div>
                     <button style={btnPrimary} onClick={() => applyRefinement()}
                       disabled={refining || !refinement.trim()}>
                       {refining ? '⏳' : '+ Apply'}
                     </button>
                   </div>
+                  {voiceStatus && (
+                    <div style={{ fontSize: 11, color: '#185FA5', marginTop: 6, fontStyle: 'italic' }}>
+                      {voiceStatus}
+                    </div>
+                  )}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
                     {REFINEMENT_SUGGESTIONS.map(s => (
                       <button key={s} style={{ fontSize: 10, padding: '3px 8px', borderRadius: 12,
