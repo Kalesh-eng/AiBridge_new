@@ -4002,3 +4002,5 @@ Please provide a clear, concise natural language summary of these results. Be sp
         "schema_available": bool(schema_context and "not available" not in schema_context)
     }
 
+
+
