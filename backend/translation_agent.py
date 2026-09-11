@@ -51,6 +51,8 @@ SUPPORTED_LANGUAGES = {
     'af': 'Afrikaans',
     'ig': 'Igbo',
     'so': 'Somali',
+    'sn': 'Shona',
+    'ms': 'Malay',
     # English (no translation needed)
     'en': 'English',
 }
@@ -231,3 +233,4 @@ if __name__ == "__main__":
         print(f"\nInput: {text}")
         print(f"Language: {result['detected_lang_name']}")
         print(f"English: {result['english_query']}")
+
