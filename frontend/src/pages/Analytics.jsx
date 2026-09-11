@@ -74,7 +74,7 @@ function buildSchedulePreview(cfg) {
 }
 
 // ── Voice hook ────────────────────────────────────────────────────────────────
-function useVoice(onResult) {
+function useVoice(onResult, voiceLang = "en", languages = []) {
   const [listening, setListening] = useState(false)
   const [supported, setSupported] = useState(false)
   const [voiceOn,   setVoiceOn]   = useState(true)
@@ -85,12 +85,12 @@ function useVoice(onResult) {
     if (!SR) return
     setSupported(true)
     const r = new SR()
-    r.continuous = false; r.interimResults = false; r.lang = 'en-IN'
+    r.continuous = false; r.interimResults = false; r.lang = languages.find(l => l.code === voiceLang)?.web_speech_code || 'en-IN'
     r.onresult = (e) => { onResult(e.results[0][0].transcript); setListening(false) }
     r.onend = () => setListening(false)
     r.onerror = () => setListening(false)
     recogRef.current = r
-  }, [onResult])
+  }, [onResult, voiceLang])
 
   const toggleListen = useCallback(() => {
     if (!recogRef.current) return
@@ -155,27 +155,61 @@ export default function Analytics() {
   const [scheduleMsg,   setScheduleMsg]   = useState('')
   // Voice
   const [voiceStatus,   setVoiceStatus]   = useState('')
+  const [voiceLang,     setVoiceLang]     = useState('en')
+  const [languages,     setLanguages]     = useState([
+    { code: 'en', name: 'English',  flag: '🇬🇧', web_speech_code: 'en-IN' },
+    { code: 'hi', name: 'Hindi',    flag: '🇮🇳', web_speech_code: 'hi-IN' },
+    { code: 'ta', name: 'Tamil',    flag: '🇮🇳', web_speech_code: 'ta-IN' },
+    { code: 'te', name: 'Telugu',   flag: '🇮🇳', web_speech_code: 'te-IN' },
+    { code: 'ar', name: 'Arabic',   flag: '🇸🇦', web_speech_code: 'ar-SA' },
+    { code: 'zh', name: 'Chinese',  flag: '🇨🇳', web_speech_code: 'zh-CN' },
+    { code: 'ru', name: 'Russian',  flag: '🇷🇺', web_speech_code: 'ru-RU' },
+    { code: 'de', name: 'German',   flag: '🇩🇪', web_speech_code: 'de-DE' },
+    { code: 'fr', name: 'French',   flag: '🇫🇷', web_speech_code: 'fr-FR' },
+    { code: 'es', name: 'Spanish',  flag: '🇪🇸', web_speech_code: 'es-ES' },
+    { code: 'sw', name: 'Swahili',  flag: '🇰🇪', web_speech_code: 'sw-KE' },
+    { code: 'ha', name: 'Hausa',    flag: '🇳🇬', web_speech_code: 'ha-NE' },
+    { code: 'yo', name: 'Yoruba',   flag: '🇳🇬', web_speech_code: 'yo-NG' },
+    { code: 'zu', name: 'Zulu',     flag: '🇿🇦', web_speech_code: 'zu-ZA' },
+    { code: 'af', name: 'Afrikaans',flag: '🇿🇦', web_speech_code: 'af-ZA' },
+  ])
   const refinementRef  = useRef(null)
   const voiceSubmitRef = useRef(null)
   const voiceRefineRef = useRef(null)
   const voiceChainRef  = useRef([])
 
-  const handleVoiceResult = useCallback((text) => {
+  const handleVoiceResult = useCallback(async (text) => {
     setVoiceStatus(`Heard: "${text}"`)
-    setTimeout(() => setVoiceStatus(''), 3000)
+    
+    // If non-English, translate first
+    let processedText = text
+    if (voiceLang !== 'en') {
+      try {
+        setVoiceStatus(`Translating from ${languages.find(l=>l.code===voiceLang)?.name}...`)
+        const r = await api.post('/voice/translate', { text, source_lang: voiceLang, target_lang: 'en' })
+        processedText = r.data.translated || text
+        setVoiceStatus(`Heard (${languages.find(l=>l.code===voiceLang)?.name}): "${text}" → "${processedText}"`)
+      } catch(e) {
+        console.log('Translation failed:', e)
+        setVoiceStatus(`Heard: "${text}" (translation failed)`)
+      }
+    } else {
+      setVoiceStatus(`Heard: "${text}"`)
+    }
+    
+    setTimeout(() => setVoiceStatus(''), 4000)
     setTimeout(() => {
-      // If query chain exists, treat as refinement
       if (voiceChainRef.current && voiceChainRef.current.length > 0) {
-        setRefinement(text)
-        voiceRefineRef.current?.(text)
+        setRefinement(processedText)
+        voiceRefineRef.current?.(processedText)
       } else {
-        setQuestion(text)
-        voiceSubmitRef.current?.(text)
+        setQuestion(processedText)
+        voiceSubmitRef.current?.(processedText)
       }
     }, 600)
-  }, [])
+  }, [voiceLang, languages])
 
-  const { listening, supported, voiceOn, setVoiceOn, toggleListen, speak, stopSpeaking } = useVoice(handleVoiceResult)
+  const { listening, supported, voiceOn, setVoiceOn, toggleListen, speak, stopSpeaking } = useVoice(handleVoiceResult, voiceLang, languages)
 
   useEffect(() => {
     Promise.all([api.get('/pipeline/list'), api.get('/connector/list')])
@@ -264,6 +298,7 @@ export default function Analytics() {
 
   useEffect(() => { voiceSubmitRef.current = generateSql }, [selectedPipeline, warehouseInfo, mode, selectedConnId])
   useEffect(() => { voiceRefineRef.current = applyRefinement }, [queryChain, activeStep, editedSql])
+
   useEffect(() => { voiceChainRef.current = queryChain }, [queryChain])
 
   // ── Refinement ─────────────────────────────────────────────────────────────
@@ -524,6 +559,16 @@ export default function Analytics() {
                       style={{ fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', opacity: voiceOn?1:0.4, padding: 0 }}>
                       {voiceOn ? '🔊' : '🔇'}
                     </button>
+                  )}
+                  {supported && (
+                    <select value={voiceLang} onChange={e => setVoiceLang(e.target.value)}
+                      title="Voice language"
+                      style={{ fontSize: 11, padding: '2px 6px', border: '1px solid #E5E7EB',
+                        borderRadius: 6, background: '#F9FAFB', cursor: 'pointer', maxWidth: 120 }}>
+                      {languages.map(l => (
+                        <option key={l.code} value={l.code}>{l.flag} {l.name}</option>
+                      ))}
+                    </select>
                   )}
                   <button onClick={() => setMode(mode === 'pipeline' ? 'connection' : 'pipeline')} style={{
                     padding: '4px 12px', borderRadius: 12, fontSize: 10, cursor: 'pointer', fontWeight: 600,
@@ -975,6 +1020,13 @@ const btnPrimary   = { padding: '7px 14px', background: '#185FA5', color: '#fff'
 const btnGhost     = { padding: '7px 14px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 11, cursor: 'pointer' }
 const btnGhostSmall= { padding: '4px 10px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 10, cursor: 'pointer' }
 const selStyle     = { padding: '6px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', cursor: 'pointer', minWidth: 130 }
+
+
+
+
+
+
+
 
 
 
