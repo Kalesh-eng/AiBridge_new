@@ -250,11 +250,15 @@ def introspect_postgres(host: str, port: int, database: str,
         """)
         all_schemas = [r[0] for r in cur.fetchall()]
 
-        # Filter to relevant schemas
-        target_schemas = [s for s in all_schemas
-                          if s in schemas or any(kw in s for kw in ['dw','warehouse','analytics','reporting'])]
-        if not target_schemas:
-            target_schemas = [s for s in all_schemas if s not in ('staging',)][:5]
+        # Use ONLY the specified schemas — no fallback to others
+        if schemas:
+            target_schemas = [s for s in all_schemas if s in schemas]
+        else:
+            # No schema specified — use relevant ones
+            target_schemas = [s for s in all_schemas
+                              if s in schemas or any(kw in s for kw in ['dw','warehouse','analytics','reporting'])]
+            if not target_schemas:
+                target_schemas = [s for s in all_schemas if s not in ('staging','public','pg_catalog')][:3]
 
         # 2. Discover all tables and columns
         placeholders = ','.join(['%s'] * len(target_schemas))

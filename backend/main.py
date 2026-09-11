@@ -167,7 +167,9 @@ class ProviderRequest(BaseModel):
     provider: str; api_key: str = ""
 
 class NLToSQLRequest(BaseModel):
-    question: str; connector_id: str = ""
+    question:     str
+    connector_id: str = ""
+    pipeline_id:  str = ""
 
 class ApproveModelRequest(BaseModel):
     approval_id:  str
@@ -1948,27 +1950,42 @@ def nl_to_sql(req: NLToSQLRequest, current_user=Depends(get_current_user),
               db: Session = Depends(get_db)):
     try:
         schema_text = ""
-        if req.connector_id:
+        warehouse_schema = "warehouse"  # default
+
+        if req.pipeline_id:
+            # Use pipeline's actual target warehouse schema
+            pipeline = db.query(Pipeline).filter(Pipeline.id == req.pipeline_id).first()
+            if pipeline:
+                warehouse_schema = getattr(pipeline, 'warehouse_schema', None) or                                    (pipeline.artifacts or {}).get('warehouse_schema', 'warehouse')
+                tgt_conn_id = pipeline.target_connector_id or pipeline.connector_id
+                tgt_conn = db.query(Connector).filter(Connector.id == tgt_conn_id).first()
+                if tgt_conn:
+                    schema_text = get_full_schema_for_ai(_cfg(tgt_conn), source_schema=warehouse_schema)
+                    print(f"[NL2SQL] Pipeline mode — schema: {warehouse_schema}")
+
+        if not schema_text and req.connector_id:
             c = db.query(Connector).filter(Connector.id == req.connector_id).first()
-            if c: schema_text = get_full_schema_for_ai(_cfg(c), source_schema="warehouse")
+            if c:
+                schema_text = get_full_schema_for_ai(_cfg(c), source_schema=warehouse_schema)
+                print(f"[NL2SQL] Connector mode — schema: {warehouse_schema}")
 
         from ai_provider import ask_ai
         prompt = f"""You are a PostgreSQL expert. Your ONLY job is to return a JSON object containing a SQL query.
 
 WAREHOUSE SCHEMA:
-{schema_text if schema_text else "(use warehouse.fact_* and warehouse.dim_* tables)"}
+{schema_text if schema_text else f"(use {warehouse_schema}.fact_* and {warehouse_schema}.dim_* tables)"}
 
 STRICT RULES:
 1. Your ENTIRE response must be a single JSON object, nothing else, no explanation, no markdown
 2. Format: {{"sql": "SELECT ..."}}
 3. Use ONLY exact table and column names from the schema above
-4. Always prefix tables with schema name: warehouse.table_name
+4. Always prefix tables with schema name: use exact schema.table_name as shown in schema above
 5. JOIN dimension tables to the fact table using _key columns
 6. Only SELECT statements
 7. Always add LIMIT 100 at the end
 
 EXAMPLE OUTPUT for "total sales by city":
-{{"sql": "SELECT d.city, SUM(f.amount) AS total FROM warehouse.fact_sales f JOIN warehouse.dim_location d ON f.location_key = d.location_key GROUP BY d.city ORDER BY total DESC LIMIT 100"}}
+{{"sql": "SELECT d.city, SUM(f.amount) AS total FROM {warehouse_schema}.fact_sales f JOIN {warehouse_schema}.dim_location d ON f.location_key = d.location_key GROUP BY d.city ORDER BY total DESC LIMIT 100"}}
 
 USER QUESTION: {req.question}
 
@@ -2007,9 +2024,24 @@ def refine_sql(req: RefineSQLRequest, current_user=Depends(get_current_user),
     """
     try:
         schema_text = ""
-        if req.connector_id:
+        warehouse_schema = "warehouse"  # default
+
+        if req.pipeline_id:
+            # Use pipeline's actual target warehouse schema
+            pipeline = db.query(Pipeline).filter(Pipeline.id == req.pipeline_id).first()
+            if pipeline:
+                warehouse_schema = getattr(pipeline, 'warehouse_schema', None) or                                    (pipeline.artifacts or {}).get('warehouse_schema', 'warehouse')
+                tgt_conn_id = pipeline.target_connector_id or pipeline.connector_id
+                tgt_conn = db.query(Connector).filter(Connector.id == tgt_conn_id).first()
+                if tgt_conn:
+                    schema_text = get_full_schema_for_ai(_cfg(tgt_conn), source_schema=warehouse_schema)
+                    print(f"[NL2SQL] Pipeline mode — schema: {warehouse_schema}")
+
+        if not schema_text and req.connector_id:
             c = db.query(Connector).filter(Connector.id == req.connector_id).first()
-            if c: schema_text = get_full_schema_for_ai(_cfg(c), source_schema="warehouse")
+            if c:
+                schema_text = get_full_schema_for_ai(_cfg(c), source_schema=warehouse_schema)
+                print(f"[NL2SQL] Connector mode — schema: {warehouse_schema}")
 
         history_text = ""
         if req.history:
@@ -2021,7 +2053,7 @@ def refine_sql(req: RefineSQLRequest, current_user=Depends(get_current_user),
         prompt = f"""You are a SQL expert. The user has an existing PostgreSQL query and wants to refine it.
 
 WAREHOUSE SCHEMA:
-{schema_text if schema_text else "(use warehouse.fact_* and warehouse.dim_* tables)"}
+{schema_text if schema_text else f"(use {warehouse_schema}.fact_* and {warehouse_schema}.dim_* tables)"}
 
 CURRENT SQL:
 {req.current_sql}
@@ -3825,9 +3857,10 @@ class ChatMessage(BaseModel):
     content: str
 
 class ChatRequest(BaseModel):
-    message:  str
-    history:  list = []  # list of ChatMessage dicts
-    pipeline_id: str = ""  # optional — scope to specific pipeline
+    message:     str
+    history:     list = []
+    pipeline_id: str  = ""
+    connector_id: str = ""
 
 @app.post("/chat")
 def chat(req: ChatRequest, current_user=Depends(get_current_user), db: Session = Depends(get_db)):
@@ -3839,42 +3872,65 @@ def chat(req: ChatRequest, current_user=Depends(get_current_user), db: Session =
     from ai_provider import ask_ai_text
     import psycopg2
 
-    # 1. Get warehouse schema (no raw data)
+    # 1. Get schema context — scoped to selected connector or pipeline
     schema_context = ""
     pipeline_summary = ""
     try:
-        from warehouse_knowledge import get_warehouse_knowledge, refresh_warehouse_knowledge
-        import sqlalchemy as _sa_chat
-        from database import engine as _chat_engine
-        # Try knowledge graph first (rich context with relationships)
-        knowledge = get_warehouse_knowledge(db)
-        if knowledge.get("schema_context"):
-            schema_context = knowledge["schema_context"]
-        else:
-            # Fallback: direct schema query
-            with _chat_engine.connect() as _chat_conn:
-                _schema_r = _chat_conn.execute(_sa_chat.text(
-                    "SELECT table_name, column_name, data_type "
-                    "FROM information_schema.columns "
-                    "WHERE table_schema = 'warehouse' "
-                    "ORDER BY table_name, ordinal_position"
-                ))
-                rows = _schema_r.fetchall()
-            if rows:
-                tables = {}
-                for tbl, col, dtype in rows:
-                    tables.setdefault(tbl, []).append(f"{col} ({dtype})")
-                schema_lines = []
-                for tbl, cols in tables.items():
-                    schema_lines.append(f"  {tbl}: {chr(44).join(cols)}")
-                schema_context = "Warehouse schema (table: columns):\n" + "\n".join(schema_lines)
-        # Get pipeline summary
-        if req.pipeline_id:
+        from dwh_introspector import introspect_connector
+
+        if req.connector_id:
+            # CONNECTION MODE — introspect selected connector only
+            _conn = db.query(Connector).filter(Connector.id == req.connector_id).first()
+            if _conn:
+                _cfg = {
+                    "connector_type": _conn.connector_type or "postgres",
+                    "host":           _conn.host,
+                    "port":           _conn.port or 5432,
+                    "database_name":  _conn.database_name,
+                    "username":       _conn.username,
+                    "password":       _conn.password,
+                    "schemas":        [_conn.source_schema] if _conn.source_schema else None,
+                }
+                _intro = introspect_connector(_cfg)
+                if _intro.get("schema_context"):
+                    schema_context = _intro["schema_context"]
+                    print(f"[Chat] Connection mode — schema: {_conn.name} ({_conn.source_schema})")
+
+        elif req.pipeline_id:
+            # PIPELINE MODE — use pipeline's target warehouse schema
             pipeline = db.query(Pipeline).filter(Pipeline.id == req.pipeline_id).first()
             if pipeline:
                 pipeline_summary = f"\nActive pipeline: {pipeline.name}"
+                # Get target connector
+                tgt_conn_id = pipeline.target_connector_id or pipeline.connector_id
+                tgt_conn = db.query(Connector).filter(Connector.id == tgt_conn_id).first()
+                if tgt_conn:
+                    warehouse_schema = getattr(pipeline, 'warehouse_schema', None) or                                        (pipeline.artifacts or {}).get('warehouse_schema', 'warehouse')
+                    _cfg = {
+                        "connector_type": tgt_conn.connector_type or "postgres",
+                        "host":           tgt_conn.host,
+                        "port":           tgt_conn.port or 5432,
+                        "database_name":  tgt_conn.database_name,
+                        "username":       tgt_conn.username,
+                        "password":       tgt_conn.password,
+                        "schemas":        [warehouse_schema],
+                    }
+                    _intro = introspect_connector(_cfg)
+                    if _intro.get("schema_context"):
+                        schema_context = _intro["schema_context"]
+                        print(f"[Chat] Pipeline mode — warehouse: {warehouse_schema}")
+
+        # Fallback — global knowledge graph if nothing else worked
+        if not schema_context:
+            from warehouse_knowledge import get_warehouse_knowledge
+            knowledge = get_warehouse_knowledge(db)
+            if knowledge.get("schema_context"):
+                schema_context = knowledge["schema_context"]
+                print("[Chat] Fallback — using global knowledge graph")
+
     except Exception as e:
         schema_context = f"(Schema not available: {e})"
+        print(f"[Chat] Schema error: {e}")
 
     # 2. Build conversation history
     history_text = ""
@@ -3906,14 +3962,25 @@ RESPONSE FORMAT:
 - Always explain what the SQL does before showing it"""
 
     # 4. Build user prompt
+    # Build explicit available tables list
+    import re as _re_tbl
+    _table_matches = _re_tbl.findall(r'(\S+\.\S+) \[', schema_context)
+    _available_tables = "\n".join(f"  - {t}" for t in _table_matches) if _table_matches else "  (check schema context above)"
+
     user_prompt = f"""{schema_context}{pipeline_summary}
+
+AVAILABLE TABLES (use ONLY these exact names):
+{_available_tables}
 
 Conversation history:{history_text}
 
 User: {req.message}
 
-Respond helpfully. If the question requires querying warehouse data, generate safe aggregated SQL.
-If generating SQL, prefix it with: EXECUTE_SQL:"""
+RULES:
+- Use ONLY the tables listed in AVAILABLE TABLES above
+- Use exact schema.table format as shown (e.g. insdwh.fact_claims)
+- Generate aggregated SQL only (COUNT, SUM, AVG, GROUP BY, no SELECT *)
+- Prefix SQL with: EXECUTE_SQL:"""
 
     # 5. Get AI response
     ai_response = ask_ai_text(user_prompt, system_prompt=system_prompt, agent_name="ChatAgent")
@@ -3922,7 +3989,7 @@ If generating SQL, prefix it with: EXECUTE_SQL:"""
     sql_result = None
     final_response = ai_response
 
-    if "EXECUTE_SQL:" in ai_response or ("SELECT" in ai_response.upper() and "FROM" in ai_response.upper() and ("warehouse." in ai_response.lower() or "fact_" in ai_response.lower() or "dim_" in ai_response.lower())):
+    if "EXECUTE_SQL:" in ai_response or ("SELECT" in ai_response.upper() and "FROM" in ai_response.upper() and ("warehouse." in ai_response.lower() or "fact_" in ai_response.lower() or "dim_" in ai_response.lower() or "insdwh." in ai_response.lower() or "bank." in ai_response.lower() or "stg_" in ai_response.lower())):
         try:
             # Extract SQL
             # Extract SQL — robust extraction from any response format
@@ -4001,6 +4068,13 @@ Please provide a clear, concise natural language summary of these results. Be sp
         "sql_result": sql_result,
         "schema_available": bool(schema_context and "not available" not in schema_context)
     }
+
+
+
+
+
+
+
 
 
 
