@@ -213,7 +213,11 @@ export default function Analytics() {
   }
 
   // Active connector ID — depends on mode
-  const activeConnId = () => mode === 'connection' ? selectedConnId : warehouseInfo?.id
+  const activeConnId = () => {
+    const id = mode === 'connection' ? selectedConnId : warehouseInfo?.id
+    console.log('[Debug] activeConnId:', id, 'mode:', mode, 'selectedConnId:', selectedConnId)
+    return id
+  }
 
   // ── SQL generation ─────────────────────────────────────────────────────────
   const generateSql = async (questionOverride) => {
@@ -224,13 +228,32 @@ export default function Analytics() {
     if (mode === 'connection' && !selectedConnId) { setError('Select a connection first'); return }
     setError(null); setLoading(true); setResults(null); setQueryChain([])
     try {
-      const r = await api.post('/nl/to-sql', { question: q, connector_id: activeConnId() })
-      if (!r.data.success) { setError(r.data.error || 'AI could not generate SQL'); setLoading(false); return }
-      if (r.data.safety?.blocked) {
-        setError(`SQL blocked: ${r.data.safety.violations?.map(v => v.message).join(', ')}`)
-        setLoading(false); return
+      const r = mode === 'connection'
+        ? await api.post('/chat', { message: q, connector_id: activeConnId(), history: [] })
+        : await api.post('/nl/to-sql', { question: q, connector_id: activeConnId(), pipeline_id: selectedPipeline?.id || '' })
+      const isChat = mode === 'connection'
+      const sql_data = isChat ? r.data.sql_result : r.data
+      if (!isChat && !r.data.success) { setError(r.data.error || 'AI could not generate SQL'); setLoading(false); return }
+      if (isChat && !r.data.sql_result) {
+        // Auto-extract and execute SQL from markdown blocks in response
+        const allBlocks = [...(r.data.response?.matchAll(/```(?:sql)?\s*([\s\S]*?)```/gi) || [])]
+        const bestSql = allBlocks.map(m => m[1].trim()).sort((a,b) => b.length - a.length)[0]
+        console.log("[AutoExec] blocks found:", allBlocks.length, "bestSql:", bestSql?.slice(0,50))
+        if (bestSql) {
+          try {
+            const runRes = await api.post('/sql/run', { sql: bestSql, connector_id: activeConnId() })
+            if (runRes.data.success) {
+              r.data.sql_result = { sql: bestSql, columns: runRes.data.columns, rows: runRes.data.rows }
+            }
+          } catch(e) { console.log('Auto-exec failed:', e) }
+        }
+        if (!r.data.sql_result) {
+          setError(r.data.response?.slice(0, 200) || 'Could not generate SQL')
+          setLoading(false); return
+        }
       }
-      const step = { instruction: q, sql: r.data.sql, explanation: null }
+      // safety check handled above
+      const step = { instruction: q, sql: isChat ? r.data.sql_result?.sql : r.data.sql, explanation: isChat ? r.data.response : null }
       setQueryChain([step]); setActiveStep(0); setEditedSql(r.data.sql); setEditingSql(false)
       await runSql(r.data.sql, q)
     } catch (e) {
@@ -952,3 +975,11 @@ const btnPrimary   = { padding: '7px 14px', background: '#185FA5', color: '#fff'
 const btnGhost     = { padding: '7px 14px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 11, cursor: 'pointer' }
 const btnGhostSmall= { padding: '4px 10px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 10, cursor: 'pointer' }
 const selStyle     = { padding: '6px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', cursor: 'pointer', minWidth: 130 }
+
+
+
+
+
+
+
+
