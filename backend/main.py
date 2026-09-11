@@ -3851,6 +3851,163 @@ def dwh_knowledge(connector_id: str, current_user=Depends(get_current_user), db:
     return introspect_connector(config)
 
 
+
+
+# ── Multi-Language Voice Endpoints ──────────────────────────────────────────
+
+class TranslateRequest(BaseModel):
+    text:        str
+    source_lang: str = "auto"
+    target_lang: str = "en"
+
+class VoiceQueryRequest(BaseModel):
+    text:         str
+    connector_id: str = ""
+    pipeline_id:  str = ""
+    source_lang:  str = "auto"
+    respond_in_lang: str = ""  # if empty, respond in detected language
+
+@app.get("/voice/languages")
+def get_languages(current_user=Depends(get_current_user)):
+    """Return all supported languages for voice mode."""
+    from translation_agent import get_supported_languages
+    return {"success": True, "languages": get_supported_languages()}
+
+@app.post("/voice/detect-language")
+def detect_language_endpoint(req: TranslateRequest, current_user=Depends(get_current_user)):
+    """Detect language of given text."""
+    from translation_agent import detect_language
+    result = detect_language(req.text)
+    return {"success": True, **result}
+
+@app.post("/voice/translate")
+def translate_endpoint(req: TranslateRequest, current_user=Depends(get_current_user)):
+    """Translate text between languages."""
+    from translation_agent import translate_to_english, translate_from_english
+    if req.target_lang == "en":
+        result = translate_to_english(req.text, req.source_lang)
+        return {"success": True, "translated": result["english"], "detected_lang": result["original_lang"]}
+    else:
+        translated = translate_from_english(req.text, req.target_lang)
+        return {"success": True, "translated": translated, "target_lang": req.target_lang}
+
+@app.post("/voice/query")
+def voice_query(req: VoiceQueryRequest, current_user=Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Multi-language voice query endpoint.
+    1. Detect language of input
+    2. Translate to English
+    3. Run through /chat endpoint
+    4. Translate answer back to original language
+    """
+    from translation_agent import process_multilang_query, translate_from_english
+    from ai_provider import ask_ai_text
+
+    # Step 1: Process language
+    lang_info = process_multilang_query(req.text, req.connector_id, req.pipeline_id)
+    english_query = lang_info["english_query"]
+    detected_lang = lang_info["detected_lang"]
+    respond_lang  = req.respond_in_lang or detected_lang
+
+    print(f"[VoiceQuery] Lang: {lang_info['detected_lang_name']} | Query: {english_query}")
+
+    # Step 2: Get schema context (same as /chat)
+    schema_context = ""
+    try:
+        from dwh_introspector import introspect_connector
+        if req.connector_id:
+            _conn = db.query(Connector).filter(Connector.id == req.connector_id).first()
+            if _conn:
+                _cfg = {
+                    "connector_type": _conn.connector_type or "postgres",
+                    "host": _conn.host, "port": _conn.port or 5432,
+                    "database_name": _conn.database_name,
+                    "username": _conn.username, "password": _conn.password,
+                    "schemas": [_conn.source_schema] if _conn.source_schema else None,
+                }
+                _intro = introspect_connector(_cfg)
+                schema_context = _intro.get("schema_context", "")
+    except Exception as e:
+        print(f"[VoiceQuery] Schema error: {e}")
+
+    # Step 3: Generate SQL + answer (English)
+    import re as _re
+    sql_result = None
+    english_answer = ""
+
+    try:
+        import re as _re_tbl
+        _table_matches = _re_tbl.findall(r'(\S+\.\S+) \[', schema_context)
+        available_tables = "\n".join(f"  - {t}" for t in _table_matches) if _table_matches else ""
+
+        prompt = f"""{schema_context}
+
+AVAILABLE TABLES:
+{available_tables}
+
+User question: {english_query}
+
+RULES:
+- Use ONLY tables from AVAILABLE TABLES
+- Generate aggregated SQL (COUNT, SUM, AVG, GROUP BY)
+- Use EXECUTE_SQL: prefix before SQL
+- Be concise"""
+
+        system = "You are AIBridge BI Assistant. Answer data questions by executing SQL. Always use EXECUTE_SQL: prefix. Use only tables from schema context."
+        ai_response = ask_ai_text(prompt, system_prompt=system, agent_name="VoiceQueryAgent")
+
+        # Extract and execute SQL
+        if "EXECUTE_SQL:" in ai_response:
+            sql_part = ai_response.split("EXECUTE_SQL:")[1].strip()
+        else:
+            blocks = _re.findall(r'```(?:sql)?\s*([\s\S]*?)```', ai_response, _re.IGNORECASE)
+            sql_part = max(blocks, key=len).strip() if blocks else ""
+
+        if sql_part:
+            # Clean SQL
+            sql = sql_part.split("```")[0].strip()
+            # Execute
+            import psycopg2
+            if req.connector_id:
+                _conn = db.query(Connector).filter(Connector.id == req.connector_id).first()
+                if _conn:
+                    pg_conn = psycopg2.connect(
+                        host=_conn.host, port=_conn.port or 5432,
+                        dbname=_conn.database_name,
+                        user=_conn.username, password=_conn.password
+                    )
+                    cur = pg_conn.cursor()
+                    cur.execute(sql)
+                    rows = cur.fetchall()
+                    cols = [d[0] for d in cur.description]
+                    pg_conn.close()
+                    sql_result = {"sql": sql, "columns": cols, "rows": [list(r) for r in rows]}
+
+        english_answer = ai_response.replace(f"EXECUTE_SQL:{sql_part}" if "EXECUTE_SQL:" in ai_response else "", "").strip()
+        english_answer = _re.sub(r'```[\s\S]*?```', '', english_answer).strip()
+
+    except Exception as e:
+        english_answer = f"I encountered an error: {str(e)}"
+        print(f"[VoiceQuery] Query error: {e}")
+
+    # Step 4: Translate answer back if needed
+    final_answer = english_answer
+    if respond_lang != "en" and english_answer:
+        final_answer = translate_from_english(english_answer, respond_lang)
+        print(f"[VoiceQuery] Answer translated to {respond_lang}")
+
+    return {
+        "success":         True,
+        "original_text":   req.text,
+        "english_query":   english_query,
+        "detected_lang":   detected_lang,
+        "detected_lang_name": lang_info["detected_lang_name"],
+        "response":        final_answer,
+        "english_response": english_answer,
+        "sql_result":      sql_result,
+        "web_speech_code": lang_info["web_speech_code"],
+    }
+
 # ── Chat Endpoint ──────────────────────────────────────────────────────────
 class ChatMessage(BaseModel):
     role:    str  # "user" or "assistant"
