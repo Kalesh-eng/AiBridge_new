@@ -172,6 +172,8 @@ export default function Analytics() {
     { code: 'yo', name: 'Yoruba',   flag: '🇳🇬', web_speech_code: 'yo-NG' },
     { code: 'zu', name: 'Zulu',     flag: '🇿🇦', web_speech_code: 'zu-ZA' },
     { code: 'af', name: 'Afrikaans',flag: '🇿🇦', web_speech_code: 'af-ZA' },
+    { code: 'sn', name: 'Shona',      flag: '🇿🇼', web_speech_code: 'en-US' },
+    { code: 'ms', name: 'Malay',       flag: '🇲🇾', web_speech_code: 'ms-MY' },
   ])
   const refinementRef  = useRef(null)
   const voiceSubmitRef = useRef(null)
@@ -1020,6 +1022,7 @@ const btnPrimary   = { padding: '7px 14px', background: '#185FA5', color: '#fff'
 const btnGhost     = { padding: '7px 14px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 11, cursor: 'pointer' }
 const btnGhostSmall= { padding: '4px 10px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 10, cursor: 'pointer' }
 const selStyle     = { padding: '6px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', cursor: 'pointer', minWidth: 130 }
+
 
 
 
