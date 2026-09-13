@@ -1921,6 +1921,57 @@ def run_sql(req: SQLRunRequest, current_user=Depends(get_current_user),
             cur.execute(req.sql)
             rows    = cur.fetchall() if cur.description else []
             columns = [d[0] for d in cur.description] if cur.description else []
+
+            # Auto-fix: if 0 rows returned, fix string value mismatches
+            if (len(rows) == 0 or (len(rows) == 1 and list(rows[0].values())[0] == 0)) and "WHERE" in req.sql.upper():
+                try:
+                    import re as _re2
+                    fixed_sql = req.sql
+
+                    # Find all schema.table references in SQL
+                    all_tables = list(set(_re2.findall(r'\w+\.\w+', req.sql)))
+                    all_tables = [t for t in all_tables if '.' in t and not t.startswith('1=')]
+
+                    # Find all col = 'VALUE' patterns
+                    val_matches = _re2.findall(r"(\w+)\s*=\s*'([^']+)'", req.sql)
+
+                    for col_name, val in val_matches:
+                        # Skip non-column patterns
+                        if col_name.upper() in ('AND','OR','NOT','NULL','AS','ON'):
+                            continue
+                        # Try each table to find this column
+                        for tbl in all_tables:
+                            try:
+                                dist_cur = conn.cursor()
+                                dist_cur.execute(
+                                    "SELECT DISTINCT " + col_name + " FROM " + tbl +
+                                    " WHERE " + col_name + " IS NOT NULL LIMIT 10"
+                                )
+                                actual_vals = [str(r[0]) for r in dist_cur.fetchall()]
+                                if actual_vals:
+                                    val_lower = val.lower()
+                                    best = next(
+                                        (v for v in actual_vals if v.lower() == val_lower),
+                                        next((v for v in actual_vals if val_lower in v.lower()), None)
+                                    )
+                                    if best and best != val:
+                                        fixed_sql = fixed_sql.replace("'" + val + "'", "'" + best + "'")
+                                        print("[AutoFix] " + col_name + ": '" + val + "' -> '" + best + "' (actual: " + str(actual_vals) + ")")
+                                    break
+                            except:
+                                continue
+
+                    if fixed_sql != req.sql:
+                        cur2 = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+                        cur2.execute(fixed_sql)
+                        rows2 = cur2.fetchall() if cur2.description else []
+                        if rows2:
+                            rows = rows2
+                            columns = [d[0] for d in cur2.description]
+                            print("[AutoFix] Fixed SQL returned " + str(len(rows)) + " rows")
+                except Exception as _fix_e:
+                    print("[AutoFix] Error: " + str(_fix_e))
+
             conn.close()
             import math
             def _safe(v):
@@ -1976,6 +2027,7 @@ WAREHOUSE SCHEMA:
 {schema_text if schema_text else f"(use {warehouse_schema}.fact_* and {warehouse_schema}.dim_* tables)"}
 
 STRICT RULES:
+0. For boolean/flag columns, use single character values like Y/N, T/F, 1/0 unless schema specifies otherwise
 1. Your ENTIRE response must be a single JSON object, nothing else, no explanation, no markdown
 2. Format: {{"sql": "SELECT ..."}}
 3. Use ONLY exact table and column names from the schema above
@@ -3853,6 +3905,61 @@ def dwh_knowledge(connector_id: str, current_user=Depends(get_current_user), db:
 
 
 
+# ── Whisper Universal Voice Transcription ────────────────────────────────────
+
+@app.post("/voice/transcribe")
+async def transcribe_audio(
+    audio: UploadFile = File(...),
+    language: str = Form(default=""),
+    current_user = Depends(get_current_user)
+):
+    """
+    Universal voice transcription using local Whisper model.
+    Supports 99 languages including African languages.
+    Audio is processed locally — no data sent to external services.
+    """
+    import tempfile, os, whisper
+    import sys
+    os.environ['PATH'] = os.environ.get('PATH', '') + r';E:\ffmpeg\ffmpeg-master-latest-win64-gpl\bin'
+
+    # Load Whisper base model (145MB, cached after first load)
+    print("[Whisper] Loading model...")
+    model = whisper.load_model("base")
+
+    # Save uploaded audio to temp file
+    suffix = ".webm" if audio.content_type == "audio/webm" else ".wav"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        content_bytes = await audio.read()
+        tmp.write(content_bytes)
+        tmp_path = tmp.name
+
+    try:
+        print(f"[Whisper] Transcribing {suffix} file ({len(content_bytes)} bytes)...")
+        
+        # Transcribe — auto-detect language if not specified
+        options = {'task': 'transcribe', 'fp16': False}
+        if language and language != "auto":
+            options["language"] = language
+            
+        result = model.transcribe(tmp_path, **options)
+        text          = result["text"].strip()
+        detected_lang = result.get("language", "en")
+        
+        print(f"[Whisper] Detected: {detected_lang} | Text: {text}")
+        
+        return {
+            "success":       True,
+            "text":          text,
+            "detected_lang": detected_lang,
+            "model":         "whisper-base",
+        }
+    except Exception as e:
+        print(f"[Whisper] Error: {e}")
+        return {"success": False, "error": str(e), "text": ""}
+    finally:
+        os.unlink(tmp_path)
+
+
 # ── Multi-Language Voice Endpoints ──────────────────────────────────────────
 
 class TranslateRequest(BaseModel):
@@ -4225,6 +4332,14 @@ Please provide a clear, concise natural language summary of these results. Be sp
         "sql_result": sql_result,
         "schema_available": bool(schema_context and "not available" not in schema_context)
     }
+
+
+
+
+
+
+
+
 
 
 
