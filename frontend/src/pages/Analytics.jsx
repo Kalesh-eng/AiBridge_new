@@ -179,6 +179,76 @@ export default function Analytics() {
   const voiceSubmitRef = useRef(null)
   const voiceRefineRef = useRef(null)
   const voiceChainRef  = useRef([])
+  const mediaRecorderRef = useRef(null)
+  const audioChunksRef   = useRef([])
+  const [recording, setRecording] = useState(false)
+
+  // Whisper-based recording for non-English languages
+  const WHISPER_LANGS = ['sw','ha','yo','zu','xh','am','af','ig','so','sn','ms']
+
+  const startWhisperRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data)
+      }
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop())
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        setVoiceStatus('Transcribing with Whisper...')
+        try {
+          const formData = new FormData()
+          formData.append('audio', audioBlob, 'recording.webm')
+          formData.append('language', voiceLang !== 'en' ? voiceLang : '')
+          const res = await api.post('/voice/transcribe', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
+          if (res.data.success && res.data.text) {
+            handleVoiceResult(res.data.text)
+          } else {
+            setVoiceStatus('Could not transcribe audio')
+            setTimeout(() => setVoiceStatus(''), 3000)
+          }
+        } catch(e) {
+          setVoiceStatus('Transcription failed: ' + e.message)
+          setTimeout(() => setVoiceStatus(''), 3000)
+        }
+        setRecording(false)
+      }
+
+      mediaRecorder.start()
+      setRecording(true)
+      setVoiceStatus('Recording... speak now')
+
+      // Auto-stop after 8 seconds
+      setTimeout(() => {
+        if (mediaRecorderRef.current?.state === 'recording') {
+          mediaRecorderRef.current.stop()
+          setVoiceStatus('Processing...')
+        }
+      }, 8000)
+    } catch(e) {
+      setVoiceStatus('Microphone access denied')
+      setTimeout(() => setVoiceStatus(''), 3000)
+    }
+  }
+
+  const stopWhisperRecording = () => {
+    if (mediaRecorderRef.current && recording) {
+      mediaRecorderRef.current.stop()
+    }
+  }
+
+  const handleMicClick = () => {
+    // Always use Whisper — supports 99 languages, private, no internet needed
+    if (recording) stopWhisperRecording()
+    else startWhisperRecording()
+  }
 
   const handleVoiceResult = useCallback(async (text) => {
     setVoiceStatus(`Heard: "${text}"`)
@@ -640,19 +710,19 @@ export default function Analytics() {
                     onKeyDown={e => { if (e.key === 'Enter' && e.metaKey) generateSql() }}
                   />
                   {supported && (
-                    <button onClick={toggleListen}
+                    <button onClick={handleMicClick}
                       title={listening ? 'Stop listening' : 'Speak your question'}
                       style={{
                         position: 'absolute', right: 8, top: 8,
                         width: 32, height: 32, borderRadius: '50%',
-                        border: listening ? '2px solid #dc2626' : '2px solid #185FA5',
-                        background: listening ? '#fef2f2' : '#EBF4FF',
+                        border: (listening || recording) ? '2px solid #dc2626' : '2px solid #185FA5',
+                        background: (listening || recording) ? '#fef2f2' : '#EBF4FF',
                         cursor: 'pointer', fontSize: 16,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        animation: listening ? 'pulse-mic 1.2s infinite' : 'none',
+                        animation: (listening || recording) ? 'pulse-mic 1.2s infinite' : 'none',
                         transition: 'all 0.2s',
                       }}>
-                      {listening ? '⏹' : '🎤'}
+                      {(listening || recording) ? '⏹' : '🎤'}
                     </button>
                   )}
                 </div>
@@ -747,18 +817,18 @@ export default function Analytics() {
                       onChange={e => setRefinement(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') applyRefinement() }} />
                     {supported && (
-                      <button onClick={toggleListen}
+                      <button onClick={handleMicClick}
                         title={listening ? 'Stop' : 'Speak refinement'}
                         style={{
                           position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
                           width: 28, height: 28, borderRadius: '50%',
-                          border: listening ? '2px solid #dc2626' : '2px solid #185FA5',
-                          background: listening ? '#fef2f2' : '#EBF4FF',
+                          border: (listening || recording) ? '2px solid #dc2626' : '2px solid #185FA5',
+                          background: (listening || recording) ? '#fef2f2' : '#EBF4FF',
                           cursor: 'pointer', fontSize: 13,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          animation: listening ? 'pulse-mic 1.2s infinite' : 'none',
+                          animation: (listening || recording) ? 'pulse-mic 1.2s infinite' : 'none',
                         }}>
-                        {listening ? '⏹' : '🎤'}
+                        {(listening || recording) ? '⏹' : '🎤'}
                       </button>
                     )}
                   </div>
