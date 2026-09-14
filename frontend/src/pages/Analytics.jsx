@@ -293,7 +293,7 @@ export default function Analytics() {
     try {
       window.speechSynthesis?.cancel()
       if (window._gttsAudio) { window._gttsAudio.pause(); window._gttsAudio = null }
-      const response = await fetch('/api/voice/tts', {
+      const response = await fetch('http://localhost:8888/voice/tts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
