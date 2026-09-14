@@ -98,13 +98,17 @@ function useVoice(onResult, voiceLang = "en", languages = []) {
     else { try { recogRef.current.start(); setListening(true) } catch {} }
   }, [listening])
 
-  const speak = useCallback((text) => {
+  const speak = useCallback((text, langCode) => {
     if (!voiceOn || !window.speechSynthesis) return
     window.speechSynthesis.cancel()
-    const utt = new SpeechSynthesisUtterance(
-      text.replace(/```[\s\S]*?```/g,'').replace(/[#*_`>]/g,'').replace(/\n+/g,' ').trim().slice(0,400)
-    )
-    utt.lang = 'en-IN'; utt.rate = 0.93; utt.pitch = 1
+    const clean = text.replace(/```[\s\S]*?```/g,'').replace(/[#*_`>]/g,'').replace(/\n+/g,' ').trim().slice(0,400)
+    const utt = new SpeechSynthesisUtterance(clean)
+    // Use provided langCode or fall back to en-IN
+    const langMap = {hi:'hi-IN',ta:'ta-IN',te:'te-IN',ar:'ar-SA',zh:'zh-CN',
+      ru:'ru-RU',de:'de-DE',fr:'fr-FR',es:'es-ES',pt:'pt-BR',
+      ms:'ms-MY',af:'af-ZA',en:'en-IN'}
+    utt.lang = langMap[langCode] || langCode || 'en-IN'
+    utt.rate = 0.93; utt.pitch = 1
     window.speechSynthesis.speak(utt)
   }, [voiceOn])
 
@@ -283,6 +287,33 @@ export default function Analytics() {
 
   const { listening, supported, voiceOn, setVoiceOn, toggleListen, speak, stopSpeaking } = useVoice(handleVoiceResult, voiceLang, languages)
 
+  // gTTS speak — backend TTS, supports 60+ languages including African
+  const speakWithGTTS = useCallback(async (text, langCode) => {
+    if (!voiceOn) return
+    try {
+      window.speechSynthesis?.cancel()
+      if (window._gttsAudio) { window._gttsAudio.pause(); window._gttsAudio = null }
+      const response = await fetch('/api/voice/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('aibridge_token')
+        },
+        body: JSON.stringify({ text: text.slice(0, 400), lang: langCode || 'en' })
+      })
+      if (!response.ok) throw new Error('TTS failed')
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      window._gttsAudio = audio
+      audio.onended = () => URL.revokeObjectURL(url)
+      audio.play()
+    } catch(e) {
+      console.log('gTTS failed, falling back:', e)
+      speak(text, langCode)
+    }
+  }, [voiceOn, speak])
+
   useEffect(() => {
     Promise.all([api.get('/pipeline/list'), api.get('/connector/list')])
       .then(([pRes, cRes]) => {
@@ -415,7 +446,18 @@ export default function Analytics() {
       if (rows.length > 0) {
         const q = questionCtx || question
         const top = rows.slice(0,3).map(row => cols.map((c,i) => `${c}: ${row[i]}`).join(', ')).join('; ')
-        speak(`Found ${rows.length} results for "${q}". Top results are: ${top}`)
+        const englishSummary = `Found ${rows.length} results for "${q}". Top results are: ${top}`
+        // Translate answer back to user's language if not English
+        if (voiceLang && voiceLang !== 'en') {
+          api.post('/voice/translate', { text: englishSummary, source_lang: 'en', target_lang: voiceLang })
+            .then(r => {
+              const translated = r.data.translated || englishSummary
+              speakWithGTTS(translated, voiceLang)
+            })
+            .catch(() => speakWithGTTS(englishSummary, 'en'))
+        } else {
+          speakWithGTTS(englishSummary, 'en')
+        }
       }
     } catch (e) { setError(e.response?.data?.detail || e.message || 'Execution failed') }
     setExecuting(false)

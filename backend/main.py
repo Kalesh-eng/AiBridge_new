@@ -3960,6 +3960,62 @@ async def transcribe_audio(
         os.unlink(tmp_path)
 
 
+# ── gTTS Text to Speech Endpoint ────────────────────────────────────────────
+
+class TTSRequest(BaseModel):
+    text:     str
+    lang:     str = "en"
+
+@app.post("/voice/tts")
+async def text_to_speech(req: TTSRequest, current_user=Depends(get_current_user)):
+    """
+    Convert text to speech using gTTS (Google TTS - free, no API key).
+    Supports 60+ languages including Hindi, Arabic, Chinese, Swahili.
+    Returns audio as MP3 bytes.
+    """
+    from gtts import gTTS
+    from gtts.lang import tts_langs
+    import io
+    from fastapi.responses import StreamingResponse
+
+    # Map our lang codes to gTTS codes
+    lang_map = {
+        'hi': 'hi', 'ta': 'ta', 'te': 'te', 'kn': 'kn', 'ml': 'ml',
+        'mr': 'mr', 'gu': 'gu', 'bn': 'bn', 'ar': 'ar', 'zh': 'zh-TW',
+        'ru': 'ru', 'de': 'de', 'fr': 'fr', 'es': 'es', 'pt': 'pt',
+        'it': 'it', 'nl': 'nl', 'pl': 'pl', 'tr': 'tr', 'af': 'af',
+        'sw': 'sw', 'ms': 'ms', 'ja': 'ja', 'ko': 'ko', 'uk': 'uk',
+        'en': 'en',
+    }
+
+    gtts_lang = lang_map.get(req.lang, 'en')
+    available = tts_langs()
+    if gtts_lang not in available:
+        gtts_lang = 'en'
+
+    try:
+        # Clean text
+        clean_text = req.text.replace('*', '').replace('#', '').replace('_', '').strip()
+        clean_text = clean_text[:500]  # limit length
+
+        print(f"[TTS] Speaking in {gtts_lang}: {clean_text[:50]}...")
+
+        # Generate audio
+        tts = gTTS(text=clean_text, lang=gtts_lang, slow=False)
+        audio_buffer = io.BytesIO()
+        tts.write_to_fp(audio_buffer)
+        audio_buffer.seek(0)
+
+        return StreamingResponse(
+            audio_buffer,
+            media_type="audio/mpeg",
+            headers={"Content-Disposition": "inline; filename=response.mp3"}
+        )
+    except Exception as e:
+        print(f"[TTS] Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ── Multi-Language Voice Endpoints ──────────────────────────────────────────
 
 class TranslateRequest(BaseModel):
@@ -4332,6 +4388,7 @@ Please provide a clear, concise natural language summary of these results. Be sp
         "sql_result": sql_result,
         "schema_available": bool(schema_context and "not available" not in schema_context)
     }
+
 
 
 
