@@ -159,7 +159,7 @@ export default function Analytics() {
   const [scheduleMsg,   setScheduleMsg]   = useState('')
   // Voice
   const [voiceStatus,   setVoiceStatus]   = useState('')
-  const [voiceLang,     setVoiceLang]     = useState('en')
+  const [voiceLang, setVoiceLang] = useState(() => localStorage.getItem('aibridge_voice_lang') || 'en')
   const [languages,     setLanguages]     = useState([
     { code: 'en', name: 'English',  flag: '🇬🇧', web_speech_code: 'en-IN' },
     { code: 'hi', name: 'Hindi',    flag: '🇮🇳', web_speech_code: 'hi-IN' },
@@ -448,15 +448,17 @@ export default function Analytics() {
         const top = rows.slice(0,3).map(row => cols.map((c,i) => `${c}: ${row[i]}`).join(', ')).join('; ')
         const englishSummary = `Found ${rows.length} results for "${q}". Top results are: ${top}`
         // Translate answer back to user's language if not English
-        if (voiceLang && voiceLang !== 'en') {
-          api.post('/voice/translate', { text: englishSummary, source_lang: 'en', target_lang: voiceLang })
+        const currentLang = localStorage.getItem('aibridge_voice_lang') || voiceLang || 'en'
+        console.log('[Debug TTS] voiceLang=', voiceLang, 'localStorage=', currentLang)
+        if (currentLang && currentLang !== 'en') {
+          api.post('/voice/translate', { text: englishSummary, source_lang: 'en', target_lang: currentLang })
             .then(r => {
               const translated = r.data.translated || englishSummary
-              speakWithGTTS(translated, voiceLang)
+              speakWithGTTS(translated, currentLang)
             })
-            .catch(() => speakWithGTTS(englishSummary, 'en'))
+            .catch(() => speakWithGTTS(englishSummary, currentLang))
         } else {
-          speakWithGTTS(englishSummary, 'en')
+          speakWithGTTS(englishSummary, currentLang)
         }
       }
     } catch (e) { setError(e.response?.data?.detail || e.message || 'Execution failed') }
@@ -675,7 +677,7 @@ export default function Analytics() {
                     </button>
                   )}
                   {supported && (
-                    <select value={voiceLang} onChange={e => setVoiceLang(e.target.value)}
+                    <select value={voiceLang} onChange={e => { setVoiceLang(e.target.value); localStorage.setItem('aibridge_voice_lang', e.target.value) }}
                       title="Voice language"
                       style={{ fontSize: 11, padding: '2px 6px', border: '1px solid #E5E7EB',
                         borderRadius: 6, background: '#F9FAFB', cursor: 'pointer', maxWidth: 120 }}>
@@ -1134,6 +1136,11 @@ const btnPrimary   = { padding: '7px 14px', background: '#185FA5', color: '#fff'
 const btnGhost     = { padding: '7px 14px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 11, cursor: 'pointer' }
 const btnGhostSmall= { padding: '4px 10px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 10, cursor: 'pointer' }
 const selStyle     = { padding: '6px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', cursor: 'pointer', minWidth: 130 }
+
+
+
+
+
 
 
 
