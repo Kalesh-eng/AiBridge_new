@@ -36,3 +36,12 @@ pydantic-settings
 python-jose[cryptography]
 passlib[bcrypt]
 bcrypt==4.0.1
+
+
+# Multi-language Voice
+openai-whisper
+gtts
+python-multipart
+
+# FFmpeg path (install separately from https://ffmpeg.org)
+# ffmpeg required for Whisper audio processing
