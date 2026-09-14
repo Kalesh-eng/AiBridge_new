@@ -1,6 +1,4 @@
-from gtts import gTTS
-import io
-tts = gTTS(text='Hello how are you', lang='en', slow=False)
-buf = io.BytesIO()
-tts.write_to_fp(buf)
-print('gTTS works! Size:', buf.tell(), 'bytes')
+import whisper
+print('Downloading large model (2.9GB)... this will take a few minutes')
+model = whisper.load_model('large')
+print('Large model ready!')
