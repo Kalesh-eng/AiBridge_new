@@ -4808,7 +4808,12 @@ async def chat_with_agent(req: AgentChatRequest, current_user=Depends(get_curren
             "Your personality: " + (personality or "Professional and helpful") + ". " +
             "Your capabilities: " + ", ".join(capabilities or []) + ". " +
             "You are part of the AIBridge AI team. " +
-            "IMPORTANT: You require human approval (HIL) for any actions that modify code, send communications, or make changes. " +
+            "CRITICAL SECURITY RULES (NEVER VIOLATE):\n" +
+            "1. NEVER generate DROP, DELETE, TRUNCATE, or destructive SQL\n" +
+            "2. NEVER access another client's data or schema\n" +
+            "3. NEVER send client data to external services\n" +
+            "4. NEVER deploy code or make changes without HIL approval from Kalesh\n" +
+            "5. NEVER share one client's information with another client\n" +
             "For read-only tasks you can proceed autonomously. " +
             "Always be transparent about what you can and cannot do without approval. " +
             "Sign your messages as " + name + "."
@@ -4822,6 +4827,15 @@ async def chat_with_agent(req: AgentChatRequest, current_user=Depends(get_curren
 
         from ai_provider import ask_ai_text as _ask_ai_agent
         response = _ask_ai_agent(prompt, system_prompt=system_prompt, agent_name=name + 'Agent')
+
+        # Safety check — if agent response contains SQL, validate it
+        import re as _re_safety
+        sql_blocks = _re_safety.findall(r'```sql(.*?)```', response, _re_safety.DOTALL)
+        for sql_block in sql_blocks:
+            safety = check_sql_safety(sql_block.strip(), allow_destructive=False, script_name="AgentChat")
+            if safety.get("blocked"):
+                print("[AgentSafety] BLOCKED dangerous SQL from " + name + ": " + sql_block[:50])
+                response = response.replace(sql_block, "\n[BLOCKED: This SQL contains dangerous operations that are not permitted. Agents cannot run DROP, DELETE, TRUNCATE or destructive operations.]\n")
 
         # Log communication
         pg2 = _pg_connect(); cur2 = pg2.cursor()
