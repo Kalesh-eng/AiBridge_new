@@ -4334,6 +4334,110 @@ Please provide a clear, concise natural language summary of these results. Be sp
     }
 
 
+
+# ── Exchange Mapping Endpoints ────────────────────────────────────────────────
+
+@app.get("/exchange/mappings")
+async def get_exchange_mappings(current_user=Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get all saved exchange mappings for current user."""
+    import psycopg2
+    try:
+        pg = psycopg2.connect(host=os.getenv("PG_HOST","localhost"), port=int(os.getenv("PG_PORT",5433)),
+            dbname=os.getenv("PG_DB","postgres"), user=os.getenv("PG_USER","postgres"),
+            password=os.getenv("PG_PASSWORD","postgres123"))
+        cur = pg.cursor()
+        cur.execute("""
+            SELECT m.id, m.name, m.target_schema, m.schedule_cron,
+                   m.last_run_at, m.last_run_status, m.created_at,
+                   COUNT(t.id) as table_count
+            FROM public.exchange_mappings m
+            LEFT JOIN public.exchange_mapping_tables t ON t.mapping_id = m.id
+            WHERE m.user_id = %s
+            GROUP BY m.id ORDER BY m.created_at DESC
+        """, (str(current_user.id),))
+        cols = [d[0] for d in cur.description]
+        rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+        # Convert datetime to string
+        for r in rows:
+            for k, v in r.items():
+                if hasattr(v, 'isoformat'): r[k] = v.isoformat()
+        pg.close()
+        return {"mappings": rows}
+    except Exception as e:
+        print(f"[Exchange Mappings] Error: {e}")
+        return {"mappings": []}
+
+@app.get("/exchange/history")
+async def get_exchange_history(current_user=Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get exchange run history."""
+    import psycopg2
+    try:
+        pg = psycopg2.connect(host=os.getenv("PG_HOST","localhost"), port=int(os.getenv("PG_PORT",5433)),
+            dbname=os.getenv("PG_DB","postgres"), user=os.getenv("PG_USER","postgres"),
+            password=os.getenv("PG_PASSWORD","postgres123"))
+        cur = pg.cursor()
+        cur.execute("""
+            SELECT h.id, h.started_at, h.completed_at, h.status,
+                   h.tables_loaded, h.total_rows, h.error_message,
+                   m.name as mapping_name,
+                   EXTRACT(EPOCH FROM (h.completed_at - h.started_at))::int as duration_secs
+            FROM public.exchange_run_history h
+            LEFT JOIN public.exchange_mappings m ON m.id = h.mapping_id
+            WHERE m.user_id = %s OR m.id IS NULL
+            ORDER BY h.started_at DESC LIMIT 50
+        """, (str(current_user.id),))
+        cols = [d[0] for d in cur.description]
+        rows = []
+        for r in cur.fetchall():
+            d = dict(zip(cols, r))
+            for k, v in d.items():
+                if hasattr(v, 'isoformat'): d[k] = v.isoformat()
+            d['duration'] = f"{d.get('duration_secs', 0)}s"
+            rows.append(d)
+        pg.close()
+        return {"history": rows}
+    except Exception as e:
+        print(f"[Exchange History] Error: {e}")
+        return {"history": []}
+
+@app.post("/exchange/preview")
+async def preview_file(file: UploadFile = File(...),
+                       current_user=Depends(get_current_user)):
+    """Preview file columns and sample rows."""
+    import tempfile, shutil, pandas as pd
+    try:
+        suffix = '.' + file.filename.rsplit('.', 1)[-1].lower()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            shutil.copyfileobj(file.file, tmp)
+            tmp_path = tmp.name
+
+        if suffix in ('.csv', '.txt'):
+            df = pd.read_csv(tmp_path, nrows=5)
+        elif suffix in ('.xlsx', '.xls'):
+            df = pd.read_excel(tmp_path, nrows=5)
+        elif suffix == '.json':
+            df = pd.read_json(tmp_path)
+            df = df.head(5)
+        else:
+            df = pd.read_csv(tmp_path, nrows=5)
+
+        os.unlink(tmp_path)
+
+        columns = []
+        for col, dtype in zip(df.columns, df.dtypes):
+            if 'int' in str(dtype):      t = 'INTEGER'
+            elif 'float' in str(dtype):  t = 'NUMERIC'
+            elif 'bool' in str(dtype):   t = 'BOOLEAN'
+            elif 'date' in str(dtype):   t = 'DATE'
+            else:                         t = 'TEXT'
+            columns.append({"name": str(col), "type": t})
+
+        sample = df.head(3).fillna('').values.tolist()
+        return {"columns": columns, "sample": sample, "total_rows": len(df)}
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+
 # ── Exchange Agent ────────────────────────────────────────────────────────────
 
 class ExchangeFileItem(BaseModel):
@@ -4349,6 +4453,8 @@ class ExchangeRunRequest(BaseModel):
     target_schema:         str = "exchange_dwh"
     load_mode:             str = "full"
     requirements:          str = ""
+    mapping_name:          Optional[str] = None
+    schedule_cron:         Optional[str] = None
 
 @app.post("/exchange/run")
 async def run_exchange(req: ExchangeRunRequest,
@@ -4458,12 +4564,59 @@ async def run_exchange(req: ExchangeRunRequest,
             tgt.close()
 
         duration = f"{time.time()-start:.1f}s"
+        # Save mapping if name provided
+        mapping_id = None
+        if req.mapping_name:
+            try:
+                import uuid as _uuid
+                pg2 = psycopg2.connect(
+                    host=os.getenv("PG_HOST","localhost"), port=int(os.getenv("PG_PORT",5433)),
+                    dbname=os.getenv("PG_DB","postgres"), user=os.getenv("PG_USER","postgres"),
+                    password=os.getenv("PG_PASSWORD","postgres123")
+                )
+                c2 = pg2.cursor()
+                # Check if mapping exists
+                c2.execute("SELECT id FROM public.exchange_mappings WHERE user_id=%s AND name=%s",
+                           (str(current_user.id), req.mapping_name))
+                existing = c2.fetchone()
+                if existing:
+                    mapping_id = str(existing[0])
+                    c2.execute("UPDATE public.exchange_mappings SET last_run_at=NOW(), last_run_status='success' WHERE id=%s", (mapping_id,))
+                    c2.execute("DELETE FROM public.exchange_mapping_tables WHERE mapping_id=%s", (mapping_id,))
+                    print("[Exchange] Updated mapping: " + req.mapping_name)
+                else:
+                    mapping_id = str(_uuid.uuid4())
+                    c2.execute(
+                        "INSERT INTO public.exchange_mappings (id,user_id,name,target_connector_id,target_schema,requirements,schedule_cron,last_run_at,last_run_status) VALUES (%s,%s,%s,%s,%s,%s,%s,NOW(),%s)",
+                        (mapping_id, str(current_user.id), req.mapping_name, req.target_connector_id,
+                         req.target_schema, req.requirements, req.schedule_cron, "success")
+                    )
+                    print("[Exchange] Created mapping: " + req.mapping_name)
+                # Save table mappings
+                if req.source_files:
+                    for i, fi in enumerate(req.source_files):
+                        c2.execute(
+                            "INSERT INTO public.exchange_mapping_tables (mapping_id,load_order,source_name,target_table,load_mode) VALUES (%s,%s,%s,%s,%s)",
+                            (mapping_id, i+1, fi.file_name, fi.table_name, req.load_mode)
+                        )
+                # Save run history
+                c2.execute(
+                    "INSERT INTO public.exchange_run_history (id,mapping_id,completed_at,status,tables_loaded,total_rows) VALUES (%s,%s,NOW(),%s,%s,%s)",
+                    (str(_uuid.uuid4()), mapping_id, "success", tables_loaded, total_rows)
+                )
+                pg2.commit()
+                pg2.close()
+            except Exception as me:
+                print("[Exchange] Error saving mapping: " + str(me))
+                import traceback; traceback.print_exc()
+
         return {
             "success":       True,
             "tables_loaded": tables_loaded,
             "total_rows":    total_rows,
             "duration":      duration,
             "target_schema": req.target_schema,
+            "mapping_id":    mapping_id,
             "message":       f"Exchange complete: {tables_loaded} tables, {total_rows} rows in {duration}"
         }
 
