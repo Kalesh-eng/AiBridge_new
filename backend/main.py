@@ -3960,62 +3960,6 @@ async def transcribe_audio(
         os.unlink(tmp_path)
 
 
-# ── gTTS Text to Speech Endpoint ────────────────────────────────────────────
-
-class TTSRequest(BaseModel):
-    text:     str
-    lang:     str = "en"
-
-@app.post("/voice/tts")
-async def text_to_speech(req: TTSRequest, current_user=Depends(get_current_user)):
-    """
-    Convert text to speech using gTTS (Google TTS - free, no API key).
-    Supports 60+ languages including Hindi, Arabic, Chinese, Swahili.
-    Returns audio as MP3 bytes.
-    """
-    from gtts import gTTS
-    from gtts.lang import tts_langs
-    import io
-    from fastapi.responses import StreamingResponse
-
-    # Map our lang codes to gTTS codes
-    lang_map = {
-        'hi': 'hi', 'ta': 'ta', 'te': 'te', 'kn': 'kn', 'ml': 'ml',
-        'mr': 'mr', 'gu': 'gu', 'bn': 'bn', 'ar': 'ar', 'zh': 'zh-TW',
-        'ru': 'ru', 'de': 'de', 'fr': 'fr', 'es': 'es', 'pt': 'pt',
-        'it': 'it', 'nl': 'nl', 'pl': 'pl', 'tr': 'tr', 'af': 'af',
-        'sw': 'sw', 'ms': 'ms', 'ja': 'ja', 'ko': 'ko', 'uk': 'uk',
-        'en': 'en',
-    }
-
-    gtts_lang = lang_map.get(req.lang, 'en')
-    available = tts_langs()
-    if gtts_lang not in available:
-        gtts_lang = 'en'
-
-    try:
-        # Clean text
-        clean_text = req.text.replace('*', '').replace('#', '').replace('_', '').strip()
-        clean_text = clean_text[:500]  # limit length
-
-        print(f"[TTS] Speaking in {gtts_lang}: {clean_text[:50]}...")
-
-        # Generate audio
-        tts = gTTS(text=clean_text, lang=gtts_lang, slow=False)
-        audio_buffer = io.BytesIO()
-        tts.write_to_fp(audio_buffer)
-        audio_buffer.seek(0)
-
-        return StreamingResponse(
-            audio_buffer,
-            media_type="audio/mpeg",
-            headers={"Content-Disposition": "inline; filename=response.mp3"}
-        )
-    except Exception as e:
-        print(f"[TTS] Error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 # ── Multi-Language Voice Endpoints ──────────────────────────────────────────
 
 class TranslateRequest(BaseModel):
@@ -4390,22 +4334,143 @@ Please provide a clear, concise natural language summary of these results. Be sp
     }
 
 
+# ── Exchange Agent ────────────────────────────────────────────────────────────
 
+class ExchangeFileItem(BaseModel):
+    connector_id: str
+    table_name:   str
+    file_name:    str = ""
 
+class ExchangeRunRequest(BaseModel):
+    source_files:          Optional[List[ExchangeFileItem]] = None
+    source_connector_id:   Optional[str] = None
+    source_tables:         Optional[List[dict]] = None
+    target_connector_id:   Optional[str] = None
+    target_schema:         str = "exchange_dwh"
+    load_mode:             str = "full"
+    requirements:          str = ""
 
+@app.post("/exchange/run")
+async def run_exchange(req: ExchangeRunRequest,
+                       current_user=Depends(get_current_user),
+                       db: Session = Depends(get_db)):
+    """Universal data exchange - files or DB to any target."""
+    import time, pandas as pd, psycopg2
+    from io import StringIO
+    start = time.time()
+    total_rows = 0
+    tables_loaded = 0
 
+    try:
+        # Get target connector
+        target_conn = None
+        if req.target_connector_id:
+            target_conn = db.query(Connector).filter(
+                Connector.id == req.target_connector_id
+            ).first()
+            if not target_conn:
+                raise HTTPException(404, "Target connector not found")
 
+        if req.source_files:
+            if not target_conn:
+                raise HTTPException(400, "Target connector required for file exchange")
 
+            tgt = psycopg2.connect(
+                host=target_conn.host, port=target_conn.port,
+                dbname=target_conn.database_name,
+                user=target_conn.username, password=target_conn.password
+            )
+            tgt_cur = tgt.cursor()
+            tgt_cur.execute(f"CREATE SCHEMA IF NOT EXISTS {req.target_schema}")
+            tgt.commit()
 
+            for file_item in req.source_files:
+                src_conn = db.query(Connector).filter(
+                    Connector.id == file_item.connector_id
+                ).first()
+                if not src_conn:
+                    print(f"[Exchange] Connector {file_item.connector_id} not found")
+                    continue
 
+                table_name = file_item.table_name
+                full_table = f"{req.target_schema}.{table_name}"
+                print(f"[Exchange] Loading {file_item.file_name} -> {full_table}")
 
+                # Read from DuckDB (files are loaded there by /connector/file/upload)
+                duckdb_path = os.getenv("DUCKDB_PATH", "./aibridge.duckdb")
+                table_in_duck = src_conn.database_name  # stored as table name in database_name
+                print(f"[Exchange] Reading from DuckDB table: {table_in_duck}")
 
+                try:
+                    import duckdb
+                    duck = duckdb.connect(duckdb_path)
+                    # Try direct table name first, then with raw_ prefix
+                    try:
+                        df = duck.execute(f"SELECT * FROM {table_in_duck}").df()
+                    except:
+                        df = duck.execute(f"SELECT * FROM raw_{table_in_duck}").df()
+                    duck.close()
+                    print(f"[Exchange] Read {len(df)} rows from DuckDB")
+                except Exception as e:
+                    print(f"[Exchange] Error reading from DuckDB: {e}")
+                    continue
 
+                if df.empty:
+                    print(f"[Exchange] Empty file: {file_path}")
+                    continue
 
+                # Clean column names
+                df.columns = [
+                    str(c).lower().strip()
+                    .replace(' ','_').replace('-','_')
+                    .replace('(','').replace(')','').replace('/','_')
+                    .replace('.','_').replace('?','').replace('!','')
+                    for c in df.columns
+                ]
 
+                # Drop and recreate table
+                tgt_cur.execute(f"DROP TABLE IF EXISTS {full_table}")
+                col_defs = []
+                for col, dtype in zip(df.columns, df.dtypes):
+                    if 'int' in str(dtype):    col_defs.append(f'"{col}" BIGINT')
+                    elif 'float' in str(dtype): col_defs.append(f'"{col}" NUMERIC')
+                    elif 'bool' in str(dtype):  col_defs.append(f'"{col}" BOOLEAN')
+                    else:                        col_defs.append(f'"{col}" TEXT')
 
+                tgt_cur.execute(f"CREATE TABLE {full_table} ({', '.join(col_defs)})")
+                tgt.commit()
 
+                # Insert rows
+                df = df.where(pd.notnull(df), None)
+                rows = [tuple(r) for r in df.values]
+                placeholders = ', '.join(['%s'] * len(df.columns))
+                col_names = ', '.join([f'"{c}"' for c in df.columns])
+                psycopg2.extras.execute_batch(
+                    tgt_cur,
+                    f"INSERT INTO {full_table} ({col_names}) VALUES ({placeholders})",
+                    rows, page_size=500
+                )
+                tgt.commit()
+                total_rows += len(df)
+                tables_loaded += 1
+                print(f"[Exchange] {full_table}: {len(df)} rows loaded OK")
 
+            tgt.close()
 
+        duration = f"{time.time()-start:.1f}s"
+        return {
+            "success":       True,
+            "tables_loaded": tables_loaded,
+            "total_rows":    total_rows,
+            "duration":      duration,
+            "target_schema": req.target_schema,
+            "message":       f"Exchange complete: {tables_loaded} tables, {total_rows} rows in {duration}"
+        }
 
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[Exchange] Error: {e}")
+        import traceback; traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 

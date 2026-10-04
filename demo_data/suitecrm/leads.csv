@@ -1,0 +1,301 @@
+lead_id,first_name,last_name,company,title,email,phone,lead_source,industry,status,rating,city,country,assigned_to,date_entered,converted,converted_date,annual_revenue,days_in_pipeline
+1,Thomas,Jackson,InnovateTech Ltd LLC,Director,thomas.jackson@innovatetechltdllc.com,+1-555-879-7211,Trade Show,Education,Recycled,Warm,Los Angeles,Singapore,John Smith,2023-12-01,No,,3757670.09,1035
+2,Patricia,Thomas,ShopNow Retail Inc,VP Sales,patricia.thomas@shopnowretailinc.com,+1-555-304-1333,Email Campaign,Insurance,New,Hot,Seattle,UK,Emily Chen,2023-02-01,No,,2351918.22,1338
+3,Thomas,Okonkwo,FashionForward Inc LLC,VP Marketing,thomas.okonkwo@fashionforwardincllc.com,+1-555-210-1420,Trade Show,Consulting,New,Cold,Atlanta,UAE,Emily Chen,2023-06-17,No,,426182.57,1202
+4,Sarah,Brown,SmartFactory Ltd Ltd,CEO,sarah.brown@smartfactoryltdltd.com,+1-555-455-9728,Partner,Manufacturing,New,Hot,Boston,Germany,John Smith,2024-08-02,No,,4255399.35,790
+5,Amina,Brown,UrbanRealty Group Ltd,CFO,amina.brown@urbanrealtygroupltd.com,+1-555-545-3885,Trade Show,Consulting,Recycled,Cold,Seattle,Singapore,David Martinez,2024-12-25,No,,4137386.26,645
+6,Karen,Anderson,BuildRight Construction Inc,VP Sales,karen.anderson@buildrightconstructi.com,+1-555-868-8613,Partner,Manufacturing,In Process,Hot,Seattle,Germany,Mike Davis,2024-04-06,No,,2463372.17,908
+7,Amir,Ndiaye,SafeGuard Insurance Ltd,VP Marketing,amir.ndiaye@safeguardinsurancelt.com,+1-555-669-1166,Referral,Healthcare,In Process,Hot,San Francisco,UAE,Jennifer Taylor,2024-09-02,No,,2798122.25,759
+8,Sarah,Kim,NextGen Software Corp,CTO,sarah.kim@nextgensoftwarecorp.com,+1-555-401-4630,Partner,Insurance,Recycled,Warm,Miami,Nigeria,Lisa Anderson,2023-01-18,No,,2392639.42,1352
+9,Amir,White,MetroRealty Partners Group,Head of IT,amir.white@metrorealtypartnersg.com,+1-555-377-6023,Trade Show,Insurance,In Process,Hot,San Francisco,Canada,Lisa Anderson,2023-12-27,No,,641795.97,1009
+10,Susan,Miller,SecureFinance Inc Corp,Operations Manager,susan.miller@securefinanceinccorp.com,+1-555-711-5636,Cold Call,Insurance,In Process,Warm,Houston,Germany,Mike Davis,2024-08-26,No,,1546224.56,766
+11,William,Wilson,FinanceEdge Ltd Inc,CFO,william.wilson@financeedgeltdinc.com,+1-555-753-9042,Cold Call,Technology,Dead,Cold,Phoenix,Singapore,Jennifer Taylor,2023-10-27,No,,2230320.55,1070
+12,Susan,Johnson,SafeGuard Insurance Corp,Manager,susan.johnson@safeguardinsuranceco.com,+1-555-603-2213,Web Site,Finance,New,Hot,Denver,Australia,Sarah Johnson,2023-03-08,No,,4969894.71,1303
+13,Linda,Patel,GlobalShip Co Corp,Manager,linda.patel@globalshipcocorp.com,+1-555-561-8253,Trade Show,Consulting,Assigned,Warm,Phoenix,Nigeria,John Smith,2024-06-19,No,,3067673.02,834
+14,Michael,Okonkwo,SecureFinance Inc LLC,CTO,michael.okonkwo@securefinanceincllc.com,+1-555-260-4929,Email Campaign,Logistics,In Process,Hot,Chicago,USA,David Martinez,2024-11-07,No,,2279993.34,693
+15,Kwame,Taylor,FinanceEdge Ltd LLC,VP Marketing,kwame.taylor@financeedgeltdllc.com,+1-555-819-8438,Cold Call,Insurance,In Process,Warm,Miami,Nigeria,Emily Chen,2024-12-24,No,,2154437.88,646
+16,Joseph,Chen,ConsultPro Group Ltd,CEO,joseph.chen@consultprogroupltd.com,+1-555-269-6039,Trade Show,Real Estate,New,Hot,Seattle,Australia,David Martinez,2023-03-15,No,,4716247.39,1296
+17,Amina,Harris,InsureSmart LLC Group,Director,amina.harris@insuresmartllcgroup.com,+1-555-718-5102,Web Site,Healthcare,New,Hot,Miami,Nigeria,John Smith,2024-03-18,No,,4997883.46,927
+18,Karen,Ahmed,FinanceEdge Ltd LLC,Head of IT,karen.ahmed@financeedgeltdllc.com,+1-555-384-3973,Partner,Real Estate,Recycled,Hot,Seattle,Germany,David Martinez,2024-06-15,No,,1699876.55,838
+19,Michael,Garcia,MediCare Solutions Corp,Manager,michael.garcia@medicaresolutionscor.com,+1-555-933-1601,Word of Mouth,Healthcare,Recycled,Warm,Phoenix,Germany,Sarah Johnson,2023-10-23,No,,4852414.4,1074
+20,Priya,Kumar,TechVision Solutions Group,CEO,priya.kumar@techvisionsolutionsg.com,+1-555-292-9494,LinkedIn,Consulting,Recycled,Warm,Miami,Singapore,John Smith,2024-02-28,No,,1057613.28,946
+21,William,Taylor,RapidShip Express Corp,Business Owner,william.taylor@rapidshipexpresscorp.com,+1-555-918-4920,Email Campaign,Retail,New,Cold,New York,South Africa,David Martinez,2023-01-30,No,,511385.55,1340
+22,Linda,Harris,PropTech Realty LLC,Operations Manager,linda.harris@proptechrealtyllc.com,+1-555-822-5479,Partner,Real Estate,Recycled,Warm,Houston,Singapore,Mike Davis,2023-10-26,No,,1948750.77,1071
+23,William,Williams,LearnFast Academy Corp,VP Marketing,william.williams@learnfastacademycorp.com,+1-555-940-1042,Trade Show,Retail,In Process,Cold,Denver,Singapore,Mike Davis,2024-06-03,No,,2260409.6,850
+24,Kwame,Thomas,MediCare Solutions Group,Head of IT,kwame.thomas@medicaresolutionsgro.com,+1-555-429-4090,Referral,Consulting,Dead,Warm,Houston,UAE,John Smith,2024-01-22,No,,1624972.82,983
+25,Kwame,Kim,AutoMation Systems Corp,CEO,kwame.kim@automationsystemscor.com,+1-555-229-9229,LinkedIn,Healthcare,New,Warm,Los Angeles,South Africa,Jennifer Taylor,2024-05-22,No,,125970.61,862
+26,Barbara,White,CareFirst Medical LLC,VP Marketing,barbara.white@carefirstmedicalllc.com,+1-555-446-7512,Cold Call,Manufacturing,New,Cold,Boston,UAE,Lisa Anderson,2024-04-25,No,,3152655.94,889
+27,Amina,Patel,FinanceEdge Ltd Group,VP Marketing,amina.patel@financeedgeltdgroup.com,+1-555-332-2480,Partner,Healthcare,New,Cold,San Francisco,UK,Jennifer Taylor,2023-08-29,No,,873505.69,1129
+28,Lisa,Smith,FinanceEdge Ltd Ltd,Director,lisa.smith@financeedgeltdltd.com,+1-555-483-8056,Email Campaign,Insurance,New,Cold,Atlanta,Nigeria,Mike Davis,2023-10-28,No,,891419.06,1069
+29,Jennifer,Sharma,AutoMation Systems Group,Business Owner,jennifer.sharma@automationsystemsgro.com,+1-555-246-4804,Word of Mouth,Retail,Assigned,Warm,Phoenix,USA,Jennifer Taylor,2024-05-24,No,,4510986.65,860
+30,David,Williams,RapidShip Express Ltd,Manager,david.williams@rapidshipexpressltd.com,+1-555-806-5097,Word of Mouth,Retail,In Process,Hot,Atlanta,Singapore,Sarah Johnson,2024-10-16,No,,1224168.22,715
+31,Amir,Ahmed,HomeBase Properties Ltd,Manager,amir.ahmed@homebasepropertieslt.com,+1-555-381-1132,Web Site,Consulting,New,Cold,Seattle,Australia,Emily Chen,2024-11-05,No,,3054971.74,695
+32,Amir,Davis,Quantum Systems Inc LLC,CFO,amir.davis@quantumsystemsincllc.com,+1-555-743-2591,Web Site,Retail,In Process,Warm,New York,Nigeria,Lisa Anderson,2024-11-25,No,,3675180.85,675
+33,Jennifer,Taylor,InnovateTech Ltd Corp,CFO,jennifer.taylor@innovatetechltdcorp.com,+1-555-905-9837,LinkedIn,Logistics,New,Cold,Phoenix,India,Robert Wilson,2023-07-25,No,,4574542.32,1164
+34,Kwame,Ndiaye,HomeBase Properties Ltd,CTO,kwame.ndiaye@homebasepropertieslt.com,+1-555-244-4696,Partner,Logistics,New,Warm,Los Angeles,UAE,John Smith,2024-04-24,No,,1359069.96,890
+35,Linda,Harris,FashionForward Inc Ltd,CTO,linda.harris@fashionforwardincltd.com,+1-555-791-4830,Word of Mouth,Technology,Converted,Cold,Boston,Germany,Emily Chen,2024-10-15,Yes,2025-10-30,3255879.28,380
+36,Maria,Kim,SwiftLogistics Corp,CEO,maria.kim@swiftlogisticscorp.com,+1-555-138-5986,Word of Mouth,Healthcare,New,Hot,Houston,South Africa,Mike Davis,2023-05-24,No,,1973796.86,1226
+37,Fatima,Wang,MetroRealty Partners Group,CFO,fatima.wang@metrorealtypartnersg.com,+1-555-524-2622,Word of Mouth,Consulting,Converted,Warm,Phoenix,USA,Lisa Anderson,2024-08-24,Yes,2026-09-23,1125484.94,760
+38,Carlos,Davis,FashionForward Inc Inc,Director,carlos.davis@fashionforwardincinc.com,+1-555-162-7523,Trade Show,Insurance,In Process,Hot,Seattle,UK,Emily Chen,2024-07-11,No,,3226437.11,812
+39,Mary,Johnson,MediCare Solutions LLC,VP Sales,mary.johnson@medicaresolutionsllc.com,+1-555-170-4394,Referral,Insurance,New,Warm,Chicago,Nigeria,John Smith,2024-08-01,No,,1422510.49,791
+40,Barbara,Jones,PrecisionMfg Co Ltd,CEO,barbara.jones@precisionmfgcoltd.com,+1-555-234-1243,LinkedIn,Insurance,New,Cold,Dallas,USA,Mike Davis,2023-04-23,No,,1363569.17,1257
+41,William,Lee,SmartClass Education Group,Head of IT,william.lee@smartclasseducationg.com,+1-555-559-6931,Cold Call,Real Estate,New,Cold,Houston,Nigeria,John Smith,2023-03-07,No,,3649852.84,1304
+42,Lisa,Harris,CareFirst Medical Inc,Manager,lisa.harris@carefirstmedicalinc.com,+1-555-536-2768,Word of Mouth,Real Estate,New,Hot,Los Angeles,Germany,Mike Davis,2024-05-05,No,,375127.05,879
+43,Karen,Sharma,Quantum Systems Inc Group,Director,karen.sharma@quantumsystemsincgro.com,+1-555-490-9692,Trade Show,Real Estate,Dead,Cold,Denver,UAE,Sarah Johnson,2024-12-30,No,,3975825.66,640
+44,Linda,Chen,CareFirst Medical Group,Head of IT,linda.chen@carefirstmedicalgrou.com,+1-555-333-7779,LinkedIn,Real Estate,Assigned,Warm,Atlanta,UK,Lisa Anderson,2024-03-16,No,,2162481.83,929
+45,Thomas,Thomas,ConsultPro Group Corp,CTO,thomas.thomas@consultprogroupcorp.com,+1-555-195-8075,Cold Call,Manufacturing,New,Hot,Boston,USA,Lisa Anderson,2023-04-04,No,,3366565.66,1276
+46,Zhang,Thomas,AssetGrow Financial Corp,Business Owner,zhang.thomas@assetgrowfinancialco.com,+1-555-419-6761,Cold Call,Consulting,New,Cold,Houston,India,Jennifer Taylor,2023-10-22,No,,1160012.1,1075
+47,Michael,Thomas,TrustShield Insurance Ltd,Business Owner,michael.thomas@trustshieldinsurance.com,+1-555-331-8030,Web Site,Consulting,New,Cold,San Francisco,Australia,John Smith,2023-10-13,No,,943059.56,1084
+48,Lisa,Anderson,WealthManage Pro Inc,Business Owner,lisa.anderson@wealthmanageproinc.com,+1-555-773-7566,Cold Call,Finance,New,Cold,Miami,USA,Sarah Johnson,2023-05-27,No,,3743253.22,1223
+49,Jessica,Jackson,SmartClass Education Corp,Director,jessica.jackson@smartclasseducationc.com,+1-555-419-6314,Cold Call,Technology,In Process,Hot,Chicago,Nigeria,John Smith,2023-06-11,No,,3386145.12,1208
+50,Karen,Harris,AssetGrow Financial Corp,Head of IT,karen.harris@assetgrowfinancialco.com,+1-555-524-5475,Referral,Logistics,Recycled,Hot,Dallas,UAE,Sarah Johnson,2024-09-13,No,,1452070.03,748
+51,Amina,Kumar,AssetGrow Financial Ltd,Manager,amina.kumar@assetgrowfinanciallt.com,+1-555-713-1897,Web Site,Insurance,New,Warm,Houston,India,Robert Wilson,2023-08-14,No,,1482763.3,1144
+52,Linda,Smith,BioHealth Ltd Corp,Manager,linda.smith@biohealthltdcorp.com,+1-555-645-4770,LinkedIn,Healthcare,New,Warm,San Francisco,USA,David Martinez,2023-05-13,No,,142770.61,1237
+53,John,Anderson,DigitalLearn Corp Corp,VP Marketing,john.anderson@digitallearncorpcorp.com,+1-555-217-7636,Web Site,Manufacturing,Converted,Hot,Denver,Singapore,Lisa Anderson,2024-12-27,Yes,2026-02-27,486242.91,427
+54,Michael,Davis,UrbanRealty Group Group,Manager,michael.davis@urbanrealtygroupgrou.com,+1-555-991-6083,LinkedIn,Insurance,Converted,Warm,Chicago,UK,Sarah Johnson,2024-06-20,Yes,2024-09-08,2676493.86,80
+55,Richard,Okonkwo,WealthManage Pro Ltd,CTO,richard.okonkwo@wealthmanageproltd.com,+1-555-249-5193,Referral,Finance,New,Cold,Chicago,UK,Mike Davis,2023-08-30,No,,4758896.1,1128
+56,Amina,Harris,GlobalShip Co Group,Business Owner,amina.harris@globalshipcogroup.com,+1-555-758-6295,LinkedIn,Finance,Recycled,Warm,Los Angeles,Singapore,Jennifer Taylor,2024-11-28,No,,3175356.34,672
+57,Karen,Ahmed,RetailPro Inc Ltd,VP Marketing,karen.ahmed@retailproincltd.com,+1-555-572-8404,Web Site,Technology,Dead,Warm,Phoenix,UK,Sarah Johnson,2023-03-17,No,,3094291.52,1294
+58,Ahmed,Harris,PrimeProperties LLC Group,Business Owner,ahmed.harris@primepropertiesllcgr.com,+1-555-767-4084,LinkedIn,Consulting,New,Warm,Boston,India,John Smith,2024-04-05,No,,2280089.39,909
+59,Priya,Kim,InsureSmart LLC Group,VP Sales,priya.kim@insuresmartllcgroup.com,+1-555-824-8172,Word of Mouth,Logistics,New,Cold,Denver,India,Lisa Anderson,2023-02-10,No,,1895617.31,1329
+60,Charles,Jackson,SmartClass Education Ltd,Director,charles.jackson@smartclasseducationl.com,+1-555-167-6401,Cold Call,Logistics,New,Cold,Atlanta,Australia,Robert Wilson,2024-10-08,No,,3632481.59,723
+61,Barbara,Anderson,InsureSmart LLC Group,VP Marketing,barbara.anderson@insuresmartllcgroup.com,+1-555-771-7421,Email Campaign,Consulting,New,Cold,Los Angeles,Australia,David Martinez,2023-12-25,No,,3235291.65,1011
+62,Priya,Jones,AssetGrow Financial Group,Manager,priya.jones@assetgrowfinancialgr.com,+1-555-620-6928,Web Site,Manufacturing,New,Warm,Chicago,Canada,Lisa Anderson,2024-10-23,No,,4740957.92,708
+63,Amina,Miller,ShopNow Retail LLC,VP Marketing,amina.miller@shopnowretailllc.com,+1-555-964-2657,Web Site,Manufacturing,New,Cold,Chicago,Nigeria,David Martinez,2023-03-21,No,,813551.17,1290
+64,Susan,Kim,InsightConsulting Group,CEO,susan.kim@insightconsultinggro.com,+1-555-520-6968,Referral,Real Estate,New,Cold,Phoenix,Singapore,Emily Chen,2024-03-24,No,,2693355.19,921
+65,Lisa,Ndiaye,NextGen Software LLC,Business Owner,lisa.ndiaye@nextgensoftwarellc.com,+1-555-551-8564,Trade Show,Education,In Process,Cold,Boston,UAE,Mike Davis,2024-11-25,No,,4093611.64,675
+66,William,Wilson,RetailPro Inc Corp,CTO,william.wilson@retailproinccorp.com,+1-555-828-9452,Cold Call,Retail,In Process,Hot,Chicago,Australia,Jennifer Taylor,2024-07-21,No,,4531265.73,802
+67,Barbara,White,InsureSmart LLC LLC,CEO,barbara.white@insuresmartllcllc.com,+1-555-524-1872,Partner,Logistics,Recycled,Warm,Houston,UAE,Sarah Johnson,2023-12-24,No,,1905817.73,1012
+68,Mary,Anderson,EduLearn Systems Ltd,CEO,mary.anderson@edulearnsystemsltd.com,+1-555-393-8740,Email Campaign,Real Estate,New,Warm,Denver,USA,Sarah Johnson,2023-05-21,No,,144069.23,1229
+69,Jessica,Jones,TrustShield Insurance Group,CTO,jessica.jones@trustshieldinsurance.com,+1-555-894-5720,Referral,Retail,Dead,Hot,New York,Canada,David Martinez,2024-03-09,No,,3212811.07,936
+70,Maria,Williams,PropTech Realty Corp,Operations Manager,maria.williams@proptechrealtycorp.com,+1-555-688-4963,Email Campaign,Retail,Dead,Warm,New York,Nigeria,Lisa Anderson,2023-01-17,No,,1240792.98,1353
+71,Zhang,Garcia,AssetGrow Financial Inc,CTO,zhang.garcia@assetgrowfinancialin.com,+1-555-638-9914,Web Site,Education,Dead,Warm,New York,UAE,Lisa Anderson,2024-01-05,No,,1305568.79,1000
+72,Mary,Thomas,ManufacturePlus Co Ltd,CTO,mary.thomas@manufacturepluscoltd.com,+1-555-890-6447,Email Campaign,Technology,Assigned,Warm,Boston,Germany,Mike Davis,2024-11-03,No,,4160399.1,697
+73,Maria,Kim,NextGen Software LLC,Head of IT,maria.kim@nextgensoftwarellc.com,+1-555-137-5807,Referral,Technology,New,Hot,New York,Germany,Robert Wilson,2023-03-06,No,,2601148.77,1305
+74,Kwame,Wilson,FinanceEdge Ltd LLC,CEO,kwame.wilson@financeedgeltdllc.com,+1-555-986-6438,Trade Show,Healthcare,In Process,Warm,Atlanta,UAE,Jennifer Taylor,2024-01-01,No,,4478455.6,1004
+75,Ahmed,Anderson,CloudFirst LLC Corp,Operations Manager,ahmed.anderson@cloudfirstllccorp.com,+1-555-373-2353,Partner,Healthcare,Recycled,Warm,Denver,India,Robert Wilson,2024-01-12,No,,1639996.57,993
+76,Jennifer,Anderson,AssetGrow Financial Ltd,Business Owner,jennifer.anderson@assetgrowfinanciallt.com,+1-555-834-7981,Email Campaign,Real Estate,In Process,Warm,Seattle,USA,Lisa Anderson,2024-04-01,No,,3093514.84,913
+77,Yuki,Wilson,Quantum Systems Inc Inc,Manager,yuki.wilson@quantumsystemsincinc.com,+1-555-472-9406,Email Campaign,Technology,New,Hot,Denver,Singapore,John Smith,2024-11-18,No,,674838.62,682
+78,Sarah,Okonkwo,CareFirst Medical Ltd,Business Owner,sarah.okonkwo@carefirstmedicalltd.com,+1-555-133-3513,Word of Mouth,Manufacturing,In Process,Warm,Seattle,UK,Mike Davis,2024-01-28,No,,2670826.41,977
+79,Priya,Anderson,CareFirst Medical Ltd,CEO,priya.anderson@carefirstmedicalltd.com,+1-555-853-4048,Word of Mouth,Logistics,Assigned,Warm,Boston,UK,Robert Wilson,2023-04-27,No,,3886074.19,1253
+80,Carlos,Miller,AdvisoryPro Group Ltd,CTO,carlos.miller@advisoryprogroupltd.com,+1-555-238-2213,Word of Mouth,Finance,Recycled,Cold,Seattle,UK,Lisa Anderson,2023-07-24,No,,3355806.96,1165
+81,John,Patel,PrecisionMfg Co Ltd,CFO,john.patel@precisionmfgcoltd.com,+1-555-912-6922,Referral,Healthcare,In Process,Hot,Chicago,Canada,Jennifer Taylor,2023-06-11,No,,180105.93,1208
+82,Fatima,Harris,TrustShield Insurance LLC,VP Marketing,fatima.harris@trustshieldinsurance.com,+1-555-507-8842,Partner,Education,New,Cold,Los Angeles,India,Lisa Anderson,2023-03-09,No,,3229576.02,1302
+83,Carlos,Harris,StyleHub Retail Group,Operations Manager,carlos.harris@stylehubretailgroup.com,+1-555-755-3981,Email Campaign,Education,In Process,Cold,New York,UK,Mike Davis,2023-05-12,No,,1555416.49,1238
+84,David,Anderson,AllCover Insurance LLC,VP Marketing,david.anderson@allcoverinsurancellc.com,+1-555-966-2292,Trade Show,Insurance,In Process,Cold,Boston,Australia,Mike Davis,2024-06-15,No,,3143860.69,838
+85,Jennifer,Kumar,CareFirst Medical LLC,Business Owner,jennifer.kumar@carefirstmedicalllc.com,+1-555-837-6531,Web Site,Technology,New,Hot,New York,Nigeria,Robert Wilson,2023-06-25,No,,3273093.39,1194
+86,Zhang,Sharma,Quantum Systems Inc Inc,Operations Manager,zhang.sharma@quantumsystemsincinc.com,+1-555-396-5949,Word of Mouth,Insurance,Recycled,Cold,Atlanta,Australia,Jennifer Taylor,2024-10-04,No,,411216.48,727
+87,Patricia,Garcia,RapidShip Express Corp,VP Sales,patricia.garcia@rapidshipexpresscorp.com,+1-555-448-3353,LinkedIn,Manufacturing,Recycled,Cold,Dallas,UAE,Mike Davis,2024-04-20,No,,3815291.72,894
+88,Michael,Anderson,BuildRight Construction Corp,Head of IT,michael.anderson@buildrightconstructi.com,+1-555-353-3308,Cold Call,Technology,New,Warm,Atlanta,Nigeria,David Martinez,2023-10-01,No,,1278937.89,1096
+89,David,Anderson,DigitalLearn Corp Ltd,Head of IT,david.anderson@digitallearncorpltd.com,+1-555-627-8648,Word of Mouth,Retail,Assigned,Warm,New York,UK,David Martinez,2023-06-13,No,,2551950.09,1206
+90,Sarah,Miller,PrimeProperties LLC Ltd,VP Marketing,sarah.miller@primepropertiesllclt.com,+1-555-606-8710,Trade Show,Logistics,New,Hot,Los Angeles,UAE,Mike Davis,2023-02-21,No,,4418155.87,1318
+91,Fatima,Okonkwo,CoverAll Insurance Ltd,CEO,fatima.okonkwo@coverallinsuranceltd.com,+1-555-683-4189,LinkedIn,Logistics,New,Warm,Los Angeles,UAE,Jennifer Taylor,2024-02-15,No,,3833800.37,959
+92,Karen,Sharma,StyleHub Retail Group,CTO,karen.sharma@stylehubretailgroup.com,+1-555-503-7114,LinkedIn,Logistics,New,Warm,Chicago,Canada,David Martinez,2023-05-12,No,,2525385.62,1238
+93,Robert,Johnson,LogiFlow Networks Ltd,Head of IT,robert.johnson@logiflownetworksltd.com,+1-555-252-9446,Email Campaign,Manufacturing,Recycled,Cold,Dallas,India,David Martinez,2024-06-15,No,,4953547.9,838
+94,Lisa,Ahmed,MediCare Solutions Group,Head of IT,lisa.ahmed@medicaresolutionsgro.com,+1-555-825-5911,Word of Mouth,Technology,Dead,Warm,Dallas,UK,David Martinez,2024-06-29,No,,2939325.6,824
+95,Mary,Sharma,NextGen Software Ltd,Business Owner,mary.sharma@nextgensoftwareltd.com,+1-555-591-3793,Partner,Finance,Assigned,Cold,Houston,USA,Sarah Johnson,2023-02-22,No,,994382.42,1317
+96,Carlos,Anderson,SmartClass Education LLC,Manager,carlos.anderson@smartclasseducationl.com,+1-555-613-8726,Web Site,Finance,Converted,Cold,Houston,South Africa,Lisa Anderson,2024-12-08,Yes,2025-07-04,4990708.2,208
+97,Kwame,Kumar,AutoMation Systems Ltd,Operations Manager,kwame.kumar@automationsystemsltd.com,+1-555-450-9950,LinkedIn,Retail,New,Cold,Seattle,Canada,Emily Chen,2024-04-15,No,,1431081.66,899
+98,Lisa,Davis,SwiftLogistics Ltd,Head of IT,lisa.davis@swiftlogisticsltd.com,+1-555-424-8861,LinkedIn,Logistics,Assigned,Cold,Phoenix,Australia,Sarah Johnson,2024-12-07,No,,2888710.18,663
+99,Ahmed,Jackson,WealthManage Pro LLC,VP Marketing,ahmed.jackson@wealthmanageprollc.com,+1-555-831-2294,LinkedIn,Real Estate,In Process,Cold,Phoenix,Singapore,Emily Chen,2023-02-13,No,,1050236.64,1326
+100,Karen,Patel,SmartFactory Ltd Ltd,Business Owner,karen.patel@smartfactoryltdltd.com,+1-555-858-4920,Referral,Technology,New,Cold,Boston,Canada,Emily Chen,2023-04-22,No,,309830.98,1258
+101,Zhang,Anderson,AllCover Insurance Corp,CFO,zhang.anderson@allcoverinsurancecor.com,+1-555-105-3587,Partner,Real Estate,New,Warm,Miami,Canada,Robert Wilson,2024-11-28,No,,1639780.13,672
+102,Patricia,Okonkwo,InsureSmart LLC Group,CEO,patricia.okonkwo@insuresmartllcgroup.com,+1-555-279-7846,Email Campaign,Technology,Assigned,Warm,Seattle,India,Robert Wilson,2024-07-01,No,,4389878.68,822
+103,James,Taylor,DigitalLearn Corp Group,VP Marketing,james.taylor@digitallearncorpgrou.com,+1-555-565-9901,Word of Mouth,Finance,New,Cold,Seattle,Australia,Emily Chen,2023-12-10,No,,4053628.7,1026
+104,Priya,Garcia,EduPath Online Corp,CEO,priya.garcia@edupathonlinecorp.com,+1-555-854-6523,Trade Show,Consulting,In Process,Cold,Houston,India,David Martinez,2023-07-10,No,,4143599.64,1179
+105,Raj,Williams,CoverAll Insurance Inc,Head of IT,raj.williams@coverallinsuranceinc.com,+1-555-431-5064,Web Site,Retail,New,Warm,Houston,Singapore,Robert Wilson,2023-05-24,No,,4772472.37,1226
+106,Lisa,Ahmed,EduPath Online Group,Director,lisa.ahmed@edupathonlinegroup.com,+1-555-809-4871,Web Site,Healthcare,New,Warm,Phoenix,India,David Martinez,2023-09-25,No,,3446064.42,1102
+107,Lisa,Kim,PropTech Realty Ltd,VP Sales,lisa.kim@proptechrealtyltd.com,+1-555-324-3188,Word of Mouth,Finance,In Process,Warm,San Francisco,Nigeria,Lisa Anderson,2024-09-21,No,,2108435.8,740
+108,Kwame,Okonkwo,PrecisionMfg Co LLC,Business Owner,kwame.okonkwo@precisionmfgcollc.com,+1-555-994-2341,Word of Mouth,Logistics,Assigned,Cold,Dallas,UK,Sarah Johnson,2024-11-27,No,,355702.34,673
+109,Richard,Ahmed,PrecisionMfg Co LLC,Operations Manager,richard.ahmed@precisionmfgcollc.com,+1-555-552-2904,Referral,Consulting,New,Warm,Los Angeles,South Africa,Jennifer Taylor,2023-12-02,No,,4053025.81,1034
+110,Maria,Jones,InvestRight Capital Corp,CEO,maria.jones@investrightcapitalco.com,+1-555-672-8575,Trade Show,Technology,Recycled,Warm,Phoenix,USA,Emily Chen,2024-07-31,No,,2912640.76,792
+111,Robert,White,WealthManage Pro Inc,CTO,robert.white@wealthmanageproinc.com,+1-555-583-1519,Trade Show,Education,Dead,Hot,Chicago,UAE,Lisa Anderson,2023-03-03,No,,4964640.16,1308
+112,Ahmed,Harris,AutoMation Systems Corp,Operations Manager,ahmed.harris@automationsystemscor.com,+1-555-236-6697,Cold Call,Finance,New,Cold,Atlanta,South Africa,Mike Davis,2024-11-30,No,,3652897.8,670
+113,Joseph,Smith,GlobalShip Co Inc,Operations Manager,joseph.smith@globalshipcoinc.com,+1-555-534-9715,Partner,Insurance,In Process,Hot,Seattle,Germany,Mike Davis,2024-04-19,No,,1414466.15,895
+114,Linda,Johnson,AssetGrow Financial Corp,VP Sales,linda.johnson@assetgrowfinancialco.com,+1-555-168-2653,Web Site,Real Estate,New,Cold,Miami,USA,Emily Chen,2023-09-04,No,,3715678.34,1123
+115,Priya,Harris,ShopNow Retail Group,CFO,priya.harris@shopnowretailgroup.com,+1-555-615-5739,Referral,Consulting,Assigned,Warm,Denver,Nigeria,Lisa Anderson,2023-02-27,No,,1222674.97,1312
+116,Barbara,Wang,TrendyShop Inc LLC,CEO,barbara.wang@trendyshopincllc.com,+1-555-670-3869,Partner,Logistics,Converted,Warm,New York,Germany,David Martinez,2023-11-04,Yes,2025-05-20,3939732.75,563
+117,Raj,Kim,SmartClass Education Corp,Manager,raj.kim@smartclasseducationc.com,+1-555-288-9813,Word of Mouth,Insurance,New,Hot,Phoenix,India,Jennifer Taylor,2023-11-04,No,,4577968.81,1062
+118,Zhang,White,TrustShield Insurance Group,VP Sales,zhang.white@trustshieldinsurance.com,+1-555-361-4331,LinkedIn,Healthcare,New,Warm,Dallas,UK,Emily Chen,2024-02-02,No,,305106.31,972
+119,Ahmed,Wang,FastTrack Logistics Group,VP Sales,ahmed.wang@fasttracklogisticsgr.com,+1-555-923-4555,Word of Mouth,Insurance,New,Warm,Phoenix,USA,Emily Chen,2023-03-16,No,,4688940.83,1295
+120,Linda,Lee,GlobalShip Co Corp,Business Owner,linda.lee@globalshipcocorp.com,+1-555-820-4350,Partner,Insurance,Assigned,Cold,Dallas,Australia,David Martinez,2024-12-13,No,,2357939.78,657
+121,Amir,Taylor,SafeGuard Insurance Ltd,Head of IT,amir.taylor@safeguardinsurancelt.com,+1-555-200-8692,LinkedIn,Insurance,Dead,Warm,Dallas,UAE,John Smith,2024-05-24,No,,2834497.4,860
+122,Joseph,Lee,ConsultPro Group Inc,Business Owner,joseph.lee@consultprogroupinc.com,+1-555-693-7841,Trade Show,Finance,In Process,Hot,Dallas,Canada,David Martinez,2024-07-20,No,,2870458.09,803
+123,Sarah,Martin,TrustShield Insurance Ltd,Head of IT,sarah.martin@trustshieldinsurance.com,+1-555-571-3756,LinkedIn,Finance,In Process,Hot,San Francisco,South Africa,Jennifer Taylor,2024-05-15,No,,961036.48,869
+124,Patricia,Kumar,FinanceEdge Ltd Inc,Manager,patricia.kumar@financeedgeltdinc.com,+1-555-240-4791,Cold Call,Finance,New,Hot,Houston,South Africa,Jennifer Taylor,2023-01-07,No,,1897343.43,1363
+125,Kwame,Wang,BioHealth Ltd Inc,Operations Manager,kwame.wang@biohealthltdinc.com,+1-555-521-1194,Web Site,Logistics,New,Cold,Phoenix,South Africa,Robert Wilson,2024-06-28,No,,134855.86,825
+126,Yuki,Ndiaye,CloudFirst LLC Inc,CFO,yuki.ndiaye@cloudfirstllcinc.com,+1-555-346-4144,Trade Show,Manufacturing,New,Warm,Atlanta,UK,Lisa Anderson,2024-06-20,No,,4798524.08,833
+127,Maria,Ahmed,BuildRight Construction LLC,CTO,maria.ahmed@buildrightconstructi.com,+1-555-769-1519,Cold Call,Education,In Process,Warm,Atlanta,South Africa,Jennifer Taylor,2024-12-01,No,,327768.95,669
+128,James,Kim,DataDrive Analytics Inc,Director,james.kim@datadriveanalyticsin.com,+1-555-679-2562,Web Site,Insurance,Recycled,Hot,San Francisco,Nigeria,Jennifer Taylor,2024-03-20,No,,1391920.51,925
+129,John,Wang,LearnFast Academy Group,Director,john.wang@learnfastacademygrou.com,+1-555-116-4394,Email Campaign,Education,New,Hot,Phoenix,India,Emily Chen,2023-07-03,No,,2855144.8,1186
+130,Ahmed,Wang,PrecisionMfg Co Ltd,Operations Manager,ahmed.wang@precisionmfgcoltd.com,+1-555-863-6666,Web Site,Healthcare,Converted,Warm,Houston,UK,Lisa Anderson,2023-05-24,Yes,2023-10-31,3045585.28,160
+131,Priya,Okonkwo,InnovateTech Ltd Inc,Head of IT,priya.okonkwo@innovatetechltdinc.com,+1-555-333-6829,Partner,Education,In Process,Hot,Miami,Nigeria,David Martinez,2024-04-06,No,,474185.88,908
+132,Charles,Ndiaye,BuildRight Construction Inc,CFO,charles.ndiaye@buildrightconstructi.com,+1-555-489-3527,Partner,Manufacturing,New,Warm,Los Angeles,UK,John Smith,2023-10-02,No,,4717653.13,1095
+133,Carlos,Thomas,GlobalShip Co Ltd,CTO,carlos.thomas@globalshipcoltd.com,+1-555-291-8061,Word of Mouth,Logistics,New,Cold,Boston,UAE,Sarah Johnson,2023-05-16,No,,179996.42,1234
+134,Amir,Patel,InsureSmart LLC Group,CEO,amir.patel@insuresmartllcgroup.com,+1-555-398-7779,Partner,Healthcare,In Process,Cold,Boston,Canada,Mike Davis,2024-01-30,No,,3442314.16,975
+135,David,Jones,LearnFast Academy Ltd,CFO,david.jones@learnfastacademyltd.com,+1-555-164-3739,Partner,Retail,In Process,Warm,Phoenix,Singapore,Sarah Johnson,2024-05-19,No,,1837568.32,865
+136,Sarah,Lee,Quantum Systems Inc Corp,CTO,sarah.lee@quantumsystemsinccor.com,+1-555-238-5991,Web Site,Education,Assigned,Warm,Denver,UAE,Lisa Anderson,2024-04-13,No,,2229103.46,901
+137,Yuki,Chen,FastTrack Logistics LLC,Business Owner,yuki.chen@fasttracklogisticsll.com,+1-555-811-4290,Word of Mouth,Manufacturing,In Process,Hot,Atlanta,Germany,Robert Wilson,2023-11-25,No,,3687628.11,1041
+138,Amina,Ahmed,BuildRight Construction Ltd,Director,amina.ahmed@buildrightconstructi.com,+1-555-216-4273,Email Campaign,Logistics,Converted,Hot,San Francisco,Singapore,Emily Chen,2023-10-15,Yes,2025-12-27,2220352.02,804
+139,Charles,Kim,ManufacturePlus Co Corp,VP Marketing,charles.kim@manufacturepluscocor.com,+1-555-347-5139,Email Campaign,Education,Recycled,Warm,Los Angeles,Singapore,Jennifer Taylor,2023-05-23,No,,2932107.9,1227
+140,Zhang,Patel,FinanceEdge Ltd Ltd,CTO,zhang.patel@financeedgeltdltd.com,+1-555-211-5067,LinkedIn,Finance,Dead,Cold,Denver,USA,David Martinez,2024-08-31,No,,4835715.11,761
+141,Priya,Ndiaye,UrbanRealty Group Inc,VP Marketing,priya.ndiaye@urbanrealtygroupinc.com,+1-555-327-9366,Referral,Real Estate,New,Warm,Atlanta,Singapore,Mike Davis,2023-04-11,No,,1757588.57,1269
+142,Mary,Martin,EduLearn Systems Ltd,CFO,mary.martin@edulearnsystemsltd.com,+1-555-456-6110,LinkedIn,Real Estate,Converted,Hot,Boston,Singapore,Lisa Anderson,2023-03-29,Yes,2023-11-21,2407004.53,237
+143,Carlos,Lee,SmartFactory Ltd Corp,VP Marketing,carlos.lee@smartfactoryltdcorp.com,+1-555-145-2885,Web Site,Manufacturing,In Process,Cold,Los Angeles,India,Emily Chen,2023-03-10,No,,2604169.81,1301
+144,David,Anderson,TrustShield Insurance Corp,Manager,david.anderson@trustshieldinsurance.com,+1-555-744-4022,Email Campaign,Education,Recycled,Warm,New York,Nigeria,Emily Chen,2023-08-26,No,,2275396.31,1132
+145,Yuki,Jackson,TechVision Solutions LLC,CTO,yuki.jackson@techvisionsolutionsl.com,+1-555-691-2667,Email Campaign,Manufacturing,Assigned,Warm,Houston,Singapore,Sarah Johnson,2023-10-13,No,,1348649.31,1084
+146,Amina,Kumar,Quantum Systems Inc Ltd,Business Owner,amina.kumar@quantumsystemsincltd.com,+1-555-216-6700,LinkedIn,Real Estate,Converted,Cold,Chicago,Australia,Sarah Johnson,2024-09-17,Yes,2025-10-23,3376944.9,401
+147,Raj,Brown,BuildRight Construction Ltd,Director,raj.brown@buildrightconstructi.com,+1-555-810-3316,Partner,Education,New,Cold,Chicago,Nigeria,David Martinez,2023-07-07,No,,2144041.97,1182
+148,Amina,Chen,PrecisionMfg Co LLC,Head of IT,amina.chen@precisionmfgcollc.com,+1-555-395-3298,Email Campaign,Manufacturing,Dead,Warm,Denver,USA,Lisa Anderson,2023-06-20,No,,4761617.65,1199
+149,Amina,Jones,HealthBridge Corp Corp,Head of IT,amina.jones@healthbridgecorpcorp.com,+1-555-518-9056,Partner,Real Estate,Dead,Warm,Chicago,UK,John Smith,2024-06-01,No,,3989610.4,852
+150,Joseph,Taylor,FinanceEdge Ltd Ltd,VP Marketing,joseph.taylor@financeedgeltdltd.com,+1-555-272-8492,Word of Mouth,Logistics,Assigned,Cold,Los Angeles,Nigeria,Sarah Johnson,2024-07-04,No,,1376050.1,819
+151,Fatima,Patel,GlobalShip Co Inc,VP Sales,fatima.patel@globalshipcoinc.com,+1-555-535-2677,Referral,Retail,Recycled,Hot,Seattle,Australia,Lisa Anderson,2024-07-13,No,,4317888.15,810
+152,Jennifer,Harris,PropTech Realty LLC,Director,jennifer.harris@proptechrealtyllc.com,+1-555-981-8015,Email Campaign,Consulting,Assigned,Hot,Houston,Canada,John Smith,2024-08-25,No,,2871868.01,767
+153,Karen,Sharma,PrecisionMfg Co LLC,VP Marketing,karen.sharma@precisionmfgcollc.com,+1-555-396-5380,Cold Call,Finance,In Process,Warm,New York,Australia,Mike Davis,2024-12-21,No,,3522061.31,649
+154,William,Davis,ConsultPro Group Ltd,Manager,william.davis@consultprogroupltd.com,+1-555-601-3329,Trade Show,Education,Assigned,Warm,Seattle,UK,Sarah Johnson,2024-11-23,No,,2044111.33,677
+155,Karen,Kim,FashionForward Inc Corp,Business Owner,karen.kim@fashionforwardinccor.com,+1-555-102-2526,Word of Mouth,Manufacturing,Recycled,Hot,Boston,UAE,Emily Chen,2023-12-02,No,,4842236.47,1034
+156,Jessica,Martin,LearnFast Academy Ltd,Operations Manager,jessica.martin@learnfastacademyltd.com,+1-555-691-3139,Word of Mouth,Manufacturing,In Process,Cold,New York,USA,Sarah Johnson,2023-12-12,No,,3149588.63,1024
+157,Maria,Smith,PropTech Realty LLC,CEO,maria.smith@proptechrealtyllc.com,+1-555-538-4314,Email Campaign,Retail,Recycled,Hot,Phoenix,UK,Lisa Anderson,2024-04-12,No,,1289426.93,902
+158,Fatima,Wang,CareFirst Medical LLC,VP Marketing,fatima.wang@carefirstmedicalllc.com,+1-555-843-4836,Partner,Healthcare,New,Cold,Los Angeles,USA,Emily Chen,2024-02-10,No,,2410193.21,964
+159,William,Ahmed,ShopNow Retail Group,CEO,william.ahmed@shopnowretailgroup.com,+1-555-812-6629,Cold Call,Education,Recycled,Cold,Chicago,Singapore,Sarah Johnson,2023-01-10,No,,1183286.99,1360
+160,Jennifer,Lee,EduLearn Systems Inc,VP Marketing,jennifer.lee@edulearnsystemsinc.com,+1-555-240-7270,Email Campaign,Finance,In Process,Hot,Boston,Nigeria,John Smith,2024-01-12,No,,3071080.23,993
+161,David,Harris,WealthManage Pro LLC,Business Owner,david.harris@wealthmanageprollc.com,+1-555-803-8248,Referral,Healthcare,New,Hot,Chicago,UK,David Martinez,2024-02-26,No,,1790101.42,948
+162,Yuki,Anderson,LogiFlow Networks LLC,CTO,yuki.anderson@logiflownetworksllc.com,+1-555-354-5668,Web Site,Retail,In Process,Hot,Boston,Nigeria,Emily Chen,2024-10-22,No,,3751826.02,709
+163,Charles,Chen,RetailPro Inc LLC,CTO,charles.chen@retailproincllc.com,+1-555-346-9185,Cold Call,Logistics,Recycled,Hot,Dallas,Germany,Mike Davis,2024-01-31,No,,1964849.33,974
+164,Zhang,Thomas,PrecisionMfg Co LLC,CEO,zhang.thomas@precisionmfgcollc.com,+1-555-701-2106,Web Site,Retail,Recycled,Hot,New York,USA,David Martinez,2023-03-16,No,,2557722.49,1295
+165,Zhang,White,SmartFactory Ltd Corp,Operations Manager,zhang.white@smartfactoryltdcorp.com,+1-555-650-3501,Trade Show,Healthcare,New,Warm,Los Angeles,South Africa,Emily Chen,2024-10-17,No,,4872851.25,714
+166,Barbara,Patel,InnovateTech Ltd Corp,Manager,barbara.patel@innovatetechltdcorp.com,+1-555-847-4909,Web Site,Insurance,New,Hot,Atlanta,UK,Jennifer Taylor,2023-11-14,No,,3080869.13,1052
+167,Patricia,Taylor,AssetGrow Financial LLC,CFO,patricia.taylor@assetgrowfinancialll.com,+1-555-818-1185,Email Campaign,Real Estate,New,Warm,Boston,South Africa,Robert Wilson,2023-01-13,No,,876466.62,1357
+168,William,Lee,InsightConsulting Ltd,Director,william.lee@insightconsultingltd.com,+1-555-926-8034,Trade Show,Logistics,New,Hot,Phoenix,Nigeria,Sarah Johnson,2023-01-31,No,,2505930.47,1339
+169,Fatima,Johnson,BioHealth Ltd Group,CFO,fatima.johnson@biohealthltdgroup.com,+1-555-361-2685,Cold Call,Insurance,New,Cold,Boston,USA,John Smith,2024-01-12,No,,4300510.6,993
+170,James,Davis,FinanceEdge Ltd Corp,CFO,james.davis@financeedgeltdcorp.com,+1-555-283-1579,Partner,Insurance,In Process,Warm,Houston,UAE,Lisa Anderson,2024-01-28,No,,1392726.89,977
+171,John,Ahmed,FashionForward Inc Inc,CEO,john.ahmed@fashionforwardincinc.com,+1-555-283-4656,Web Site,Education,Dead,Hot,Seattle,Australia,Robert Wilson,2024-11-20,No,,1670139.56,680
+172,Maria,Smith,FashionForward Inc LLC,VP Marketing,maria.smith@fashionforwardincllc.com,+1-555-857-4974,Word of Mouth,Manufacturing,In Process,Cold,Seattle,Canada,Emily Chen,2024-07-31,No,,795303.57,792
+173,Zhang,Smith,ShopNow Retail Group,CEO,zhang.smith@shopnowretailgroup.com,+1-555-443-1023,Partner,Retail,In Process,Hot,Houston,South Africa,Emily Chen,2024-10-13,No,,2128088.42,718
+174,Patricia,Jones,AllCover Insurance Ltd,VP Sales,patricia.jones@allcoverinsuranceltd.com,+1-555-965-9515,Partner,Manufacturing,New,Warm,San Francisco,UK,Sarah Johnson,2023-02-14,No,,2551867.43,1325
+175,Priya,Williams,PrimeProperties LLC Group,CFO,priya.williams@primepropertiesllcgr.com,+1-555-342-5778,Trade Show,Manufacturing,New,Warm,San Francisco,Germany,Lisa Anderson,2024-03-21,No,,2291151.37,924
+176,Joseph,Williams,HealthBridge Corp LLC,CTO,joseph.williams@healthbridgecorpllc.com,+1-555-268-8365,Word of Mouth,Manufacturing,New,Warm,Los Angeles,South Africa,Lisa Anderson,2023-06-09,No,,4824941.88,1210
+177,Jessica,Harris,SwiftLogistics Corp,CTO,jessica.harris@swiftlogisticscorp.com,+1-555-261-5984,Web Site,Insurance,In Process,Warm,Chicago,UK,Emily Chen,2023-05-03,No,,4843580.02,1247
+178,Priya,Kumar,RetailPro Inc Ltd,CEO,priya.kumar@retailproincltd.com,+1-555-514-8408,Referral,Healthcare,In Process,Warm,Los Angeles,India,Sarah Johnson,2023-06-28,No,,109186.77,1191
+179,Joseph,Jones,HealthBridge Corp Corp,CTO,joseph.jones@healthbridgecorpcorp.com,+1-555-696-5240,Cold Call,Technology,In Process,Hot,Houston,Singapore,Mike Davis,2024-12-03,No,,505294.26,667
+180,Priya,Brown,FinanceEdge Ltd Corp,Business Owner,priya.brown@financeedgeltdcorp.com,+1-555-543-7471,Word of Mouth,Technology,New,Warm,Miami,UAE,Mike Davis,2023-06-22,No,,1802019.1,1197
+181,Susan,Wilson,LearnFast Academy Corp,Business Owner,susan.wilson@learnfastacademycorp.com,+1-555-734-5026,Trade Show,Real Estate,New,Warm,Boston,Singapore,John Smith,2023-02-05,No,,484221.68,1334
+182,Ahmed,Jones,SmartClass Education LLC,Operations Manager,ahmed.jones@smartclasseducationl.com,+1-555-913-1319,Partner,Manufacturing,Dead,Warm,Boston,Singapore,Lisa Anderson,2023-09-13,No,,4567751.23,1114
+183,Raj,Jackson,LearnFast Academy LLC,Business Owner,raj.jackson@learnfastacademyllc.com,+1-555-324-1480,Trade Show,Technology,New,Warm,Boston,Germany,Emily Chen,2023-11-23,No,,4871200.32,1043
+184,Michael,Davis,AssetGrow Financial LLC,CEO,michael.davis@assetgrowfinancialll.com,+1-555-882-4594,Partner,Manufacturing,In Process,Hot,Chicago,Canada,Lisa Anderson,2024-06-30,No,,4040740.62,823
+185,Amir,Ahmed,GlobalMed Corp Ltd,VP Sales,amir.ahmed@globalmedcorpltd.com,+1-555-956-9064,Trade Show,Finance,New,Warm,New York,UK,John Smith,2024-07-30,No,,1201485.62,793
+186,Joseph,Smith,TrendyShop Inc Corp,Business Owner,joseph.smith@trendyshopinccorp.com,+1-555-306-3137,LinkedIn,Finance,New,Warm,New York,USA,Mike Davis,2023-12-06,No,,2953715.42,1030
+187,Barbara,Okonkwo,PropTech Realty Group,Director,barbara.okonkwo@proptechrealtygroup.com,+1-555-821-7481,Cold Call,Manufacturing,In Process,Warm,Dallas,India,Mike Davis,2023-03-16,No,,3675142.53,1295
+188,Yuki,Ndiaye,Quantum Systems Inc Corp,Operations Manager,yuki.ndiaye@quantumsystemsinccor.com,+1-555-810-6846,Referral,Consulting,In Process,Hot,Atlanta,Australia,Robert Wilson,2023-06-28,No,,680374.41,1191
+189,James,Kim,DigitalLearn Corp Corp,Business Owner,james.kim@digitallearncorpcorp.com,+1-555-425-4619,Cold Call,Real Estate,New,Hot,Dallas,UK,Emily Chen,2023-07-06,No,,1766710.12,1183
+190,Raj,Garcia,Quantum Systems Inc Inc,CEO,raj.garcia@quantumsystemsincinc.com,+1-555-371-4435,Referral,Healthcare,In Process,Warm,Phoenix,UK,John Smith,2024-04-02,No,,288329.92,912
+191,Carlos,Lee,SmartClass Education LLC,Director,carlos.lee@smartclasseducationl.com,+1-555-659-7149,Cold Call,Real Estate,Converted,Cold,Miami,Canada,Mike Davis,2024-05-19,Yes,2025-06-10,2283872.72,387
+192,Robert,Taylor,GlobalMed Corp Ltd,CTO,robert.taylor@globalmedcorpltd.com,+1-555-450-3787,Partner,Finance,In Process,Cold,Los Angeles,South Africa,Sarah Johnson,2023-04-18,No,,1722855.39,1262
+193,Kwame,Kim,GlobalMed Corp Corp,Manager,kwame.kim@globalmedcorpcorp.com,+1-555-260-1877,Cold Call,Manufacturing,New,Hot,Houston,UAE,Robert Wilson,2024-09-13,No,,3319959.57,748
+194,Lisa,Davis,EduLearn Systems Inc,Head of IT,lisa.davis@edulearnsystemsinc.com,+1-555-257-1893,LinkedIn,Technology,Converted,Warm,Los Angeles,Australia,Jennifer Taylor,2024-08-08,Yes,2026-02-21,1038390.26,562
+195,Mary,Miller,DataDrive Analytics Ltd,CTO,mary.miller@datadriveanalyticslt.com,+1-555-415-7512,Word of Mouth,Real Estate,New,Cold,Phoenix,UK,David Martinez,2024-04-29,No,,965162.04,885
+196,Ahmed,Thomas,CloudFirst LLC Corp,Head of IT,ahmed.thomas@cloudfirstllccorp.com,+1-555-576-5315,Referral,Retail,New,Cold,New York,India,Sarah Johnson,2023-09-27,No,,474251.19,1100
+197,Amir,Ndiaye,PrecisionMfg Co Corp,CEO,amir.ndiaye@precisionmfgcocorp.com,+1-555-960-7342,Partner,Logistics,Assigned,Cold,Seattle,Nigeria,Emily Chen,2024-07-20,No,,2407498.29,803
+198,Jennifer,Jackson,AllCover Insurance Inc,Operations Manager,jennifer.jackson@allcoverinsuranceinc.com,+1-555-919-3415,Cold Call,Real Estate,Dead,Hot,Chicago,Canada,Emily Chen,2024-08-07,No,,674620.69,785
+199,Yuki,Williams,StyleHub Retail Corp,CFO,yuki.williams@stylehubretailcorp.com,+1-555-954-5225,LinkedIn,Healthcare,Assigned,Hot,Atlanta,South Africa,David Martinez,2024-10-04,No,,2782668.25,727
+200,Karen,Kumar,StrategyFirst Consulting Inc,CTO,karen.kumar@strategyfirstconsult.com,+1-555-524-3451,Email Campaign,Consulting,Dead,Cold,Denver,UK,Sarah Johnson,2024-03-05,No,,2835284.61,940
+201,Michael,Ndiaye,HomeBase Properties Group,VP Marketing,michael.ndiaye@homebasepropertiesgr.com,+1-555-492-8955,Word of Mouth,Technology,In Process,Hot,Phoenix,UAE,Mike Davis,2024-02-25,No,,3110310.22,949
+202,Priya,Johnson,CoverAll Insurance Ltd,Head of IT,priya.johnson@coverallinsuranceltd.com,+1-555-375-7102,Web Site,Manufacturing,Assigned,Warm,Phoenix,Australia,Jennifer Taylor,2023-02-20,No,,4298262.18,1319
+203,Michael,Davis,LogiFlow Networks Ltd,VP Marketing,michael.davis@logiflownetworksltd.com,+1-555-846-7828,Cold Call,Insurance,Recycled,Warm,Houston,UAE,Jennifer Taylor,2023-11-25,No,,3809491.81,1041
+204,Fatima,Johnson,InvestRight Capital LLC,Operations Manager,fatima.johnson@investrightcapitalll.com,+1-555-513-3222,Web Site,Finance,New,Hot,Houston,USA,Emily Chen,2023-11-15,No,,213701.67,1051
+205,Patricia,Thomas,AllCover Insurance LLC,Head of IT,patricia.thomas@allcoverinsurancellc.com,+1-555-617-7503,Cold Call,Technology,In Process,Hot,Dallas,Singapore,Jennifer Taylor,2024-01-13,No,,929039.29,992
+206,Kwame,Ahmed,TrustShield Insurance Ltd,VP Marketing,kwame.ahmed@trustshieldinsurance.com,+1-555-866-2480,Trade Show,Technology,In Process,Warm,New York,India,Emily Chen,2023-06-17,No,,4292700.38,1202
+207,Joseph,Wang,SecureFinance Inc Ltd,CEO,joseph.wang@securefinanceincltd.com,+1-555-585-3167,Email Campaign,Consulting,Converted,Hot,Houston,Australia,Robert Wilson,2024-06-09,Yes,2024-06-29,3578065.42,20
+208,Karen,White,AutoMation Systems Ltd,VP Sales,karen.white@automationsystemsltd.com,+1-555-577-5950,Partner,Consulting,Recycled,Hot,New York,South Africa,Lisa Anderson,2023-09-16,No,,2829212.73,1111
+209,Charles,Taylor,StyleHub Retail Inc,Director,charles.taylor@stylehubretailinc.com,+1-555-383-6327,Trade Show,Retail,Recycled,Cold,San Francisco,Australia,Emily Chen,2023-03-07,No,,792150.02,1304
+210,Sarah,Johnson,FastTrack Logistics Corp,CFO,sarah.johnson@fasttracklogisticsco.com,+1-555-838-1417,Word of Mouth,Retail,In Process,Warm,Atlanta,UAE,David Martinez,2024-11-28,No,,3696823.87,672
+211,Richard,Anderson,EduPath Online LLC,Head of IT,richard.anderson@edupathonlinellc.com,+1-555-787-6873,Trade Show,Finance,Dead,Cold,Boston,India,Robert Wilson,2024-10-15,No,,533135.17,716
+212,William,Lee,SafeGuard Insurance Group,Director,william.lee@safeguardinsurancegr.com,+1-555-770-2463,Referral,Manufacturing,New,Hot,San Francisco,Australia,David Martinez,2024-11-27,No,,3951047.66,673
+213,Priya,Thomas,SafeGuard Insurance Group,CTO,priya.thomas@safeguardinsurancegr.com,+1-555-581-1879,Cold Call,Real Estate,In Process,Hot,Boston,UK,David Martinez,2024-04-19,No,,2672700.6,895
+214,Zhang,Johnson,ConsultPro Group LLC,Manager,zhang.johnson@consultprogroupllc.com,+1-555-683-8496,Email Campaign,Manufacturing,Assigned,Cold,Chicago,UK,Jennifer Taylor,2023-12-17,No,,1696515.76,1019
+215,Susan,Anderson,Quantum Systems Inc Inc,VP Marketing,susan.anderson@quantumsystemsincinc.com,+1-555-314-3762,Email Campaign,Real Estate,New,Hot,Chicago,Nigeria,David Martinez,2024-04-07,No,,3185763.33,907
+216,Priya,White,NextGen Software Corp,Operations Manager,priya.white@nextgensoftwarecorp.com,+1-555-304-7112,Web Site,Manufacturing,New,Cold,Houston,USA,John Smith,2023-02-08,No,,3152100.3,1331
+217,Sarah,Davis,SmartFactory Ltd Ltd,CTO,sarah.davis@smartfactoryltdltd.com,+1-555-492-9246,Trade Show,Finance,In Process,Hot,New York,Australia,Robert Wilson,2023-05-13,No,,2306835.24,1237
+218,Priya,White,StyleHub Retail LLC,Director,priya.white@stylehubretailllc.com,+1-555-868-4087,Email Campaign,Education,In Process,Hot,Houston,Canada,Mike Davis,2024-05-16,No,,1095391.63,868
+219,Mary,Ahmed,InvestRight Capital LLC,CEO,mary.ahmed@investrightcapitalll.com,+1-555-484-5190,Web Site,Consulting,New,Hot,Miami,UK,John Smith,2024-01-11,No,,288763.53,994
+220,Linda,White,RapidShip Express Corp,VP Marketing,linda.white@rapidshipexpresscorp.com,+1-555-585-3508,Referral,Technology,New,Warm,Atlanta,UK,Robert Wilson,2024-07-14,No,,3132849.0,809
+221,William,White,EduLearn Systems Group,CTO,william.white@edulearnsystemsgroup.com,+1-555-903-2741,Word of Mouth,Insurance,New,Cold,Houston,Australia,Emily Chen,2023-10-17,No,,1821713.09,1080
+222,Zhang,Taylor,DataDrive Analytics Inc,VP Sales,zhang.taylor@datadriveanalyticsin.com,+1-555-804-8875,LinkedIn,Insurance,Dead,Hot,New York,UK,Sarah Johnson,2024-05-23,No,,4184399.22,861
+223,Amina,Jones,InsureSmart LLC Group,VP Marketing,amina.jones@insuresmartllcgroup.com,+1-555-759-4787,Word of Mouth,Retail,New,Warm,Seattle,USA,Sarah Johnson,2023-04-14,No,,4075233.15,1266
+224,Robert,Taylor,FashionForward Inc Ltd,CEO,robert.taylor@fashionforwardincltd.com,+1-555-109-3267,Email Campaign,Manufacturing,Converted,Warm,Seattle,Nigeria,Robert Wilson,2023-04-29,Yes,2023-11-09,4398453.91,194
+225,Jennifer,Thomas,MediCare Solutions LLC,Manager,jennifer.thomas@medicaresolutionsllc.com,+1-555-567-5453,Partner,Real Estate,New,Warm,Miami,India,Sarah Johnson,2024-02-15,No,,705932.3,959
+226,Patricia,Garcia,EduLearn Systems Corp,Head of IT,patricia.garcia@edulearnsystemscorp.com,+1-555-285-7221,LinkedIn,Consulting,Recycled,Hot,Miami,India,Jennifer Taylor,2024-08-05,No,,4605970.03,787
+227,Linda,White,RapidShip Express Inc,Director,linda.white@rapidshipexpressinc.com,+1-555-112-9598,Referral,Manufacturing,New,Cold,Boston,Nigeria,Sarah Johnson,2023-09-25,No,,2192597.14,1102
+228,Sarah,Martin,WealthManage Pro Corp,Business Owner,sarah.martin@wealthmanageprocorp.com,+1-555-155-1190,Email Campaign,Logistics,New,Warm,Seattle,India,Sarah Johnson,2024-07-25,No,,3769578.51,798
+229,Raj,Davis,MediCare Solutions Ltd,VP Sales,raj.davis@medicaresolutionsltd.com,+1-555-663-7203,Partner,Insurance,New,Hot,Seattle,Singapore,Jennifer Taylor,2024-06-03,No,,485698.32,850
+230,Amina,Harris,InnovateTech Ltd Inc,CEO,amina.harris@innovatetechltdinc.com,+1-555-205-7609,Partner,Technology,Recycled,Cold,Boston,USA,Sarah Johnson,2024-10-31,No,,3969327.26,700
+231,Lisa,Kumar,TrustShield Insurance LLC,Director,lisa.kumar@trustshieldinsurance.com,+1-555-945-1889,Referral,Real Estate,Recycled,Warm,Boston,Nigeria,Jennifer Taylor,2023-12-16,No,,3597457.44,1020
+232,Fatima,Kim,RapidShip Express Inc,VP Sales,fatima.kim@rapidshipexpressinc.com,+1-555-102-6592,LinkedIn,Retail,New,Cold,Boston,Germany,Sarah Johnson,2024-11-05,No,,276601.64,695
+233,David,Martin,LogiFlow Networks Corp,Business Owner,david.martin@logiflownetworkscorp.com,+1-555-300-4072,Cold Call,Education,New,Hot,Seattle,Canada,Lisa Anderson,2023-09-18,No,,583440.45,1109
+234,Zhang,Johnson,Quantum Systems Inc Group,Head of IT,zhang.johnson@quantumsystemsincgro.com,+1-555-774-9260,Email Campaign,Real Estate,New,Hot,Boston,USA,David Martinez,2024-04-06,No,,4202139.75,908
+235,Kwame,Kumar,InsightConsulting LLC,CTO,kwame.kumar@insightconsultingllc.com,+1-555-496-6273,Partner,Education,New,Cold,San Francisco,Canada,Robert Wilson,2023-05-12,No,,2019456.48,1238
+236,Priya,Taylor,RapidShip Express LLC,Business Owner,priya.taylor@rapidshipexpressllc.com,+1-555-816-9393,Trade Show,Logistics,New,Warm,San Francisco,South Africa,Emily Chen,2024-02-27,No,,1044400.96,947
+237,Charles,Wang,WealthManage Pro LLC,Operations Manager,charles.wang@wealthmanageprollc.com,+1-555-810-6281,Cold Call,Manufacturing,New,Cold,Seattle,Nigeria,David Martinez,2024-05-30,No,,3387505.25,854
+238,Charles,White,TechVision Solutions Group,Manager,charles.white@techvisionsolutionsg.com,+1-555-248-1869,Web Site,Insurance,New,Warm,Chicago,Australia,Robert Wilson,2023-01-26,No,,774820.53,1344
+239,Patricia,Kim,HomeBase Properties LLC,Director,patricia.kim@homebasepropertiesll.com,+1-555-933-8415,Cold Call,Consulting,Dead,Cold,San Francisco,South Africa,Emily Chen,2023-02-03,No,,3724943.04,1336
+240,Ahmed,Davis,InvestRight Capital Ltd,Manager,ahmed.davis@investrightcapitallt.com,+1-555-526-6122,Web Site,Technology,New,Cold,Phoenix,Canada,Jennifer Taylor,2024-01-26,No,,4158418.24,979
+241,Fatima,Okonkwo,PrimeProperties LLC Group,VP Marketing,fatima.okonkwo@primepropertiesllcgr.com,+1-555-559-3906,Cold Call,Finance,Assigned,Hot,San Francisco,South Africa,Sarah Johnson,2023-07-18,No,,1917131.22,1171
+242,Yuki,Wilson,TrustShield Insurance Ltd,Business Owner,yuki.wilson@trustshieldinsurance.com,+1-555-966-5178,Web Site,Manufacturing,New,Warm,San Francisco,India,John Smith,2023-06-14,No,,810831.75,1205
+243,Raj,Sharma,RetailPro Inc Group,Business Owner,raj.sharma@retailproincgroup.com,+1-555-663-6866,Cold Call,Manufacturing,In Process,Cold,Houston,India,Sarah Johnson,2024-05-17,No,,3941978.28,867
+244,David,White,PrecisionMfg Co Group,VP Sales,david.white@precisionmfgcogroup.com,+1-555-318-6437,LinkedIn,Manufacturing,Converted,Warm,Houston,Nigeria,Jennifer Taylor,2023-04-05,Yes,2025-03-20,4983323.86,715
+245,James,Brown,AssetGrow Financial Ltd,Business Owner,james.brown@assetgrowfinanciallt.com,+1-555-736-4994,Web Site,Manufacturing,Recycled,Warm,Los Angeles,UAE,Robert Wilson,2023-09-04,No,,2724174.7,1123
+246,Charles,Smith,TrendyShop Inc Ltd,Head of IT,charles.smith@trendyshopincltd.com,+1-555-598-1718,Trade Show,Insurance,Dead,Warm,Boston,UK,Sarah Johnson,2024-06-04,No,,878604.31,849
+247,James,Chen,ManufacturePlus Co LLC,Manager,james.chen@manufacturepluscollc.com,+1-555-955-2702,Referral,Logistics,Assigned,Cold,San Francisco,UAE,Sarah Johnson,2024-12-02,No,,3747109.59,668
+248,Barbara,Smith,StrategyFirst Consulting Ltd,CTO,barbara.smith@strategyfirstconsult.com,+1-555-155-3916,Trade Show,Logistics,New,Hot,Denver,Canada,Robert Wilson,2023-03-31,No,,2067782.25,1280
+249,Carlos,Chen,CoverAll Insurance Corp,Manager,carlos.chen@coverallinsurancecor.com,+1-555-789-2938,Web Site,Consulting,In Process,Hot,San Francisco,Nigeria,John Smith,2023-01-18,No,,3519366.06,1352
+250,John,Thomas,InvestRight Capital Inc,VP Marketing,john.thomas@investrightcapitalin.com,+1-555-721-2417,Trade Show,Real Estate,In Process,Warm,Atlanta,USA,Jennifer Taylor,2024-12-03,No,,823801.2,667
+251,Joseph,Jones,MetroRealty Partners Corp,CFO,joseph.jones@metrorealtypartnersc.com,+1-555-405-7113,Web Site,Logistics,Dead,Cold,Chicago,UK,John Smith,2023-10-30,No,,74897.7,1067
+252,Priya,Patel,TrustShield Insurance Inc,Director,priya.patel@trustshieldinsurance.com,+1-555-316-7760,Email Campaign,Finance,In Process,Hot,Houston,Nigeria,Robert Wilson,2023-08-04,No,,1011914.77,1154
+253,Susan,Wang,DigitalLearn Corp Inc,Operations Manager,susan.wang@digitallearncorpinc.com,+1-555-174-5762,Cold Call,Retail,Dead,Hot,Houston,Nigeria,Jennifer Taylor,2024-04-17,No,,4760122.54,897
+254,Amir,Jones,AssetGrow Financial LLC,Business Owner,amir.jones@assetgrowfinancialll.com,+1-555-171-4170,LinkedIn,Real Estate,New,Warm,Dallas,Nigeria,Robert Wilson,2023-10-19,No,,3482617.74,1078
+255,Barbara,Ahmed,DigitalLearn Corp Ltd,CFO,barbara.ahmed@digitallearncorpltd.com,+1-555-104-6131,Referral,Insurance,In Process,Cold,San Francisco,UAE,Robert Wilson,2024-03-14,No,,4208544.79,931
+256,William,Wang,EduPath Online Ltd,Head of IT,william.wang@edupathonlineltd.com,+1-555-467-6004,Word of Mouth,Logistics,Recycled,Hot,Chicago,Nigeria,Sarah Johnson,2024-04-18,No,,4216875.33,896
+257,William,Patel,HealthBridge Corp Ltd,CEO,william.patel@healthbridgecorpltd.com,+1-555-969-9309,Web Site,Consulting,New,Cold,Atlanta,Nigeria,Emily Chen,2023-03-19,No,,4536202.71,1292
+258,Thomas,Patel,PrecisionMfg Co Corp,Manager,thomas.patel@precisionmfgcocorp.com,+1-555-328-5767,Email Campaign,Real Estate,New,Cold,Boston,UK,David Martinez,2024-01-10,No,,1851134.51,995
+259,James,Wang,BuildRight Construction Group,CFO,james.wang@buildrightconstructi.com,+1-555-556-3608,Email Campaign,Consulting,New,Cold,Miami,India,Jennifer Taylor,2024-06-10,No,,4698917.53,843
+260,Robert,Davis,GlobalShip Co Corp,VP Marketing,robert.davis@globalshipcocorp.com,+1-555-478-4834,Web Site,Insurance,Assigned,Cold,Dallas,UAE,Jennifer Taylor,2023-03-06,No,,4593614.62,1305
+261,Robert,Johnson,CareFirst Medical Ltd,Operations Manager,robert.johnson@carefirstmedicalltd.com,+1-555-748-5480,Trade Show,Consulting,New,Cold,Denver,India,David Martinez,2024-12-21,No,,3285692.8,649
+262,Fatima,Ahmed,CareFirst Medical Inc,Manager,fatima.ahmed@carefirstmedicalinc.com,+1-555-328-9460,Partner,Manufacturing,Dead,Warm,Seattle,Singapore,John Smith,2023-09-15,No,,2534093.07,1112
+263,William,Harris,DataDrive Analytics LLC,VP Marketing,william.harris@datadriveanalyticsll.com,+1-555-316-3461,Email Campaign,Finance,New,Warm,Denver,UK,Emily Chen,2024-06-10,No,,2102337.74,843
+264,Priya,Lee,PropTech Realty Corp,VP Sales,priya.lee@proptechrealtycorp.com,+1-555-704-3641,Partner,Technology,Recycled,Hot,New York,India,Mike Davis,2024-05-05,No,,716884.04,879
+265,Robert,Ahmed,ConsultPro Group Inc,CFO,robert.ahmed@consultprogroupinc.com,+1-555-629-7642,Web Site,Retail,New,Hot,Houston,Singapore,Jennifer Taylor,2023-09-22,No,,4343146.88,1105
+266,David,Davis,SmartClass Education Group,CFO,david.davis@smartclasseducationg.com,+1-555-738-9369,Trade Show,Finance,New,Cold,Miami,Germany,Jennifer Taylor,2024-08-19,No,,3002840.14,773
+267,John,Davis,AutoMation Systems Corp,CEO,john.davis@automationsystemscor.com,+1-555-307-9564,Partner,Finance,New,Cold,Los Angeles,India,Jennifer Taylor,2023-04-22,No,,4512960.68,1258
+268,Robert,Ndiaye,PrecisionMfg Co Group,Head of IT,robert.ndiaye@precisionmfgcogroup.com,+1-555-775-3135,Web Site,Education,New,Cold,Atlanta,Germany,John Smith,2023-04-06,No,,3503331.9,1274
+269,Yuki,Davis,NextGen Software Corp,Business Owner,yuki.davis@nextgensoftwarecorp.com,+1-555-200-7971,Email Campaign,Retail,In Process,Warm,Houston,UK,Robert Wilson,2024-08-26,No,,3011547.13,766
+270,Zhang,Wilson,HealthBridge Corp Inc,Operations Manager,zhang.wilson@healthbridgecorpinc.com,+1-555-220-9515,Web Site,Education,New,Cold,Houston,Germany,David Martinez,2024-08-14,No,,1843235.46,778
+271,Barbara,White,CareFirst Medical Group,Operations Manager,barbara.white@carefirstmedicalgrou.com,+1-555-533-6990,Trade Show,Education,In Process,Hot,Atlanta,South Africa,Jennifer Taylor,2023-09-25,No,,934662.01,1102
+272,Kwame,Wilson,SwiftLogistics Group,Manager,kwame.wilson@swiftlogisticsgroup.com,+1-555-853-3262,Cold Call,Insurance,In Process,Warm,San Francisco,India,Sarah Johnson,2024-12-23,No,,1111567.8,647
+273,Priya,Ndiaye,MediCare Solutions Group,Manager,priya.ndiaye@medicaresolutionsgro.com,+1-555-751-1086,Cold Call,Finance,New,Warm,Denver,UAE,Sarah Johnson,2023-06-14,No,,367198.26,1205
+274,Joseph,Thomas,InsureSmart LLC Group,Manager,joseph.thomas@insuresmartllcgroup.com,+1-555-728-9536,Trade Show,Consulting,New,Hot,Chicago,Singapore,Jennifer Taylor,2024-01-29,No,,103016.47,976
+275,Charles,Miller,FinanceEdge Ltd Group,VP Sales,charles.miller@financeedgeltdgroup.com,+1-555-729-3776,Web Site,Manufacturing,Dead,Hot,Miami,USA,Mike Davis,2024-06-12,No,,479871.92,841
+276,Karen,Okonkwo,CoverAll Insurance Ltd,VP Sales,karen.okonkwo@coverallinsuranceltd.com,+1-555-630-1251,Cold Call,Healthcare,Converted,Cold,Phoenix,South Africa,Lisa Anderson,2024-02-20,Yes,2025-10-12,1770001.69,600
+277,Karen,Davis,FastTrack Logistics LLC,Business Owner,karen.davis@fasttracklogisticsll.com,+1-555-104-5277,Email Campaign,Education,Recycled,Cold,Los Angeles,South Africa,Sarah Johnson,2024-02-18,No,,2540687.37,956
+278,Priya,Brown,InvestRight Capital Ltd,VP Marketing,priya.brown@investrightcapitallt.com,+1-555-810-8254,Partner,Consulting,Dead,Warm,Houston,Germany,Jennifer Taylor,2024-08-11,No,,3423893.63,781
+279,Mary,Martin,PropTech Realty Ltd,VP Sales,mary.martin@proptechrealtyltd.com,+1-555-793-4767,LinkedIn,Education,New,Warm,Boston,South Africa,John Smith,2024-01-27,No,,3519051.83,978
+280,Thomas,Davis,HomeBase Properties Inc,CTO,thomas.davis@homebasepropertiesin.com,+1-555-667-3924,Word of Mouth,Manufacturing,Converted,Warm,Houston,Nigeria,Robert Wilson,2024-11-20,Yes,2025-11-05,954783.04,350
+281,Richard,Martin,MetroRealty Partners LLC,VP Marketing,richard.martin@metrorealtypartnersl.com,+1-555-311-4755,Referral,Insurance,Assigned,Cold,Dallas,India,Sarah Johnson,2023-09-05,No,,643398.54,1122
+282,Jennifer,Wang,AssetGrow Financial Corp,CEO,jennifer.wang@assetgrowfinancialco.com,+1-555-968-8901,LinkedIn,Consulting,New,Warm,Seattle,Nigeria,Robert Wilson,2024-07-08,No,,2479486.49,815
+283,Karen,Jackson,ShopNow Retail Group,Operations Manager,karen.jackson@shopnowretailgroup.com,+1-555-918-7933,Word of Mouth,Logistics,New,Hot,Boston,Germany,David Martinez,2023-02-25,No,,4308980.65,1314
+284,Susan,Harris,PropTech Realty Group,CEO,susan.harris@proptechrealtygroup.com,+1-555-112-4452,Partner,Consulting,Recycled,Hot,Dallas,Germany,Robert Wilson,2023-11-20,No,,976404.59,1046
+285,Thomas,Davis,LearnFast Academy Corp,CFO,thomas.davis@learnfastacademycorp.com,+1-555-610-7945,Referral,Education,In Process,Cold,Dallas,Germany,David Martinez,2024-01-10,No,,1434166.18,995
+286,Susan,Ahmed,LogiFlow Networks Group,VP Marketing,susan.ahmed@logiflownetworksgrou.com,+1-555-923-4863,Partner,Education,Assigned,Hot,Chicago,India,Jennifer Taylor,2023-04-13,No,,4038058.39,1267
+287,Susan,White,BioHealth Ltd LLC,Director,susan.white@biohealthltdllc.com,+1-555-904-8972,Trade Show,Retail,Dead,Cold,Denver,USA,David Martinez,2024-06-30,No,,539925.26,823
+288,David,Johnson,SecureFinance Inc Ltd,CTO,david.johnson@securefinanceincltd.com,+1-555-560-6483,Trade Show,Manufacturing,Recycled,Warm,Boston,South Africa,Robert Wilson,2024-10-06,No,,1753494.37,725
+289,Zhang,Brown,WealthManage Pro Group,Business Owner,zhang.brown@wealthmanageprogroup.com,+1-555-765-9821,Email Campaign,Retail,Assigned,Warm,Dallas,South Africa,Jennifer Taylor,2024-08-13,No,,3884984.62,779
+290,Carlos,Williams,AutoMation Systems Group,CFO,carlos.williams@automationsystemsgro.com,+1-555-989-3745,LinkedIn,Education,In Process,Cold,Denver,Nigeria,David Martinez,2024-04-19,No,,4252058.82,895
+291,John,Williams,DataDrive Analytics Ltd,Director,john.williams@datadriveanalyticslt.com,+1-555-768-5773,Trade Show,Consulting,Assigned,Cold,Atlanta,Australia,Jennifer Taylor,2023-11-18,No,,3915821.48,1048
+292,Fatima,Lee,PrimeProperties LLC Group,CFO,fatima.lee@primepropertiesllcgr.com,+1-555-288-1378,Email Campaign,Insurance,Recycled,Cold,Phoenix,UK,Emily Chen,2024-02-28,No,,876206.8,946
+293,Michael,Brown,ManufacturePlus Co Corp,CEO,michael.brown@manufacturepluscocor.com,+1-555-889-7504,Cold Call,Healthcare,Dead,Warm,Denver,India,Sarah Johnson,2023-02-25,No,,3291421.74,1314
+294,Ahmed,Taylor,ShopNow Retail LLC,CFO,ahmed.taylor@shopnowretailllc.com,+1-555-234-9630,Email Campaign,Technology,In Process,Hot,Miami,Germany,Lisa Anderson,2024-03-29,No,,4327993.65,916
+295,Maria,Patel,LearnFast Academy Group,Operations Manager,maria.patel@learnfastacademygrou.com,+1-555-281-8480,Partner,Logistics,Recycled,Cold,Miami,South Africa,Robert Wilson,2023-05-19,No,,4549169.6,1231
+296,Kwame,Patel,ShopNow Retail Inc,Director,kwame.patel@shopnowretailinc.com,+1-555-522-5256,Email Campaign,Retail,Recycled,Hot,New York,South Africa,Mike Davis,2023-11-12,No,,1752230.34,1054
+297,Kwame,Patel,TechVision Solutions Corp,CEO,kwame.patel@techvisionsolutionsc.com,+1-555-884-8052,Trade Show,Consulting,Recycled,Hot,New York,South Africa,Lisa Anderson,2023-11-03,No,,983426.35,1063
+298,Yuki,Jackson,BuildRight Construction LLC,VP Marketing,yuki.jackson@buildrightconstructi.com,+1-555-181-7917,Referral,Logistics,Converted,Cold,San Francisco,Australia,Robert Wilson,2024-01-23,Yes,2024-09-04,3259862.35,225
+299,Karen,White,HealthBridge Corp Inc,VP Marketing,karen.white@healthbridgecorpinc.com,+1-555-213-8460,Word of Mouth,Retail,New,Cold,Denver,Singapore,Emily Chen,2023-05-20,No,,1637186.43,1230
+300,Barbara,Johnson,PrecisionMfg Co Inc,VP Marketing,barbara.johnson@precisionmfgcoinc.com,+1-555-375-3048,Word of Mouth,Technology,New,Hot,Los Angeles,India,John Smith,2023-04-15,No,,2493218.79,1265

@@ -1,0 +1,156 @@
+contact_id,account_id,account_name,first_name,last_name,title,department,email,phone,city,country,lead_source,date_entered,last_activity_date,do_not_call
+1,1,TechVision Solutions,Zhang,Taylor,Head of IT,HR,zhang.taylor@techvisionsolut.com,+1-555-910-1519,Dallas,UK,Email Campaign,2024-05-25,2025-06-09,No
+2,1,TechVision Solutions,Karen,Okonkwo,Operations Manager,Operations,karen.okonkwo@techvisionsolut.com,+1-555-285-4148,Phoenix,UAE,Web Site,2024-02-06,2024-04-19,No
+3,1,TechVision Solutions,Sarah,Jackson,CEO,IT,sarah.jackson@techvisionsolut.com,+1-555-571-2539,Boston,Canada,Word of Mouth,2024-03-29,2024-12-07,Yes
+4,2,GlobalMed Corp,Raj,Garcia,Operations Manager,Marketing,raj.garcia@globalmedcorp.com,+1-555-225-5150,Seattle,Australia,Referral,2024-10-06,2024-11-18,No
+5,2,GlobalMed Corp,Patricia,Wang,VP Sales,HR,patricia.wang@globalmedcorp.com,+1-555-544-6316,New York,India,Trade Show,2023-08-12,2024-03-30,No
+6,2,GlobalMed Corp,Priya,Ndiaye,CEO,Marketing,priya.ndiaye@globalmedcorp.com,+1-555-902-8786,San Francisco,Nigeria,Email Campaign,2023-09-06,2023-09-24,No
+7,3,FinanceEdge Ltd,Sarah,Garcia,Business Owner,Finance,sarah.garcia@financeedgeltd.com,+1-555-877-1983,New York,Germany,Email Campaign,2024-05-26,2024-08-27,No
+8,4,RetailPro Inc,Amina,Davis,Head of IT,HR,amina.davis@retailproinc.com,+1-555-297-1349,San Francisco,UAE,LinkedIn,2023-11-21,2025-11-01,No
+9,4,RetailPro Inc,Thomas,Johnson,Head of IT,Marketing,thomas.johnson@retailproinc.com,+1-555-401-9892,San Francisco,Singapore,Referral,2024-05-11,2026-05-04,No
+10,5,ManufacturePlus Co,Amir,Anderson,Business Owner,Executive,amir.anderson@manufactureplus.com,+1-555-667-3627,Los Angeles,South Africa,Email Campaign,2024-04-24,2025-01-30,Yes
+11,5,ManufacturePlus Co,Charles,Wilson,Head of IT,Sales,charles.wilson@manufactureplus.com,+1-555-894-9289,Atlanta,India,Web Site,2024-07-08,2025-07-18,No
+12,5,ManufacturePlus Co,Sarah,Anderson,Manager,IT,sarah.anderson@manufactureplus.com,+1-555-636-9151,Boston,India,Trade Show,2023-03-06,2026-03-13,No
+13,5,ManufacturePlus Co,Zhang,Chen,CTO,Marketing,zhang.chen@manufactureplus.com,+1-555-774-2092,New York,India,Email Campaign,2023-11-26,2024-07-09,No
+14,5,ManufacturePlus Co,Richard,Brown,CTO,Sales,richard.brown@manufactureplus.com,+1-555-684-7366,Miami,Singapore,Trade Show,2024-05-12,2024-11-24,No
+15,6,InsureSmart LLC,Joseph,Sharma,VP Sales,HR,joseph.sharma@insuresmartllc.com,+1-555-603-2310,Seattle,USA,LinkedIn,2023-03-14,2023-04-09,Yes
+16,6,InsureSmart LLC,Fatima,Ndiaye,Business Owner,Finance,fatima.ndiaye@insuresmartllc.com,+1-555-641-1666,San Francisco,UK,Trade Show,2024-12-26,2025-02-23,No
+17,6,InsureSmart LLC,Jessica,Kumar,VP Sales,Marketing,jessica.kumar@insuresmartllc.com,+1-555-494-4104,Houston,South Africa,Referral,2023-04-10,2023-11-03,No
+18,7,EduLearn Systems,Zhang,Lee,Director,HR,zhang.lee@edulearnsystems.com,+1-555-569-7997,Los Angeles,India,Email Campaign,2023-04-19,2026-07-12,Yes
+19,7,EduLearn Systems,Priya,Wang,Business Owner,Operations,priya.wang@edulearnsystems.com,+1-555-460-6163,Boston,Germany,LinkedIn,2023-06-11,2026-06-08,Yes
+20,7,EduLearn Systems,Yuki,Lee,Business Owner,Marketing,yuki.lee@edulearnsystems.com,+1-555-319-7145,Boston,Australia,LinkedIn,2023-11-28,2025-04-03,Yes
+21,7,EduLearn Systems,Carlos,Jackson,VP Marketing,Marketing,carlos.jackson@edulearnsystems.com,+1-555-116-9480,Chicago,Australia,Web Site,2023-01-01,2023-03-12,No
+22,7,EduLearn Systems,Joseph,Miller,VP Marketing,Marketing,joseph.miller@edulearnsystems.com,+1-555-623-3534,Los Angeles,USA,Word of Mouth,2023-11-19,2024-01-02,No
+23,8,PropTech Realty,William,Wilson,Business Owner,IT,william.wilson@proptechrealty.com,+1-555-338-5198,Phoenix,UK,Partner,2024-01-11,2026-07-09,No
+24,8,PropTech Realty,John,Lee,CFO,Operations,john.lee@proptechrealty.com,+1-555-945-2562,Denver,Australia,Web Site,2023-11-29,2026-08-13,Yes
+25,9,LogiFlow Networks,Patricia,Okonkwo,Manager,Operations,patricia.okonkwo@logiflownetwork.com,+1-555-988-2974,Houston,Nigeria,Web Site,2023-12-09,2025-11-20,Yes
+26,10,ConsultPro Group,Lisa,Kumar,Operations Manager,Marketing,lisa.kumar@consultprogroup.com,+1-555-253-6354,Boston,Canada,Email Campaign,2023-02-12,2024-11-26,No
+27,11,DataDrive Analytics,Carlos,Okonkwo,Operations Manager,Sales,carlos.okonkwo@datadriveanalyt.com,+1-555-327-8076,Phoenix,UAE,Email Campaign,2024-09-01,2026-04-13,No
+28,11,DataDrive Analytics,Priya,Williams,CEO,Marketing,priya.williams@datadriveanalyt.com,+1-555-508-5301,Los Angeles,UAE,Partner,2024-05-02,2025-12-08,No
+29,11,DataDrive Analytics,William,Martin,Head of IT,Operations,william.martin@datadriveanalyt.com,+1-555-767-4212,Boston,Nigeria,Referral,2024-07-26,2025-02-13,No
+30,11,DataDrive Analytics,John,Wilson,Business Owner,Sales,john.wilson@datadriveanalyt.com,+1-555-215-7776,Atlanta,Germany,LinkedIn,2024-03-16,2025-02-10,No
+31,12,CloudFirst LLC,Amir,Sharma,VP Marketing,IT,amir.sharma@cloudfirstllc.com,+1-555-458-8245,Denver,India,Word of Mouth,2024-11-02,2024-11-26,No
+32,12,CloudFirst LLC,Joseph,Miller,CFO,Executive,joseph.miller@cloudfirstllc.com,+1-555-845-2405,Los Angeles,USA,Referral,2024-12-02,2025-12-19,No
+33,12,CloudFirst LLC,Charles,Smith,CTO,Finance,charles.smith@cloudfirstllc.com,+1-555-560-8719,New York,Germany,Referral,2023-12-18,2025-11-27,No
+34,13,HealthBridge Corp,Thomas,Patel,CFO,HR,thomas.patel@healthbridgecor.com,+1-555-815-1301,Atlanta,Nigeria,Web Site,2024-05-09,2026-02-05,No
+35,13,HealthBridge Corp,David,Johnson,Business Owner,Finance,david.johnson@healthbridgecor.com,+1-555-154-8617,Miami,USA,Cold Call,2023-10-18,2024-12-02,Yes
+36,14,SecureFinance Inc,Fatima,Brown,Manager,IT,fatima.brown@securefinancein.com,+1-555-489-9331,San Francisco,UK,LinkedIn,2023-01-20,2024-09-10,Yes
+37,14,SecureFinance Inc,Jennifer,Garcia,Head of IT,Marketing,jennifer.garcia@securefinancein.com,+1-555-829-1352,New York,Canada,Trade Show,2023-07-23,2026-05-13,No
+38,14,SecureFinance Inc,Amina,Jackson,Director,HR,amina.jackson@securefinancein.com,+1-555-460-6822,Miami,Australia,Referral,2023-06-10,2023-07-17,No
+39,15,ShopNow Retail,Thomas,Jackson,VP Marketing,IT,thomas.jackson@shopnowretail.com,+1-555-255-6599,Atlanta,India,Cold Call,2023-01-31,2026-03-12,Yes
+40,16,BuildRight Construction,Joseph,White,Manager,Finance,joseph.white@buildrightconst.com,+1-555-719-6395,Seattle,South Africa,Email Campaign,2023-09-04,2024-07-12,No
+41,16,BuildRight Construction,William,Ahmed,VP Sales,Executive,william.ahmed@buildrightconst.com,+1-555-241-6062,San Francisco,South Africa,Email Campaign,2024-07-08,2026-06-08,Yes
+42,16,BuildRight Construction,Barbara,Chen,Director,Sales,barbara.chen@buildrightconst.com,+1-555-670-9732,San Francisco,UK,Email Campaign,2024-08-01,2025-01-09,No
+43,16,BuildRight Construction,Barbara,Lee,Manager,Operations,barbara.lee@buildrightconst.com,+1-555-410-8258,San Francisco,Australia,Email Campaign,2023-01-31,2024-11-13,No
+44,16,BuildRight Construction,Michael,Jones,Business Owner,Marketing,michael.jones@buildrightconst.com,+1-555-373-4783,Denver,Canada,Referral,2023-07-09,2023-08-31,No
+45,17,SafeGuard Insurance,Jennifer,Kim,Operations Manager,Executive,jennifer.kim@safeguardinsura.com,+1-555-719-8680,San Francisco,Germany,Email Campaign,2024-05-03,2024-09-17,Yes
+46,17,SafeGuard Insurance,Amina,Martin,VP Sales,IT,amina.martin@safeguardinsura.com,+1-555-133-7694,New York,Australia,Partner,2023-05-21,2024-04-20,No
+47,17,SafeGuard Insurance,Richard,Okonkwo,CFO,Operations,richard.okonkwo@safeguardinsura.com,+1-555-987-9027,San Francisco,Germany,Word of Mouth,2023-07-29,2023-12-11,No
+48,18,LearnFast Academy,Priya,Okonkwo,Manager,HR,priya.okonkwo@learnfastacadem.com,+1-555-420-7457,Denver,Nigeria,Web Site,2023-02-12,2026-07-11,No
+49,18,LearnFast Academy,Carlos,Harris,Operations Manager,Marketing,carlos.harris@learnfastacadem.com,+1-555-505-1643,Boston,UAE,Web Site,2023-02-13,2024-06-30,No
+50,18,LearnFast Academy,Charles,Harris,VP Marketing,Executive,charles.harris@learnfastacadem.com,+1-555-947-5684,Seattle,India,Partner,2024-02-12,2026-08-05,No
+51,18,LearnFast Academy,Patricia,Kim,Head of IT,Executive,patricia.kim@learnfastacadem.com,+1-555-761-8400,Los Angeles,South Africa,Cold Call,2024-06-13,2024-11-05,No
+52,19,HomeBase Properties,William,Jackson,Head of IT,Sales,william.jackson@homebasepropert.com,+1-555-283-8433,Denver,Canada,Word of Mouth,2024-02-28,2025-01-24,No
+53,19,HomeBase Properties,Thomas,Anderson,CTO,Sales,thomas.anderson@homebasepropert.com,+1-555-216-8362,Miami,Germany,Cold Call,2024-12-09,2025-05-25,Yes
+54,19,HomeBase Properties,David,Jackson,CEO,Executive,david.jackson@homebasepropert.com,+1-555-274-6491,Denver,India,Email Campaign,2024-07-17,2025-08-10,No
+55,19,HomeBase Properties,Susan,Okonkwo,Manager,Finance,susan.okonkwo@homebasepropert.com,+1-555-416-8311,Phoenix,India,Cold Call,2024-12-30,2025-02-20,No
+56,19,HomeBase Properties,Richard,Smith,CEO,Operations,richard.smith@homebasepropert.com,+1-555-609-9169,Boston,USA,Word of Mouth,2024-09-29,2025-06-15,No
+57,20,SwiftLogistics,Kwame,Harris,CTO,Marketing,kwame.harris@swiftlogistics.com,+1-555-714-1107,Houston,South Africa,Trade Show,2024-02-24,2025-05-21,No
+58,20,SwiftLogistics,Patricia,Garcia,Director,Sales,patricia.garcia@swiftlogistics.com,+1-555-248-1531,Miami,Nigeria,Trade Show,2023-06-01,2023-09-21,No
+59,21,InnovateTech Ltd,Patricia,Brown,CFO,HR,patricia.brown@innovatetechltd.com,+1-555-391-3906,Seattle,Nigeria,LinkedIn,2024-03-02,2024-08-31,No
+60,22,MediCare Solutions,Lisa,Anderson,Manager,Executive,lisa.anderson@medicaresolutio.com,+1-555-169-8001,Boston,UK,Trade Show,2024-01-13,2026-07-20,Yes
+61,23,WealthManage Pro,Linda,Kim,Operations Manager,Operations,linda.kim@wealthmanagepro.com,+1-555-637-4438,San Francisco,Canada,Web Site,2023-10-09,2025-08-13,No
+62,23,WealthManage Pro,Jennifer,Martin,VP Marketing,Operations,jennifer.martin@wealthmanagepro.com,+1-555-723-6185,Phoenix,South Africa,LinkedIn,2024-12-06,2026-08-17,No
+63,24,FashionForward Inc,Amina,Kumar,Head of IT,Executive,amina.kumar@fashionforwardi.com,+1-555-284-4812,San Francisco,Australia,Referral,2024-10-09,2026-03-02,No
+64,24,FashionForward Inc,Linda,Smith,CTO,HR,linda.smith@fashionforwardi.com,+1-555-968-4396,Denver,UAE,Partner,2024-04-21,2026-01-21,No
+65,24,FashionForward Inc,Priya,Thomas,VP Sales,Sales,priya.thomas@fashionforwardi.com,+1-555-755-4296,San Francisco,Australia,Trade Show,2024-07-27,2026-05-10,No
+66,24,FashionForward Inc,Lisa,Taylor,Director,Executive,lisa.taylor@fashionforwardi.com,+1-555-106-2865,Miami,Germany,LinkedIn,2024-06-02,2025-12-17,Yes
+67,24,FashionForward Inc,Mary,Garcia,Director,HR,mary.garcia@fashionforwardi.com,+1-555-590-8774,New York,India,Word of Mouth,2023-07-18,2025-05-24,No
+68,25,AutoMation Systems,Priya,Harris,CEO,Executive,priya.harris@automationsyste.com,+1-555-633-5904,Denver,Germany,Web Site,2024-02-28,2026-03-29,No
+69,25,AutoMation Systems,Priya,Ndiaye,CFO,Finance,priya.ndiaye@automationsyste.com,+1-555-960-1510,Dallas,UAE,Email Campaign,2023-12-29,2024-03-05,Yes
+70,25,AutoMation Systems,Susan,Sharma,Director,HR,susan.sharma@automationsyste.com,+1-555-132-5448,Atlanta,UK,Word of Mouth,2023-04-30,2025-01-20,No
+71,25,AutoMation Systems,Fatima,Harris,Operations Manager,Finance,fatima.harris@automationsyste.com,+1-555-279-2838,Dallas,USA,Referral,2023-11-06,2025-01-21,No
+72,26,CoverAll Insurance,Mary,Ndiaye,CFO,IT,mary.ndiaye@coverallinsuran.com,+1-555-448-8921,San Francisco,South Africa,Trade Show,2024-05-09,2025-10-03,No
+73,26,CoverAll Insurance,Barbara,Okonkwo,CFO,IT,barbara.okonkwo@coverallinsuran.com,+1-555-841-1598,Seattle,UAE,Cold Call,2023-04-11,2026-03-03,No
+74,26,CoverAll Insurance,Lisa,Johnson,CTO,Finance,lisa.johnson@coverallinsuran.com,+1-555-578-1755,Los Angeles,South Africa,Trade Show,2024-12-04,2026-08-04,No
+75,26,CoverAll Insurance,Lisa,Chen,VP Sales,IT,lisa.chen@coverallinsuran.com,+1-555-393-5532,Boston,Germany,Word of Mouth,2023-08-03,2025-05-21,No
+76,27,SmartClass Education,Barbara,Garcia,CEO,Marketing,barbara.garcia@smartclasseduca.com,+1-555-673-9422,Los Angeles,Canada,LinkedIn,2023-10-08,2024-05-29,No
+77,27,SmartClass Education,Karen,Jones,Business Owner,IT,karen.jones@smartclasseduca.com,+1-555-275-2167,Phoenix,Nigeria,LinkedIn,2024-12-22,2025-10-08,Yes
+78,27,SmartClass Education,Patricia,Jones,CEO,Sales,patricia.jones@smartclasseduca.com,+1-555-492-1881,Los Angeles,UAE,Partner,2023-01-30,2025-09-20,No
+79,28,UrbanRealty Group,Carlos,Sharma,Director,Executive,carlos.sharma@urbanrealtygrou.com,+1-555-302-9740,Los Angeles,Singapore,Email Campaign,2023-12-31,2024-11-14,No
+80,28,UrbanRealty Group,Maria,Brown,Head of IT,Operations,maria.brown@urbanrealtygrou.com,+1-555-337-4666,Chicago,Nigeria,Trade Show,2024-04-11,2025-02-22,No
+81,28,UrbanRealty Group,Priya,Garcia,Director,Operations,priya.garcia@urbanrealtygrou.com,+1-555-599-1495,Los Angeles,Singapore,Cold Call,2024-12-17,2025-11-20,No
+82,28,UrbanRealty Group,Kwame,Harris,Director,Marketing,kwame.harris@urbanrealtygrou.com,+1-555-688-3087,Boston,UK,Partner,2023-06-24,2025-01-22,No
+83,28,UrbanRealty Group,Raj,Patel,VP Marketing,Marketing,raj.patel@urbanrealtygrou.com,+1-555-572-7566,Denver,UAE,Referral,2024-10-27,2025-01-07,No
+84,29,RapidShip Express,David,Martin,Director,IT,david.martin@rapidshipexpres.com,+1-555-933-8063,Atlanta,Nigeria,LinkedIn,2024-01-29,2024-04-05,No
+85,29,RapidShip Express,Susan,Wang,Business Owner,Executive,susan.wang@rapidshipexpres.com,+1-555-598-2873,Denver,Nigeria,Word of Mouth,2024-11-16,2025-02-03,No
+86,29,RapidShip Express,Michael,Harris,Manager,Sales,michael.harris@rapidshipexpres.com,+1-555-712-2781,Miami,Nigeria,Partner,2023-06-30,2025-03-21,No
+87,29,RapidShip Express,Amina,Chen,CTO,IT,amina.chen@rapidshipexpres.com,+1-555-936-3276,Denver,USA,Email Campaign,2024-11-07,2025-01-08,No
+88,29,RapidShip Express,Carlos,Patel,Business Owner,Marketing,carlos.patel@rapidshipexpres.com,+1-555-557-4205,Houston,Germany,Trade Show,2023-10-26,2026-01-01,No
+89,30,StrategyFirst Consulting,Amir,Williams,Business Owner,Marketing,amir.williams@strategyfirstco.com,+1-555-513-3089,Phoenix,USA,LinkedIn,2024-08-19,2024-08-27,No
+90,30,StrategyFirst Consulting,James,Kim,CTO,Executive,james.kim@strategyfirstco.com,+1-555-388-1510,Houston,UAE,Partner,2024-07-27,2025-07-29,No
+91,30,StrategyFirst Consulting,Ahmed,Jackson,Operations Manager,IT,ahmed.jackson@strategyfirstco.com,+1-555-778-3841,Seattle,India,Referral,2024-01-26,2025-04-15,Yes
+92,30,StrategyFirst Consulting,Fatima,White,CFO,IT,fatima.white@strategyfirstco.com,+1-555-111-2175,Miami,USA,Email Campaign,2023-06-07,2025-01-17,Yes
+93,31,NextGen Software,William,Williams,Head of IT,Executive,william.williams@nextgensoftware.com,+1-555-812-7974,Denver,India,Word of Mouth,2023-05-21,2025-09-18,Yes
+94,31,NextGen Software,Carlos,Jackson,CFO,Operations,carlos.jackson@nextgensoftware.com,+1-555-719-1121,Denver,Singapore,Referral,2023-12-30,2024-08-17,No
+95,31,NextGen Software,Zhang,Patel,CEO,Sales,zhang.patel@nextgensoftware.com,+1-555-681-8917,San Francisco,Germany,Cold Call,2024-08-13,2025-08-23,Yes
+96,31,NextGen Software,Jennifer,Jones,VP Marketing,Operations,jennifer.jones@nextgensoftware.com,+1-555-629-2281,Boston,Nigeria,Cold Call,2024-06-23,2026-07-31,No
+97,32,BioHealth Ltd,John,Wang,Business Owner,Finance,john.wang@biohealthltd.com,+1-555-727-1864,Dallas,South Africa,Web Site,2024-10-10,2026-04-15,Yes
+98,32,BioHealth Ltd,Maria,Kumar,Director,Operations,maria.kumar@biohealthltd.com,+1-555-461-5827,Phoenix,India,Web Site,2024-04-25,2025-12-03,No
+99,32,BioHealth Ltd,Thomas,Johnson,Business Owner,IT,thomas.johnson@biohealthltd.com,+1-555-686-1845,Miami,Australia,Web Site,2024-10-06,2026-02-02,No
+100,32,BioHealth Ltd,Amina,Williams,CTO,Executive,amina.williams@biohealthltd.com,+1-555-902-5552,Phoenix,India,Trade Show,2023-05-10,2026-03-10,No
+101,33,InvestRight Capital,James,Lee,CFO,Marketing,james.lee@investrightcapi.com,+1-555-856-3476,Miami,Singapore,LinkedIn,2023-04-25,2026-09-12,No
+102,33,InvestRight Capital,Thomas,Ndiaye,Head of IT,IT,thomas.ndiaye@investrightcapi.com,+1-555-918-9640,New York,Germany,Cold Call,2024-12-18,2025-08-16,No
+103,33,InvestRight Capital,Barbara,Martin,Manager,IT,barbara.martin@investrightcapi.com,+1-555-776-8211,San Francisco,India,Referral,2024-02-27,2026-04-25,No
+104,34,TrendyShop Inc,Thomas,Okonkwo,CFO,Operations,thomas.okonkwo@trendyshopinc.com,+1-555-508-8802,Phoenix,Singapore,Referral,2023-04-29,2023-08-14,Yes
+105,35,PrecisionMfg Co,Kwame,Wilson,Manager,Sales,kwame.wilson@precisionmfgco.com,+1-555-395-8353,Atlanta,Germany,Web Site,2023-05-29,2026-05-19,No
+106,35,PrecisionMfg Co,Amir,White,VP Marketing,Finance,amir.white@precisionmfgco.com,+1-555-376-5375,Los Angeles,Australia,Partner,2024-09-17,2026-07-16,Yes
+107,35,PrecisionMfg Co,Sarah,Lee,VP Sales,Marketing,sarah.lee@precisionmfgco.com,+1-555-445-3947,Dallas,South Africa,Web Site,2024-11-19,2026-07-14,No
+108,35,PrecisionMfg Co,John,Smith,Operations Manager,Sales,john.smith@precisionmfgco.com,+1-555-801-8306,Dallas,Canada,Trade Show,2024-02-26,2024-06-05,No
+109,36,TrustShield Insurance,Robert,Smith,CEO,Marketing,robert.smith@trustshieldinsu.com,+1-555-772-4552,Denver,UK,Cold Call,2024-09-26,2024-12-29,No
+110,36,TrustShield Insurance,William,Jackson,Business Owner,Executive,william.jackson@trustshieldinsu.com,+1-555-289-2816,San Francisco,India,Trade Show,2024-11-03,2026-08-28,No
+111,37,DigitalLearn Corp,John,Chen,Manager,HR,john.chen@digitallearncor.com,+1-555-783-6298,Phoenix,India,Cold Call,2024-04-09,2025-01-17,No
+112,37,DigitalLearn Corp,Patricia,Jackson,CEO,Finance,patricia.jackson@digitallearncor.com,+1-555-932-5336,Chicago,Singapore,Cold Call,2024-02-02,2025-01-07,Yes
+113,37,DigitalLearn Corp,Richard,Sharma,Head of IT,Sales,richard.sharma@digitallearncor.com,+1-555-247-9857,Atlanta,Canada,Cold Call,2024-02-07,2024-08-07,Yes
+114,37,DigitalLearn Corp,Thomas,Brown,CTO,Marketing,thomas.brown@digitallearncor.com,+1-555-845-5105,Seattle,USA,Word of Mouth,2023-02-05,2023-07-04,No
+115,38,PrimeProperties LLC,Robert,Wang,CFO,HR,robert.wang@primeproperties.com,+1-555-437-7411,Denver,USA,Word of Mouth,2024-02-04,2024-11-02,Yes
+116,39,FastTrack Logistics,Priya,Lee,VP Sales,Sales,priya.lee@fasttracklogist.com,+1-555-493-8898,Los Angeles,Nigeria,LinkedIn,2023-03-13,2026-03-23,No
+117,39,FastTrack Logistics,Lisa,Jackson,CTO,Finance,lisa.jackson@fasttracklogist.com,+1-555-647-6571,Los Angeles,Singapore,Trade Show,2023-02-26,2026-09-12,No
+118,39,FastTrack Logistics,Susan,Patel,VP Sales,Finance,susan.patel@fasttracklogist.com,+1-555-812-7391,Los Angeles,Germany,Word of Mouth,2023-02-10,2025-04-06,No
+119,39,FastTrack Logistics,Carlos,Lee,CEO,IT,carlos.lee@fasttracklogist.com,+1-555-125-4907,Seattle,UAE,Cold Call,2023-07-14,2024-04-25,No
+120,40,AdvisoryPro Group,Carlos,Smith,CEO,Finance,carlos.smith@advisoryprogrou.com,+1-555-906-1701,Atlanta,UK,Referral,2023-02-07,2025-01-01,Yes
+121,40,AdvisoryPro Group,Barbara,Lee,CTO,Sales,barbara.lee@advisoryprogrou.com,+1-555-853-3319,Seattle,USA,Word of Mouth,2024-08-16,2025-04-11,No
+122,40,AdvisoryPro Group,Sarah,Kim,CEO,IT,sarah.kim@advisoryprogrou.com,+1-555-747-1818,Phoenix,UK,Word of Mouth,2024-10-26,2025-03-08,No
+123,40,AdvisoryPro Group,John,Brown,Business Owner,Executive,john.brown@advisoryprogrou.com,+1-555-730-4613,Los Angeles,Canada,Partner,2023-04-27,2026-02-08,No
+124,41,Quantum Systems Inc,Raj,Brown,Operations Manager,IT,raj.brown@quantumsystemsi.com,+1-555-429-4493,New York,Nigeria,Email Campaign,2024-12-01,2026-07-13,No
+125,41,Quantum Systems Inc,John,Brown,Manager,IT,john.brown@quantumsystemsi.com,+1-555-813-7060,Boston,India,Word of Mouth,2023-10-08,2024-07-23,No
+126,41,Quantum Systems Inc,Robert,Jones,Manager,Executive,robert.jones@quantumsystemsi.com,+1-555-261-1256,Seattle,UK,Web Site,2023-04-13,2026-09-18,No
+127,41,Quantum Systems Inc,Susan,Williams,VP Marketing,Operations,susan.williams@quantumsystemsi.com,+1-555-810-8798,San Francisco,India,Referral,2024-12-24,2026-08-23,No
+128,42,CareFirst Medical,Carlos,White,Business Owner,HR,carlos.white@carefirstmedica.com,+1-555-138-3949,San Francisco,Singapore,Cold Call,2023-09-02,2024-08-24,No
+129,42,CareFirst Medical,Amir,White,VP Sales,IT,amir.white@carefirstmedica.com,+1-555-220-9686,Los Angeles,Nigeria,LinkedIn,2023-01-05,2026-02-20,No
+130,42,CareFirst Medical,Maria,Okonkwo,VP Sales,Finance,maria.okonkwo@carefirstmedica.com,+1-555-154-4173,Los Angeles,India,Word of Mouth,2024-10-03,2026-08-09,Yes
+131,43,AssetGrow Financial,David,Wang,Director,Finance,david.wang@assetgrowfinanc.com,+1-555-314-8121,Phoenix,Germany,Word of Mouth,2023-02-14,2023-06-04,No
+132,43,AssetGrow Financial,Michael,Lee,CFO,IT,michael.lee@assetgrowfinanc.com,+1-555-904-1476,Seattle,South Africa,Cold Call,2023-02-23,2026-02-27,No
+133,44,StyleHub Retail,Carlos,Ahmed,Manager,IT,carlos.ahmed@stylehubretail.com,+1-555-865-6336,Houston,UK,LinkedIn,2024-08-16,2025-07-15,No
+134,44,StyleHub Retail,Michael,Davis,VP Sales,Operations,michael.davis@stylehubretail.com,+1-555-325-2204,Seattle,Nigeria,Word of Mouth,2024-02-27,2026-08-05,No
+135,45,SmartFactory Ltd,Barbara,Miller,CFO,Operations,barbara.miller@smartfactoryltd.com,+1-555-482-3234,Seattle,Canada,LinkedIn,2024-09-16,2025-12-25,No
+136,45,SmartFactory Ltd,Richard,Anderson,Business Owner,Sales,richard.anderson@smartfactoryltd.com,+1-555-387-3236,Los Angeles,Singapore,Word of Mouth,2023-05-11,2023-07-15,Yes
+137,45,SmartFactory Ltd,David,Okonkwo,VP Marketing,Marketing,david.okonkwo@smartfactoryltd.com,+1-555-260-3784,Denver,South Africa,Referral,2023-12-18,2024-07-30,No
+138,45,SmartFactory Ltd,Zhang,Kumar,Business Owner,Operations,zhang.kumar@smartfactoryltd.com,+1-555-957-8581,Phoenix,USA,Partner,2024-05-15,2024-12-22,No
+139,46,AllCover Insurance,Raj,White,Business Owner,IT,raj.white@allcoverinsuran.com,+1-555-687-1083,Atlanta,USA,Web Site,2024-08-16,2025-03-31,Yes
+140,46,AllCover Insurance,Robert,White,Head of IT,Executive,robert.white@allcoverinsuran.com,+1-555-917-2605,Seattle,Singapore,Referral,2024-06-27,2025-08-04,No
+141,47,EduPath Online,James,Kim,CFO,Finance,james.kim@edupathonline.com,+1-555-402-4916,Miami,UK,Web Site,2024-02-21,2024-10-01,Yes
+142,47,EduPath Online,Lisa,Garcia,Business Owner,HR,lisa.garcia@edupathonline.com,+1-555-697-1399,Seattle,Singapore,Email Campaign,2024-12-21,2026-04-05,Yes
+143,47,EduPath Online,Susan,Ndiaye,Head of IT,HR,susan.ndiaye@edupathonline.com,+1-555-748-1022,Miami,UK,Partner,2024-01-15,2025-10-17,No
+144,47,EduPath Online,Robert,Taylor,VP Marketing,HR,robert.taylor@edupathonline.com,+1-555-727-9887,Denver,Canada,Cold Call,2024-03-12,2026-04-21,No
+145,47,EduPath Online,Patricia,Kumar,CEO,Sales,patricia.kumar@edupathonline.com,+1-555-492-6989,Seattle,Nigeria,Web Site,2024-11-21,2025-11-28,No
+146,48,MetroRealty Partners,Susan,Chen,CTO,Marketing,susan.chen@metrorealtypart.com,+1-555-826-4354,Chicago,Germany,Referral,2024-07-26,2026-07-17,No
+147,48,MetroRealty Partners,Kwame,Lee,VP Sales,Executive,kwame.lee@metrorealtypart.com,+1-555-862-4693,Dallas,Germany,Trade Show,2024-08-17,2026-08-06,Yes
+148,48,MetroRealty Partners,Karen,Johnson,Director,Operations,karen.johnson@metrorealtypart.com,+1-555-597-9215,Boston,UK,Word of Mouth,2023-03-06,2025-04-07,No
+149,49,GlobalShip Co,Fatima,Ndiaye,VP Sales,Operations,fatima.ndiaye@globalshipco.com,+1-555-189-2313,Atlanta,India,Trade Show,2024-11-20,2025-01-26,No
+150,49,GlobalShip Co,Michael,Garcia,CFO,Operations,michael.garcia@globalshipco.com,+1-555-254-4346,Boston,USA,Trade Show,2023-10-10,2024-05-26,Yes
+151,49,GlobalShip Co,William,Martin,Head of IT,HR,william.martin@globalshipco.com,+1-555-760-1351,Phoenix,Canada,Cold Call,2023-12-22,2025-02-24,No
+152,49,GlobalShip Co,Joseph,Kumar,Manager,Marketing,joseph.kumar@globalshipco.com,+1-555-451-6346,Seattle,Nigeria,Word of Mouth,2024-10-22,2025-09-30,Yes
+153,50,InsightConsulting,William,Ndiaye,VP Marketing,IT,william.ndiaye@insightconsulti.com,+1-555-595-7093,Phoenix,USA,Email Campaign,2023-11-10,2024-10-26,No
+154,50,InsightConsulting,Charles,Harris,Operations Manager,Finance,charles.harris@insightconsulti.com,+1-555-286-3873,San Francisco,India,Email Campaign,2023-06-20,2024-05-14,No
+155,50,InsightConsulting,Linda,Johnson,Head of IT,Finance,linda.johnson@insightconsulti.com,+1-555-478-4022,Houston,South Africa,Web Site,2023-11-21,2024-08-06,No

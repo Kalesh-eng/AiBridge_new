@@ -1,0 +1,254 @@
+activity_id,account_id,account_name,activity_type,subject,status,assigned_to,activity_date,duration_mins,outcome,follow_up_required
+1,1,TechVision Solutions,Email,Product demo,Held,Robert Wilson,2023-03-05,30,Neutral,No
+2,2,GlobalMed Corp,Proposal Review,Partnership discussion,Planned,Mike Davis,2023-01-03,60,Positive,No
+3,3,FinanceEdge Ltd,Email,Discovery call,Held,Sarah Johnson,2023-02-18,60,Needs Follow-up,Yes
+4,3,FinanceEdge Ltd,Meeting,Discovery call,Held,Jennifer Taylor,2023-06-15,120,No Response,No
+5,3,FinanceEdge Ltd,Proposal Review,Onboarding call,Held,Lisa Anderson,2023-05-18,15,,No
+6,4,RetailPro Inc,Meeting,Discovery call,Held,Lisa Anderson,2023-03-08,15,Positive,No
+7,4,RetailPro Inc,Demo,Follow up call,Held,Emily Chen,2023-02-17,60,Positive,Yes
+8,5,ManufacturePlus Co,Demo,Partnership discussion,Not Held,Robert Wilson,2023-03-25,120,Neutral,Yes
+9,6,InsureSmart LLC,Check-in,Technical walkthrough,Held,Mike Davis,2023-09-09,45,Positive,No
+10,6,InsureSmart LLC,Meeting,Executive briefing,Not Held,David Martinez,2023-09-20,60,Needs Follow-up,No
+11,8,PropTech Realty,Proposal Review,Proposal review,Not Held,David Martinez,2023-07-08,15,Positive,No
+12,8,PropTech Realty,Follow Up,Contract discussion,Held,Jennifer Taylor,2023-08-26,90,,Yes
+13,8,PropTech Realty,Demo,Technical walkthrough,Held,Jennifer Taylor,2023-05-29,45,Neutral,No
+14,9,LogiFlow Networks,Proposal Review,Technical walkthrough,Held,John Smith,2023-05-08,90,Positive,Yes
+15,9,LogiFlow Networks,Call,Check-in call,Not Held,David Martinez,2023-09-20,15,No Response,No
+16,10,ConsultPro Group,Proposal Review,Product demo,Planned,John Smith,2023-05-11,15,No Response,No
+17,10,ConsultPro Group,Check-in,Technical walkthrough,Held,Sarah Johnson,2023-04-04,60,Needs Follow-up,No
+18,11,DataDrive Analytics,Proposal Review,Partnership discussion,Held,Lisa Anderson,2023-08-19,30,Neutral,No
+19,11,DataDrive Analytics,Follow Up,Renewal discussion,Held,Sarah Johnson,2023-02-10,60,,Yes
+20,11,DataDrive Analytics,Demo,Product demo,Held,Mike Davis,2023-01-03,120,No Response,No
+21,12,CloudFirst LLC,Email,Renewal discussion,Planned,Lisa Anderson,2023-09-07,120,No Response,No
+22,12,CloudFirst LLC,Meeting,Proposal review,Held,Emily Chen,2023-02-14,15,Positive,No
+23,12,CloudFirst LLC,Meeting,Executive briefing,Held,Emily Chen,2023-01-14,60,,No
+24,14,SecureFinance Inc,Meeting,Executive briefing,Not Held,John Smith,2023-08-26,15,Neutral,No
+25,14,SecureFinance Inc,Demo,Executive briefing,Held,Jennifer Taylor,2023-08-16,90,Neutral,No
+26,15,ShopNow Retail,Call,Quarterly review,Held,Sarah Johnson,2023-07-20,120,No Response,No
+27,15,ShopNow Retail,Follow Up,Renewal discussion,Planned,Robert Wilson,2023-09-11,15,No Response,No
+28,16,BuildRight Construction,Proposal Review,Support escalation,Planned,Jennifer Taylor,2026-04-17,30,Positive,Yes
+29,16,BuildRight Construction,Proposal Review,Quarterly review,Planned,Sarah Johnson,2025-10-12,45,No Response,No
+30,16,BuildRight Construction,Demo,Renewal discussion,Held,Jennifer Taylor,2024-01-26,120,No Response,Yes
+31,16,BuildRight Construction,Email,Support escalation,Held,Jennifer Taylor,2024-04-26,45,No Response,No
+32,16,BuildRight Construction,Meeting,Renewal discussion,Held,Jennifer Taylor,2026-04-05,30,Needs Follow-up,No
+33,16,BuildRight Construction,Check-in,Onboarding call,Held,Jennifer Taylor,2025-10-01,30,,No
+34,16,BuildRight Construction,Follow Up,Support escalation,Held,Jennifer Taylor,2024-12-30,30,Neutral,No
+35,16,BuildRight Construction,Proposal Review,Executive briefing,Held,David Martinez,2024-04-16,60,Needs Follow-up,No
+36,16,BuildRight Construction,Proposal Review,Discovery call,Held,Lisa Anderson,2024-08-02,45,Needs Follow-up,No
+37,17,SafeGuard Insurance,Call,Partnership discussion,Held,Lisa Anderson,2026-03-28,60,Positive,No
+38,17,SafeGuard Insurance,Proposal Review,Contract discussion,Not Held,Robert Wilson,2024-02-03,45,Needs Follow-up,Yes
+39,17,SafeGuard Insurance,Email,Proposal review,Planned,Sarah Johnson,2026-07-15,120,Positive,No
+40,17,SafeGuard Insurance,Check-in,Partnership discussion,Held,Sarah Johnson,2025-12-23,90,,Yes
+41,18,LearnFast Academy,Proposal Review,Product demo,Held,Sarah Johnson,2023-08-25,30,Needs Follow-up,No
+42,18,LearnFast Academy,Follow Up,Executive briefing,Planned,Jennifer Taylor,2025-01-19,120,Positive,No
+43,18,LearnFast Academy,Email,Proposal review,Held,Emily Chen,2025-06-14,60,No Response,Yes
+44,18,LearnFast Academy,Check-in,Partnership discussion,Not Held,Lisa Anderson,2024-10-15,45,,No
+45,18,LearnFast Academy,Email,Quarterly review,Not Held,Lisa Anderson,2023-11-22,120,Neutral,No
+46,18,LearnFast Academy,Demo,Partnership discussion,Held,Mike Davis,2026-05-20,60,No Response,No
+47,18,LearnFast Academy,Check-in,Check-in call,Held,John Smith,2025-12-26,60,Neutral,Yes
+48,18,LearnFast Academy,Call,Product demo,Held,Lisa Anderson,2026-04-25,60,Neutral,No
+49,18,LearnFast Academy,Demo,Partnership discussion,Held,Mike Davis,2023-10-04,90,Positive,No
+50,18,LearnFast Academy,Demo,Onboarding call,Planned,Robert Wilson,2025-10-06,120,Needs Follow-up,No
+51,19,HomeBase Properties,Proposal Review,Renewal discussion,Held,David Martinez,2024-12-24,60,Neutral,No
+52,19,HomeBase Properties,Check-in,Partnership discussion,Not Held,Emily Chen,2025-05-08,45,Positive,Yes
+53,20,SwiftLogistics,Demo,Support escalation,Held,Robert Wilson,2025-04-16,30,Positive,No
+54,20,SwiftLogistics,Email,Partnership discussion,Held,John Smith,2026-05-03,15,,No
+55,20,SwiftLogistics,Check-in,Partnership discussion,Held,David Martinez,2024-10-07,90,Positive,Yes
+56,20,SwiftLogistics,Email,Onboarding call,Planned,Lisa Anderson,2025-07-03,15,Positive,Yes
+57,20,SwiftLogistics,Email,Renewal discussion,Held,Jennifer Taylor,2025-12-06,45,Neutral,No
+58,20,SwiftLogistics,Email,Follow up call,Planned,Mike Davis,2025-05-18,120,No Response,No
+59,20,SwiftLogistics,Email,Check-in call,Planned,Emily Chen,2024-01-02,45,No Response,Yes
+60,20,SwiftLogistics,Follow Up,Technical walkthrough,Not Held,Sarah Johnson,2024-03-27,15,Positive,No
+61,20,SwiftLogistics,Demo,Contract discussion,Not Held,Sarah Johnson,2024-02-22,45,,No
+62,20,SwiftLogistics,Proposal Review,Check-in call,Not Held,Robert Wilson,2026-09-17,90,No Response,No
+63,21,InnovateTech Ltd,Follow Up,Technical walkthrough,Held,Mike Davis,2026-02-27,90,Neutral,No
+64,21,InnovateTech Ltd,Meeting,Support escalation,Planned,Sarah Johnson,2025-12-24,120,Neutral,No
+65,21,InnovateTech Ltd,Call,Support escalation,Held,Lisa Anderson,2026-01-25,15,,No
+66,21,InnovateTech Ltd,Call,Quarterly review,Planned,Robert Wilson,2024-01-12,15,,No
+67,21,InnovateTech Ltd,Email,Follow up call,Held,Robert Wilson,2024-01-28,45,No Response,Yes
+68,21,InnovateTech Ltd,Meeting,Partnership discussion,Planned,David Martinez,2024-03-19,15,Needs Follow-up,No
+69,21,InnovateTech Ltd,Meeting,Support escalation,Not Held,John Smith,2024-08-15,15,,No
+70,21,InnovateTech Ltd,Check-in,Discovery call,Not Held,Jennifer Taylor,2023-10-17,90,Needs Follow-up,No
+71,21,InnovateTech Ltd,Check-in,Technical walkthrough,Not Held,Mike Davis,2025-04-22,30,,No
+72,22,MediCare Solutions,Meeting,Support escalation,Held,Sarah Johnson,2025-12-06,90,,No
+73,22,MediCare Solutions,Meeting,Technical walkthrough,Held,John Smith,2025-08-02,120,No Response,No
+74,22,MediCare Solutions,Check-in,Proposal review,Held,Robert Wilson,2023-11-29,90,Positive,Yes
+75,22,MediCare Solutions,Proposal Review,Check-in call,Planned,John Smith,2024-06-29,90,,No
+76,22,MediCare Solutions,Proposal Review,Discovery call,Held,Mike Davis,2026-01-30,15,Needs Follow-up,No
+77,22,MediCare Solutions,Check-in,Support escalation,Planned,Jennifer Taylor,2024-10-15,15,,No
+78,22,MediCare Solutions,Proposal Review,Discovery call,Not Held,John Smith,2025-08-31,45,No Response,No
+79,22,MediCare Solutions,Call,Check-in call,Held,David Martinez,2025-09-27,45,Positive,Yes
+80,22,MediCare Solutions,Proposal Review,Proposal review,Held,Mike Davis,2023-12-21,30,Needs Follow-up,Yes
+81,23,WealthManage Pro,Demo,Onboarding call,Held,John Smith,2025-02-18,90,Needs Follow-up,No
+82,23,WealthManage Pro,Follow Up,Discovery call,Held,David Martinez,2023-07-26,15,Needs Follow-up,No
+83,23,WealthManage Pro,Email,Follow up call,Not Held,Sarah Johnson,2025-09-23,15,Neutral,No
+84,23,WealthManage Pro,Meeting,Executive briefing,Planned,David Martinez,2026-09-13,15,Needs Follow-up,Yes
+85,24,FashionForward Inc,Proposal Review,Technical walkthrough,Held,Jennifer Taylor,2026-01-07,15,No Response,No
+86,24,FashionForward Inc,Email,Check-in call,Planned,Sarah Johnson,2023-07-09,30,,No
+87,24,FashionForward Inc,Proposal Review,Technical walkthrough,Not Held,Sarah Johnson,2025-02-13,120,,No
+88,24,FashionForward Inc,Email,Check-in call,Held,Emily Chen,2024-03-18,90,No Response,No
+89,24,FashionForward Inc,Call,Executive briefing,Planned,Robert Wilson,2023-08-25,120,Neutral,Yes
+90,24,FashionForward Inc,Demo,Follow up call,Planned,Robert Wilson,2023-10-02,120,No Response,No
+91,24,FashionForward Inc,Proposal Review,Check-in call,Held,John Smith,2024-08-09,30,,Yes
+92,25,AutoMation Systems,Demo,Support escalation,Held,Mike Davis,2023-12-01,120,,No
+93,25,AutoMation Systems,Meeting,Renewal discussion,Planned,Lisa Anderson,2025-11-01,120,Needs Follow-up,No
+94,25,AutoMation Systems,Email,Contract discussion,Held,Lisa Anderson,2025-12-14,30,No Response,No
+95,25,AutoMation Systems,Follow Up,Proposal review,Held,Jennifer Taylor,2023-07-03,15,Positive,No
+96,25,AutoMation Systems,Proposal Review,Support escalation,Not Held,David Martinez,2025-09-24,90,Positive,Yes
+97,25,AutoMation Systems,Call,Onboarding call,Not Held,Sarah Johnson,2026-06-08,45,No Response,No
+98,26,CoverAll Insurance,Check-in,Partnership discussion,Held,Sarah Johnson,2024-05-28,60,Needs Follow-up,No
+99,26,CoverAll Insurance,Call,Contract discussion,Held,Robert Wilson,2025-11-27,120,Needs Follow-up,No
+100,26,CoverAll Insurance,Check-in,Renewal discussion,Held,Emily Chen,2023-12-02,30,No Response,No
+101,26,CoverAll Insurance,Email,Executive briefing,Planned,Emily Chen,2023-08-15,15,Neutral,No
+102,26,CoverAll Insurance,Check-in,Follow up call,Planned,Jennifer Taylor,2024-01-14,30,,No
+103,26,CoverAll Insurance,Follow Up,Onboarding call,Planned,Mike Davis,2026-08-02,15,,No
+104,26,CoverAll Insurance,Meeting,Follow up call,Planned,Emily Chen,2023-10-12,90,Needs Follow-up,No
+105,26,CoverAll Insurance,Follow Up,Onboarding call,Planned,Robert Wilson,2023-07-18,120,,No
+106,27,SmartClass Education,Follow Up,Onboarding call,Held,Lisa Anderson,2025-10-22,60,No Response,No
+107,27,SmartClass Education,Follow Up,Check-in call,Not Held,Jennifer Taylor,2024-02-05,45,,Yes
+108,28,UrbanRealty Group,Email,Technical walkthrough,Planned,Jennifer Taylor,2023-09-05,45,Positive,No
+109,28,UrbanRealty Group,Email,Product demo,Planned,John Smith,2024-07-03,120,Neutral,No
+110,28,UrbanRealty Group,Meeting,Contract discussion,Held,Lisa Anderson,2023-10-31,45,Positive,Yes
+111,28,UrbanRealty Group,Demo,Technical walkthrough,Held,Lisa Anderson,2023-07-28,45,Neutral,Yes
+112,28,UrbanRealty Group,Meeting,Quarterly review,Held,Lisa Anderson,2026-01-25,90,Neutral,Yes
+113,29,RapidShip Express,Check-in,Product demo,Not Held,Sarah Johnson,2025-11-15,15,Positive,Yes
+114,29,RapidShip Express,Email,Support escalation,Held,Mike Davis,2025-07-12,15,No Response,Yes
+115,29,RapidShip Express,Proposal Review,Onboarding call,Not Held,Sarah Johnson,2025-02-07,15,Positive,Yes
+116,29,RapidShip Express,Check-in,Technical walkthrough,Not Held,Sarah Johnson,2025-01-24,90,No Response,No
+117,29,RapidShip Express,Demo,Technical walkthrough,Not Held,David Martinez,2023-06-22,90,,Yes
+118,29,RapidShip Express,Follow Up,Onboarding call,Held,Jennifer Taylor,2025-04-26,90,Needs Follow-up,No
+119,29,RapidShip Express,Call,Discovery call,Planned,Sarah Johnson,2024-01-08,90,Neutral,No
+120,29,RapidShip Express,Email,Quarterly review,Not Held,Jennifer Taylor,2026-04-08,120,,No
+121,29,RapidShip Express,Meeting,Proposal review,Held,John Smith,2024-06-15,30,Needs Follow-up,No
+122,29,RapidShip Express,Follow Up,Partnership discussion,Held,Robert Wilson,2026-04-16,90,,No
+123,29,RapidShip Express,Demo,Follow up call,Planned,Lisa Anderson,2024-03-28,45,Needs Follow-up,Yes
+124,30,StrategyFirst Consulting,Follow Up,Onboarding call,Held,John Smith,2026-09-14,30,,Yes
+125,30,StrategyFirst Consulting,Email,Contract discussion,Held,Emily Chen,2025-10-12,15,Needs Follow-up,No
+126,30,StrategyFirst Consulting,Follow Up,Support escalation,Not Held,Lisa Anderson,2026-01-30,90,,No
+127,30,StrategyFirst Consulting,Demo,Quarterly review,Held,Sarah Johnson,2025-02-03,60,Positive,No
+128,30,StrategyFirst Consulting,Call,Onboarding call,Held,Emily Chen,2024-08-23,60,,No
+129,30,StrategyFirst Consulting,Demo,Support escalation,Held,David Martinez,2024-10-02,30,No Response,No
+130,30,StrategyFirst Consulting,Email,Discovery call,Held,Lisa Anderson,2023-06-14,15,,Yes
+131,30,StrategyFirst Consulting,Email,Executive briefing,Held,Lisa Anderson,2024-03-18,15,Positive,No
+132,30,StrategyFirst Consulting,Email,Proposal review,Held,Robert Wilson,2024-07-10,120,Neutral,No
+133,30,StrategyFirst Consulting,Meeting,Proposal review,Held,John Smith,2026-07-10,30,Needs Follow-up,Yes
+134,31,NextGen Software,Demo,Onboarding call,Held,Lisa Anderson,2024-03-08,30,Needs Follow-up,No
+135,31,NextGen Software,Email,Partnership discussion,Held,Mike Davis,2024-10-04,90,,No
+136,32,BioHealth Ltd,Meeting,Proposal review,Held,Emily Chen,2024-01-29,90,No Response,No
+137,32,BioHealth Ltd,Proposal Review,Technical walkthrough,Held,John Smith,2025-03-13,90,,No
+138,32,BioHealth Ltd,Email,Partnership discussion,Held,Lisa Anderson,2026-06-01,30,Positive,No
+139,33,InvestRight Capital,Proposal Review,Executive briefing,Held,Sarah Johnson,2026-04-06,60,,Yes
+140,33,InvestRight Capital,Proposal Review,Technical walkthrough,Planned,Lisa Anderson,2024-05-08,60,,No
+141,33,InvestRight Capital,Email,Support escalation,Held,Jennifer Taylor,2024-06-01,120,No Response,No
+142,33,InvestRight Capital,Proposal Review,Technical walkthrough,Planned,John Smith,2024-12-01,30,Neutral,No
+143,34,TrendyShop Inc,Demo,Contract discussion,Held,David Martinez,2024-09-23,60,,No
+144,34,TrendyShop Inc,Email,Check-in call,Held,Mike Davis,2025-07-06,15,Needs Follow-up,No
+145,34,TrendyShop Inc,Email,Contract discussion,Planned,John Smith,2026-04-28,60,,No
+146,34,TrendyShop Inc,Demo,Executive briefing,Not Held,David Martinez,2025-10-20,45,No Response,No
+147,34,TrendyShop Inc,Demo,Discovery call,Held,Jennifer Taylor,2024-12-11,30,Needs Follow-up,Yes
+148,34,TrendyShop Inc,Call,Follow up call,Planned,Sarah Johnson,2025-06-05,45,Neutral,Yes
+149,34,TrendyShop Inc,Call,Quarterly review,Held,Emily Chen,2024-01-29,45,Neutral,No
+150,34,TrendyShop Inc,Email,Support escalation,Held,Emily Chen,2024-10-25,120,,No
+151,34,TrendyShop Inc,Email,Discovery call,Held,Robert Wilson,2026-06-17,45,No Response,No
+152,35,PrecisionMfg Co,Demo,Onboarding call,Planned,Mike Davis,2023-06-25,60,Neutral,No
+153,35,PrecisionMfg Co,Demo,Contract discussion,Planned,Jennifer Taylor,2024-08-03,120,No Response,No
+154,35,PrecisionMfg Co,Email,Contract discussion,Not Held,David Martinez,2023-11-23,30,No Response,No
+155,35,PrecisionMfg Co,Call,Quarterly review,Held,Mike Davis,2026-07-18,45,Positive,No
+156,35,PrecisionMfg Co,Email,Contract discussion,Not Held,David Martinez,2025-05-27,120,No Response,No
+157,35,PrecisionMfg Co,Proposal Review,Discovery call,Planned,John Smith,2025-03-29,30,Neutral,No
+158,35,PrecisionMfg Co,Follow Up,Partnership discussion,Planned,David Martinez,2026-08-07,60,Neutral,No
+159,35,PrecisionMfg Co,Proposal Review,Technical walkthrough,Held,Jennifer Taylor,2023-10-09,15,Needs Follow-up,No
+160,35,PrecisionMfg Co,Call,Proposal review,Held,Mike Davis,2025-02-13,15,,No
+161,35,PrecisionMfg Co,Meeting,Contract discussion,Held,David Martinez,2023-07-25,45,Neutral,No
+162,35,PrecisionMfg Co,Follow Up,Check-in call,Held,Jennifer Taylor,2025-01-17,15,Needs Follow-up,Yes
+163,36,TrustShield Insurance,Check-in,Technical walkthrough,Not Held,Mike Davis,2025-03-31,15,Neutral,No
+164,36,TrustShield Insurance,Follow Up,Product demo,Not Held,Emily Chen,2026-02-04,30,Neutral,No
+165,36,TrustShield Insurance,Check-in,Support escalation,Not Held,Mike Davis,2025-11-02,90,,No
+166,36,TrustShield Insurance,Meeting,Check-in call,Not Held,Robert Wilson,2026-09-16,30,Positive,No
+167,37,DigitalLearn Corp,Check-in,Technical walkthrough,Planned,Emily Chen,2023-10-10,90,Needs Follow-up,No
+168,37,DigitalLearn Corp,Demo,Renewal discussion,Held,Sarah Johnson,2025-12-29,45,No Response,No
+169,37,DigitalLearn Corp,Demo,Renewal discussion,Held,David Martinez,2025-01-30,30,Neutral,No
+170,37,DigitalLearn Corp,Demo,Onboarding call,Held,Sarah Johnson,2025-12-24,60,Positive,No
+171,37,DigitalLearn Corp,Email,Onboarding call,Planned,Robert Wilson,2024-04-19,120,Positive,No
+172,37,DigitalLearn Corp,Demo,Partnership discussion,Planned,Sarah Johnson,2026-03-07,45,Positive,Yes
+173,37,DigitalLearn Corp,Check-in,Partnership discussion,Held,David Martinez,2026-03-30,60,Neutral,No
+174,37,DigitalLearn Corp,Proposal Review,Discovery call,Not Held,John Smith,2024-07-29,15,No Response,No
+175,37,DigitalLearn Corp,Follow Up,Technical walkthrough,Held,David Martinez,2025-05-04,15,Positive,No
+176,38,PrimeProperties LLC,Email,Onboarding call,Not Held,Jennifer Taylor,2024-03-06,60,Positive,Yes
+177,38,PrimeProperties LLC,Follow Up,Contract discussion,Not Held,Mike Davis,2026-06-28,60,Needs Follow-up,No
+178,38,PrimeProperties LLC,Check-in,Discovery call,Planned,Sarah Johnson,2024-05-15,30,Needs Follow-up,Yes
+179,39,FastTrack Logistics,Meeting,Product demo,Held,Robert Wilson,2025-08-09,30,No Response,No
+180,39,FastTrack Logistics,Meeting,Support escalation,Held,Emily Chen,2024-05-30,60,Positive,Yes
+181,39,FastTrack Logistics,Follow Up,Follow up call,Not Held,John Smith,2025-08-08,90,Positive,Yes
+182,39,FastTrack Logistics,Check-in,Contract discussion,Held,Lisa Anderson,2025-07-12,30,Neutral,Yes
+183,39,FastTrack Logistics,Demo,Discovery call,Held,Lisa Anderson,2023-07-03,30,Positive,No
+184,39,FastTrack Logistics,Check-in,Onboarding call,Held,Mike Davis,2023-12-15,15,No Response,Yes
+185,39,FastTrack Logistics,Email,Check-in call,Held,Emily Chen,2025-03-31,90,No Response,No
+186,39,FastTrack Logistics,Meeting,Contract discussion,Held,Lisa Anderson,2024-02-03,45,Neutral,Yes
+187,39,FastTrack Logistics,Follow Up,Quarterly review,Held,David Martinez,2025-09-01,30,No Response,No
+188,39,FastTrack Logistics,Follow Up,Follow up call,Planned,Lisa Anderson,2023-10-14,15,Positive,No
+189,40,AdvisoryPro Group,Check-in,Renewal discussion,Not Held,Sarah Johnson,2025-02-07,120,,No
+190,40,AdvisoryPro Group,Call,Renewal discussion,Held,David Martinez,2024-10-28,120,Neutral,No
+191,40,AdvisoryPro Group,Follow Up,Partnership discussion,Held,Jennifer Taylor,2024-05-25,15,Needs Follow-up,Yes
+192,40,AdvisoryPro Group,Demo,Technical walkthrough,Planned,Emily Chen,2026-09-11,90,,Yes
+193,40,AdvisoryPro Group,Call,Renewal discussion,Held,Robert Wilson,2024-09-19,30,No Response,No
+194,40,AdvisoryPro Group,Call,Proposal review,Held,Jennifer Taylor,2023-11-10,45,Neutral,No
+195,40,AdvisoryPro Group,Meeting,Onboarding call,Held,Emily Chen,2025-07-09,120,,No
+196,40,AdvisoryPro Group,Meeting,Follow up call,Held,John Smith,2025-04-04,90,No Response,No
+197,41,Quantum Systems Inc,Check-in,Support escalation,Held,Lisa Anderson,2024-09-12,30,Neutral,Yes
+198,41,Quantum Systems Inc,Check-in,Onboarding call,Held,David Martinez,2024-10-21,90,Needs Follow-up,No
+199,42,CareFirst Medical,Call,Executive briefing,Held,Emily Chen,2023-06-13,15,Neutral,No
+200,42,CareFirst Medical,Call,Proposal review,Planned,Emily Chen,2024-02-13,30,,Yes
+201,42,CareFirst Medical,Follow Up,Executive briefing,Held,Mike Davis,2025-10-20,120,Neutral,No
+202,42,CareFirst Medical,Meeting,Renewal discussion,Held,Robert Wilson,2025-10-16,45,,No
+203,42,CareFirst Medical,Email,Partnership discussion,Not Held,Sarah Johnson,2024-07-17,45,No Response,No
+204,42,CareFirst Medical,Demo,Executive briefing,Not Held,David Martinez,2024-05-09,30,No Response,Yes
+205,42,CareFirst Medical,Demo,Product demo,Held,Mike Davis,2025-07-21,90,Neutral,No
+206,42,CareFirst Medical,Demo,Follow up call,Not Held,Robert Wilson,2025-07-19,60,,No
+207,42,CareFirst Medical,Email,Proposal review,Not Held,Emily Chen,2023-10-26,30,Neutral,Yes
+208,43,AssetGrow Financial,Follow Up,Support escalation,Held,Jennifer Taylor,2026-03-22,60,No Response,No
+209,43,AssetGrow Financial,Demo,Executive briefing,Held,Sarah Johnson,2025-07-04,60,Positive,Yes
+210,44,StyleHub Retail,Meeting,Contract discussion,Not Held,Robert Wilson,2026-08-02,120,Needs Follow-up,No
+211,44,StyleHub Retail,Follow Up,Discovery call,Not Held,David Martinez,2025-06-24,120,Neutral,No
+212,44,StyleHub Retail,Call,Quarterly review,Held,Mike Davis,2026-02-03,45,,No
+213,44,StyleHub Retail,Email,Contract discussion,Planned,Mike Davis,2024-03-28,15,Positive,Yes
+214,44,StyleHub Retail,Demo,Support escalation,Planned,Sarah Johnson,2025-07-27,90,Neutral,No
+215,44,StyleHub Retail,Check-in,Technical walkthrough,Held,Robert Wilson,2024-05-05,90,,No
+216,44,StyleHub Retail,Email,Support escalation,Not Held,Sarah Johnson,2026-09-13,15,,No
+217,44,StyleHub Retail,Email,Support escalation,Held,David Martinez,2024-03-19,120,Needs Follow-up,Yes
+218,45,SmartFactory Ltd,Call,Product demo,Held,David Martinez,2026-03-04,90,No Response,No
+219,45,SmartFactory Ltd,Meeting,Proposal review,Held,Mike Davis,2025-10-30,120,Neutral,No
+220,45,SmartFactory Ltd,Meeting,Check-in call,Held,Jennifer Taylor,2026-02-21,90,Neutral,No
+221,45,SmartFactory Ltd,Call,Support escalation,Held,Emily Chen,2024-07-16,45,No Response,No
+222,46,AllCover Insurance,Check-in,Onboarding call,Held,Sarah Johnson,2024-01-10,45,Positive,No
+223,46,AllCover Insurance,Email,Product demo,Held,John Smith,2024-02-11,90,Neutral,No
+224,46,AllCover Insurance,Follow Up,Partnership discussion,Held,John Smith,2026-02-18,15,Needs Follow-up,Yes
+225,46,AllCover Insurance,Check-in,Discovery call,Held,Emily Chen,2026-09-05,90,Positive,No
+226,46,AllCover Insurance,Check-in,Follow up call,Not Held,Jennifer Taylor,2026-05-01,45,,No
+227,46,AllCover Insurance,Email,Onboarding call,Held,Lisa Anderson,2025-04-20,30,Needs Follow-up,No
+228,46,AllCover Insurance,Proposal Review,Discovery call,Held,Lisa Anderson,2025-07-15,15,Positive,No
+229,46,AllCover Insurance,Follow Up,Proposal review,Held,Sarah Johnson,2025-08-31,90,Needs Follow-up,No
+230,46,AllCover Insurance,Demo,Renewal discussion,Not Held,David Martinez,2025-06-24,120,Neutral,Yes
+231,46,AllCover Insurance,Call,Onboarding call,Held,John Smith,2025-03-21,120,Needs Follow-up,No
+232,46,AllCover Insurance,Proposal Review,Executive briefing,Not Held,Sarah Johnson,2024-09-21,45,No Response,No
+233,46,AllCover Insurance,Follow Up,Technical walkthrough,Held,Emily Chen,2023-12-23,120,Neutral,Yes
+234,47,EduPath Online,Check-in,Product demo,Held,Jennifer Taylor,2026-03-16,30,No Response,Yes
+235,47,EduPath Online,Follow Up,Check-in call,Held,Emily Chen,2026-02-12,30,Neutral,Yes
+236,47,EduPath Online,Demo,Support escalation,Held,Mike Davis,2024-01-03,45,No Response,No
+237,47,EduPath Online,Follow Up,Follow up call,Not Held,Sarah Johnson,2024-08-25,120,Neutral,No
+238,48,MetroRealty Partners,Check-in,Contract discussion,Planned,Sarah Johnson,2025-04-12,120,Needs Follow-up,No
+239,48,MetroRealty Partners,Follow Up,Onboarding call,Planned,David Martinez,2025-07-21,30,Neutral,No
+240,48,MetroRealty Partners,Email,Product demo,Held,Sarah Johnson,2024-01-23,45,,No
+241,49,GlobalShip Co,Email,Proposal review,Held,David Martinez,2026-08-17,90,Positive,No
+242,49,GlobalShip Co,Proposal Review,Check-in call,Held,David Martinez,2023-10-05,60,Needs Follow-up,No
+243,49,GlobalShip Co,Proposal Review,Onboarding call,Planned,Emily Chen,2024-02-14,15,No Response,Yes
+244,50,InsightConsulting,Email,Proposal review,Held,Emily Chen,2025-12-30,60,No Response,No
+245,50,InsightConsulting,Meeting,Support escalation,Held,Lisa Anderson,2025-01-01,45,,Yes
+246,50,InsightConsulting,Check-in,Support escalation,Planned,Jennifer Taylor,2024-12-12,120,Neutral,No
+247,50,InsightConsulting,Follow Up,Technical walkthrough,Held,Lisa Anderson,2025-01-17,30,Neutral,No
+248,50,InsightConsulting,Check-in,Partnership discussion,Held,Jennifer Taylor,2023-09-16,120,No Response,No
+249,50,InsightConsulting,Call,Check-in call,Not Held,Lisa Anderson,2024-04-22,60,No Response,No
+250,50,InsightConsulting,Demo,Product demo,Planned,Robert Wilson,2025-08-10,45,Neutral,No
+251,50,InsightConsulting,Meeting,Quarterly review,Planned,John Smith,2023-12-17,120,Needs Follow-up,No
+252,50,InsightConsulting,Proposal Review,Proposal review,Not Held,Jennifer Taylor,2024-05-01,45,Neutral,No
+253,50,InsightConsulting,Check-in,Support escalation,Held,John Smith,2024-08-20,45,,Yes

@@ -7,25 +7,38 @@ import { useAuth } from './AuthContext'
 
 const NAV = [
   { path: '/',               label: 'Dashboard',           color: '#185FA5', section: 'Main' },
-  { path: '/agent',          label: 'ETL Agent',           color: '#534AB7' },
-  { path: '/source-target',  label: 'Source → Target',     color: '#185FA5' },
-  { path: '/model',          label: 'Data model',          color: '#854F0B' },
-  { path: '/mapping',        label: 'ETL mapping',         color: '#0F6E56' },
-  { path: '/sql',            label: 'SQL scripts',         color: '#993C1D' },
-  { path: '/evolution',      label: 'Schema evolution',    color: '#534AB7' },
-  { path: '/plug-and-play',  label: '🔌 Plug & Play',       color: '#0B5D73', section: 'Analytics' },
-  { path: '/analytics',      label: 'BI / Analytics',      color: '#3B6D11', section: 'Analytics' },
-  { path: '/neon-bi',        label: '⚡ Neon BI',           color: '#00aa88' },
+
+  // Migration & ETL
+  { path: '/agent',          label: 'ETL Agent',           color: '#534AB7', section: 'ETL' },
+  { path: '/source-target',  label: 'Source to Target',    color: '#185FA5' },
+  { path: '/model',          label: 'Data Model',          color: '#854F0B' },
+  { path: '/mapping',        label: 'ETL Mapping',         color: '#0F6E56' },
+  { path: '/sql',            label: 'SQL Scripts',         color: '#993C1D' },
+  { path: '/evolution',      label: 'Schema Evolution',    color: '#534AB7' },
   { path: '/pipelines',      label: 'Pipelines',           color: '#185FA5' },
-  { path: '/quality',        label: '✅ Data Quality',     color: '#27500A' },
-  { path: '/scheduler',      label: '⏰ Scheduler',        color: '#854F0B' },
-  { path: '/cost',           label: '💰 AI Costs',         color: '#854F0B' },
-  { path: '/approvals',      label: '👁 Approvals (HIL)',  color: '#854F0B', section: 'Agents' },
-  { path: '/logs',           label: '📜 Pipeline Logs',    color: '#185FA5' },
-  { path: '/recovery-logs',  label: '🤖 Recovery Agent',   color: '#A32D2D' },
+
+  // Exchange
+  { path: '/exchange',       label: 'Exchange Agent',      color: '#15803D', section: 'Exchange' },
+  { path: '/plug-and-play',  label: 'Plug & Play',         color: '#0B5D73', section: 'Migration'},
+
+  // Analytics & BI
+  { path: '/analytics',      label: 'BI / Analytics',      color: '#3B6D11', section: 'Analytics & BI' },
+  { path: '/neon-bi',        label: 'Neon BI',             color: '#00aa88' },
+  { path: '/quality',        label: 'Data Quality',        color: '#27500A' },
+
+  // Agents & Automation
+  { path: '/approvals',      label: 'Approvals (HIL)',     color: '#854F0B', section: 'Agents' },
+  { path: '/recovery-logs',  label: 'Recovery Agent',      color: '#A32D2D' },
+  { path: '/scheduler',      label: 'Scheduler',           color: '#854F0B' },
+
+  // Monitoring
+  { path: '/logs',           label: 'Pipeline Logs',       color: '#185FA5', section: 'Monitoring' },
+  { path: '/cost',           label: 'AI Costs',            color: '#854F0B' },
+
+  // Settings
   { path: '/connectors',     label: 'Connectors',          color: '#888780', section: 'Settings' },
   { path: '/team',           label: 'Team',                color: '#185FA5' },
-  { path: '/settings',       label: 'AI provider',         color: '#888780' },
+  { path: '/settings',       label: 'AI Provider',         color: '#888780' },
 ]
 
 export default function Layout({ children }) {
@@ -102,3 +115,6 @@ export function PageBody({ children }) {
     </div>
   )
 }
+
+
+

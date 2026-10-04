@@ -1,4 +1,7 @@
-import whisper
-print('Downloading large model (2.9GB)... this will take a few minutes')
-model = whisper.load_model('large')
-print('Large model ready!')
+import psycopg2
+conn = psycopg2.connect(host='localhost', port=5433, dbname='postgres', user='postgres', password='postgres123')
+cur = conn.cursor()
+cur.execute(\"UPDATE public.connectors SET source_schema='exchange' WHERE name='exchange'\")
+conn.commit()
+print('Updated exchange connector schema to exchange')
+conn.close()

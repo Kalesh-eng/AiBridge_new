@@ -114,7 +114,17 @@ function useVoice(onResult, voiceLang = "en", languages = []) {
 
   const stopSpeaking = useCallback(() => { window.speechSynthesis?.cancel() }, [])
 
-  return { listening, supported, voiceOn, setVoiceOn, toggleListen, speak, stopSpeaking }
+  const stopAllAudio = () => {
+    window.speechSynthesis?.cancel()
+    if (window._gttsAudio) {
+      window._gttsAudio.pause()
+      window._gttsAudio.currentTime = 0
+      window._gttsAudio = null
+    }
+    setIsSpeaking(false)
+  }
+
+  return { listening, supported, voiceOn, setVoiceOn, toggleListen, speak, stopSpeaking, stopAllAudio }
 }
 
 export default function Analytics() {
@@ -186,6 +196,7 @@ export default function Analytics() {
   const mediaRecorderRef = useRef(null)
   const audioChunksRef   = useRef([])
   const [recording, setRecording] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
 
   // Whisper-based recording for non-English languages
   const WHISPER_LANGS = ['sw','ha','yo','zu','xh','am','af','ig','so','sn','ms']
@@ -285,7 +296,7 @@ export default function Analytics() {
     }, 600)
   }, [voiceLang, languages])
 
-  const { listening, supported, voiceOn, setVoiceOn, toggleListen, speak, stopSpeaking } = useVoice(handleVoiceResult, voiceLang, languages)
+  const { listening, supported, voiceOn, setVoiceOn, toggleListen, speak, stopSpeaking, stopAllAudio } = useVoice(handleVoiceResult, voiceLang, languages)
 
   // gTTS speak — backend TTS, supports 60+ languages including African
   const speakWithGTTS = useCallback(async (text, langCode) => {
@@ -306,7 +317,8 @@ export default function Analytics() {
       const url = URL.createObjectURL(blob)
       const audio = new Audio(url)
       window._gttsAudio = audio
-      audio.onended = () => URL.revokeObjectURL(url)
+      audio.onended = () => { URL.revokeObjectURL(url); setIsSpeaking(false) }
+      audio.onplay = () => setIsSpeaking(true)
       audio.play()
     } catch(e) {
       console.log('gTTS failed, falling back:', e)
@@ -906,11 +918,25 @@ export default function Analytics() {
                     {executing && <span style={{ color: '#888', fontWeight: 400 }}> (refreshing…)</span>}
                   </div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    {supported && voiceOn && (
+                    {isSpeaking ? (
+                      <button title="Stop speaking" onClick={stopAllAudio}
+                        style={{ fontSize: 16, background: '#FEF2F2', border: '1px solid #FCA5A5',
+                          borderRadius: 6, cursor: 'pointer', padding: '2px 8px', color: '#DC2626' }}>
+                        ⏹ Stop
+                      </button>
+                    ) : (
                       <button title="Read results aloud"
                         onClick={() => {
                           const top = results.rows.slice(0,3).map(row => results.columns.map((c,i) => `${c}: ${row[i]}`).join(', ')).join('; ')
-                          speak(`${results.rows.length} results. Top entries: ${top}`)
+                          const lang = localStorage.getItem('aibridge_voice_lang') || 'en'
+                          const summary = `${results.rows.length} results found`
+                          if (lang !== 'en') {
+                            api.post('/voice/translate', { text: summary, source_lang: 'en', target_lang: lang })
+                              .then(r => speakWithGTTS(r.data.translated || summary, lang))
+                              .catch(() => speakWithGTTS(summary, 'en'))
+                          } else {
+                            speakWithGTTS(summary, 'en')
+                          }
                         }}
                         style={{ fontSize: 16, background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px' }}>🔊</button>
                     )}
@@ -1136,6 +1162,7 @@ const btnPrimary   = { padding: '7px 14px', background: '#185FA5', color: '#fff'
 const btnGhost     = { padding: '7px 14px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 11, cursor: 'pointer' }
 const btnGhostSmall= { padding: '4px 10px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 10, cursor: 'pointer' }
 const selStyle     = { padding: '6px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', cursor: 'pointer', minWidth: 130 }
+
 
 
 
