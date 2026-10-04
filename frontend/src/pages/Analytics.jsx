@@ -383,6 +383,7 @@ export default function Analytics() {
       const isChat = mode === 'connection'
       const sql_data = isChat ? r.data.sql_result : r.data
       if (!isChat && !r.data.success) { setError(r.data.error || 'AI could not generate SQL'); setLoading(false); return }
+      console.log('[Chat] isChat:', isChat, 'sql_result:', r.data.sql_result, 'response preview:', r.data.response?.slice(0,50))
       if (isChat && !r.data.sql_result) {
         // Auto-extract and execute SQL from markdown blocks in response
         const allBlocks = [...(r.data.response?.matchAll(/```(?:sql)?\s*([\s\S]*?)```/gi) || [])]
@@ -396,15 +397,21 @@ export default function Analytics() {
             }
           } catch(e) { console.log('Auto-exec failed:', e) }
         }
+        if (!r.data.sql_result && bestSql) {
+          // SQL found in response but auto-exec failed — still use it
+          r.data.sql_result = { sql: bestSql, columns: [], rows: [] }
+          r.data.sql = bestSql
+        }
         if (!r.data.sql_result) {
           setError(r.data.response?.slice(0, 200) || 'Could not generate SQL')
           setLoading(false); return
         }
       }
       // safety check handled above
-      const step = { instruction: q, sql: isChat ? r.data.sql_result?.sql : r.data.sql, explanation: isChat ? r.data.response : null }
-      setQueryChain([step]); setActiveStep(0); setEditedSql(r.data.sql); setEditingSql(false)
-      await runSql(r.data.sql, q)
+      const finalSql = isChat ? (r.data.sql_result?.sql || r.data.sql) : r.data.sql
+      const step = { instruction: q, sql: finalSql, explanation: isChat ? r.data.response : null }
+      setQueryChain([step]); setActiveStep(0); setEditedSql(finalSql); setEditingSql(false)
+      await runSql(finalSql, q)
     } catch (e) {
       setError(e.response?.data?.detail || e.message || 'Failed to generate SQL')
     }
@@ -1162,6 +1169,9 @@ const btnPrimary   = { padding: '7px 14px', background: '#185FA5', color: '#fff'
 const btnGhost     = { padding: '7px 14px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 11, cursor: 'pointer' }
 const btnGhostSmall= { padding: '4px 10px', background: '#fff', color: '#555', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 10, cursor: 'pointer' }
 const selStyle     = { padding: '6px 10px', fontSize: 12, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', cursor: 'pointer', minWidth: 130 }
+
+
+
 
 
 

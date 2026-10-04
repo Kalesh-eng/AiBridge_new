@@ -1,6 +1,29 @@
-import psycopg2
-conn = psycopg2.connect(host='localhost', port=5433, dbname='postgres', user='postgres', password='postgres123')
-cur = conn.cursor()
-cur.execute('SELECT id, name, target_schema, last_run_status FROM public.exchange_mappings')
-for r in cur.fetchall(): print(r)
-conn.close()
+path = r"E:\AIBRIDGE_Claude\frontend\src\pages\Analytics.jsx"
+
+with open(path, encoding='utf-8') as f:
+    content = f.read()
+
+old = """        if (!r.data.sql_result) {
+          setError(r.data.response?.slice(0, 200) || 'Could not generate SQL')
+          setLoading(false); return
+        }"""
+
+new = """        if (!r.data.sql_result && bestSql) {
+          // SQL found in response but auto-exec failed — still use it
+          r.data.sql_result = { sql: bestSql, columns: [], rows: [] }
+          r.data.sql = bestSql
+        }
+        if (!r.data.sql_result) {
+          setError(r.data.response?.slice(0, 200) || 'Could not generate SQL')
+          setLoading(false); return
+        }"""
+
+if old in content:
+    content = content.replace(old, new)
+    print("✓ AutoExec fix applied")
+else:
+    print("✗ Pattern not found")
+
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(content)
+print("Done")

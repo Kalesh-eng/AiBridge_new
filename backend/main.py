@@ -4158,7 +4158,11 @@ def chat(req: ChatRequest, current_user=Depends(get_current_user), db: Session =
                 _intro = introspect_connector(_cfg)
                 if _intro.get("schema_context"):
                     schema_context = _intro["schema_context"]
-                    print(f"[Chat] Connection mode — schema: {_conn.name} ({_conn.source_schema})")
+                    print(f"[Chat] Connection mode - schema: {_conn.name} ({_conn.source_schema})")
+                    # Create SQLAlchemy engine for query execution
+                    import sqlalchemy as _sa_chat
+                    _db_url = f"postgresql://{_conn.username}:{_conn.password}@{_conn.host}:{_conn.port or 5432}/{_conn.database_name}"
+                    _chat_engine = _sa_chat.create_engine(_db_url)
 
         elif req.pipeline_id:
             # PIPELINE MODE — use pipeline's target warehouse schema
