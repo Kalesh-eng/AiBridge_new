@@ -4631,3 +4631,57 @@ async def run_exchange(req: ExchangeRunRequest,
         import traceback; traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+# ── AI Recommendation Agent ───────────────────────────────────────────────────
+
+class RecommendRequest(BaseModel):
+    question:     str = ""
+    sql:          str = ""
+    columns:      Optional[List[str]] = []
+    sample_rows:  Optional[List[list]] = []
+    connector_id: Optional[str] = None
+    context:      str = "business analytics"
+
+@app.post("/recommend")
+async def get_recommendations(req: RecommendRequest,
+                               current_user=Depends(get_current_user)):
+    try:
+        data_summary = ""
+        if req.columns and req.sample_rows:
+            data_summary = "Query results:\n"
+            data_summary += " | ".join(req.columns) + "\n"
+            for row in req.sample_rows[:15]:
+                data_summary += " | ".join(str(v) for v in row) + "\n"
+
+        prompt = (
+            "You are a senior business analyst. Analyze this data and give 3-5 actionable recommendations.\n\n"
+            "User question: " + req.question + "\n\n"
+            "SQL: " + req.sql + "\n\n"
+            + data_summary +
+            "\nRespond ONLY with a JSON array. Each item must have: title, body, action, type (urgent/opportunity/success/warning), icon (emoji).\n"
+            "Example: [{\"title\": \"Follow up stale leads\", \"body\": \"121 leads stuck in New status...\", \"action\": \"Assign leads to reps this week\", \"type\": \"urgent\", \"icon\": \"🚨\"}]\n"
+            "Return ONLY the JSON array, nothing else."
+        )
+
+        from ai_provider import ask_ai_text as _ask_ai
+        ai_response = _ask_ai(prompt, agent_name='RecommendationAgent')
+
+        import json as _json, re as _re
+        json_match = _re.search(r'\[.*\]', ai_response, _re.DOTALL)
+        if json_match:
+            recs = _json.loads(json_match.group())
+        else:
+            recs = _json.loads(ai_response)
+
+        print("[RecommendAgent] Generated " + str(len(recs)) + " recommendations")
+        return {"success": True, "recommendations": recs}
+
+    except Exception as e:
+        print("[RecommendAgent] Error: " + str(e))
+        return {"success": True, "recommendations": [{
+            "title": "Analysis complete",
+            "body": "AI analyzed your data. " + str(e)[:100],
+            "action": "Review the data manually",
+            "type": "warning",
+            "icon": "⚠️"
+        }]}
+

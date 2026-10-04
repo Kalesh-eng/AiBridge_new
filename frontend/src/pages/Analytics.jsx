@@ -196,7 +196,9 @@ export default function Analytics() {
   const mediaRecorderRef = useRef(null)
   const audioChunksRef   = useRef([])
   const [recording, setRecording] = useState(false)
-  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [isSpeaking,       setIsSpeaking]       = useState(false)
+  const [recommendations,  setRecommendations]  = useState(null)
+  const [loadingRecs,      setLoadingRecs]      = useState(false)
 
   // Whisper-based recording for non-English languages
   const WHISPER_LANGS = ['sw','ha','yo','zu','xh','am','af','ig','so','sn','ms']
@@ -299,6 +301,34 @@ export default function Analytics() {
   const { listening, supported, voiceOn, setVoiceOn, toggleListen, speak, stopSpeaking, stopAllAudio } = useVoice(handleVoiceResult, voiceLang, languages)
 
   // gTTS speak — backend TTS, supports 60+ languages including African
+  // AI Recommendation Agent
+  const getRecommendations = async () => {
+    if (!results || results.rows.length === 0) return
+    setLoadingRecs(true)
+    setRecommendations(null)
+    try {
+      const schema = results.columns.join(', ')
+      const sampleRows = results.rows.slice(0, 10).map(r =>
+        results.columns.map((c, i) => c + ': ' + r[i]).join(', ')
+      ).join('\n')
+      const currentQ = queryChain[activeStep]?.instruction || question
+
+      const r = await api.post('/recommend', {
+        question:     currentQ,
+        sql:          queryChain[activeStep]?.sql || '',
+        columns:      results.columns,
+        sample_rows:  results.rows.slice(0, 20),
+        connector_id: activeConnId(),
+        context:      'CRM and business analytics'
+      })
+      setRecommendations(r.data.recommendations || [])
+    } catch(e) {
+      console.log('Recommendations error:', e)
+      setRecommendations([{ title: 'Analysis unavailable', body: e.message, type: 'warning' }])
+    }
+    setLoadingRecs(false)
+  }
+
   const speakWithGTTS = useCallback(async (text, langCode) => {
     if (!voiceOn) return
     try {
@@ -1007,6 +1037,53 @@ export default function Analytics() {
                   </div>
                   {savedMsg && <div style={{ fontSize: 11, color: '#3B6D11', marginTop: 6 }}>{savedMsg}</div>}
                 </div>
+
+                {/* AI Recommendations */}
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #f3f4f6' }}>
+                  <button onClick={getRecommendations} disabled={loadingRecs}
+                    style={{ padding: '8px 16px', background: loadingRecs ? '#9CA3AF' : '#854F0B',
+                      color: '#fff', border: 'none', borderRadius: 8, fontSize: 12,
+                      cursor: loadingRecs ? 'not-allowed' : 'pointer', fontWeight: 600,
+                      width: '100%' }}>
+                    {loadingRecs ? '⏳ Analyzing data...' : '💡 Get AI Recommendations'}
+                  </button>
+                </div>
+
+                {/* Recommendation Cards */}
+                {recommendations && recommendations.length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#854F0B',
+                      textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10,
+                      display: 'flex', alignItems: 'center', gap: 6 }}>
+                      💡 AI Recommendations
+                      <button onClick={() => setRecommendations(null)}
+                        style={{ fontSize: 10, padding: '1px 6px', border: '1px solid #D1D5DB',
+                          borderRadius: 4, background: '#fff', cursor: 'pointer',
+                          color: '#9CA3AF', marginLeft: 'auto' }}>✕</button>
+                    </div>
+                    {recommendations.map((rec, i) => (
+                      <div key={i} style={{
+                        border: `1px solid ${rec.type==='warning'?'#FCA5A5':rec.type==='success'?'#BBF7D0':'#FED7AA'}`,
+                        borderRadius: 8, padding: '12px 14px', marginBottom: 8,
+                        background: rec.type==='warning'?'#FEF2F2':rec.type==='success'?'#F0FDF4':'#FFFBEB',
+                        borderLeft: `4px solid ${rec.type==='warning'?'#DC2626':rec.type==='success'?'#15803D':'#D97706'}`,
+                      }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#111', marginBottom: 4 }}>
+                          {rec.icon} {rec.title}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#374151', lineHeight: 1.6 }}>{rec.body}</div>
+                        {rec.action && (
+                          <div style={{ fontSize: 10, fontWeight: 600, color: '#854F0B',
+                            marginTop: 6, padding: '3px 8px', background: '#FEF3C7',
+                            borderRadius: 4, display: 'inline-block' }}>
+                            ▶ {rec.action}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
               </div>
             )}
           </div>
