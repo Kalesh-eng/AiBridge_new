@@ -4685,3 +4685,162 @@ async def get_recommendations(req: RecommendRequest,
             "icon": "⚠️"
         }]}
 
+# ── AI Agent Team Endpoints ───────────────────────────────────────────────────
+
+def _pg_connect():
+    import psycopg2
+    return psycopg2.connect(
+        host=os.getenv('PG_HOST','localhost'), port=int(os.getenv('PG_PORT',5433)),
+        dbname=os.getenv('PG_DB','postgres'), user=os.getenv('PG_USER','postgres'),
+        password=os.getenv('PG_PASSWORD','postgres123')
+    )
+    import psycopg2
+    return psycopg2.connect(
+        host=os.getenv("PG_HOST","localhost"), port=int(os.getenv("PG_PORT",5433)),
+        dbname=os.getenv("PG_DB","postgres"), user=os.getenv("PG_USER","postgres"),
+        password=os.getenv("PG_PASSWORD","postgres123")
+    )
+
+@app.get("/agents/list")
+async def list_agents(current_user=Depends(get_current_user)):
+    try:
+        pg = _pg_connect(); cur = pg.cursor()
+        cur.execute("SELECT id, name, role, emoji, personality, capabilities, status, current_task, last_active, tasks_today, tasks_total, layer FROM public.ai_agents ORDER BY layer, name")
+        cols = [d[0] for d in cur.description]
+        rows = []
+        for r in cur.fetchall():
+            d = dict(zip(cols, r))
+            for k, v in d.items():
+                if hasattr(v, 'isoformat'): d[k] = v.isoformat()
+            rows.append(d)
+        pg.close()
+        return {"agents": rows}
+    except Exception as e:
+        print("[Agents] Error: " + str(e))
+        return {"agents": []}
+
+@app.get("/agents/hil-queue")
+async def get_hil_queue(current_user=Depends(get_current_user)):
+    try:
+        pg = _pg_connect(); cur = pg.cursor()
+        cur.execute("SELECT id, agent_name, title, description, risk_level, action_type, status, created_at, responded_at, response FROM public.hil_queue ORDER BY created_at DESC LIMIT 50")
+        cols = [d[0] for d in cur.description]
+        rows = []
+        for r in cur.fetchall():
+            d = dict(zip(cols, r))
+            for k, v in d.items():
+                if hasattr(v, 'isoformat'): d[k] = v.isoformat()
+            rows.append(d)
+        pg.close()
+        return {"queue": rows}
+    except Exception as e:
+        return {"queue": []}
+
+@app.post("/agents/hil/{hil_id}/respond")
+async def respond_hil(hil_id: str, body: dict, current_user=Depends(get_current_user)):
+    try:
+        pg = _pg_connect(); cur = pg.cursor()
+        cur.execute("UPDATE public.hil_queue SET status=%s, response=%s, responded_at=NOW() WHERE id=%s",
+                    (body.get("response","rejected"), body.get("response","rejected"), hil_id))
+        pg.commit(); pg.close()
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/agents/comms")
+async def get_agent_comms(current_user=Depends(get_current_user)):
+    try:
+        pg = _pg_connect(); cur = pg.cursor()
+        cur.execute("SELECT from_agent, to_agent, message, message_type, priority, created_at FROM public.agent_comms ORDER BY created_at DESC LIMIT 30")
+        cols = [d[0] for d in cur.description]
+        rows = []
+        for r in cur.fetchall():
+            d = dict(zip(cols, r))
+            for k, v in d.items():
+                if hasattr(v, 'isoformat'): d[k] = v.isoformat()
+            rows.append(d)
+        pg.close()
+        return {"comms": rows}
+    except Exception as e:
+        return {"comms": []}
+
+@app.get("/agents/tasks")
+async def get_agent_tasks(current_user=Depends(get_current_user)):
+    try:
+        pg = _pg_connect(); cur = pg.cursor()
+        cur.execute("""
+            SELECT t.id, a.name as agent_name, a.emoji, t.task_type, t.description,
+                   t.status, t.hil_required, t.hil_approved, t.created_at
+            FROM public.agent_tasks t
+            LEFT JOIN public.ai_agents a ON a.id = t.agent_id
+            ORDER BY t.created_at DESC LIMIT 50
+        """)
+        cols = [d[0] for d in cur.description]
+        rows = []
+        for r in cur.fetchall():
+            d = dict(zip(cols, r))
+            for k, v in d.items():
+                if hasattr(v, 'isoformat'): d[k] = v.isoformat()
+            rows.append(d)
+        pg.close()
+        return {"tasks": rows}
+    except Exception as e:
+        return {"tasks": []}
+
+class AgentChatRequest(BaseModel):
+    agent_id: str
+    message:  str
+    history:  Optional[List[dict]] = []
+
+@app.post("/agents/chat")
+async def chat_with_agent(req: AgentChatRequest, current_user=Depends(get_current_user)):
+    try:
+        pg = _pg_connect(); cur = pg.cursor()
+        cur.execute("SELECT name, role, emoji, personality, capabilities FROM public.ai_agents WHERE id=%s", (req.agent_id,))
+        agent = cur.fetchone()
+        pg.close()
+        if not agent:
+            raise HTTPException(404, "Agent not found")
+
+        name, role, emoji, personality, capabilities = agent
+        system_prompt = (
+            "You are " + name + ", an AI agent with the role: " + role + ". " +
+            "Your personality: " + (personality or "Professional and helpful") + ". " +
+            "Your capabilities: " + ", ".join(capabilities or []) + ". " +
+            "You are part of the AIBridge AI team. " +
+            "IMPORTANT: You require human approval (HIL) for any actions that modify code, send communications, or make changes. " +
+            "For read-only tasks you can proceed autonomously. " +
+            "Always be transparent about what you can and cannot do without approval. " +
+            "Sign your messages as " + name + "."
+        )
+
+        history_text = ""
+        for msg in (req.history or [])[-6:]:
+            history_text += "\n" + msg.get("role","user").capitalize() + ": " + msg.get("content","")
+
+        prompt = history_text + "\nUser: " + req.message + "\n" + name + ":"
+
+        from ai_provider import ask_ai_text as _ask_ai_agent
+        response = _ask_ai_agent(prompt, system_prompt=system_prompt, agent_name=name + 'Agent')
+
+        # Log communication
+        pg2 = _pg_connect(); cur2 = pg2.cursor()
+        cur2.execute(
+            "INSERT INTO public.agent_comms (from_agent, to_agent, message, message_type) VALUES (%s, %s, %s, %s)",
+            (name, "Kalesh", req.message, "request")
+        )
+        cur2.execute(
+            "INSERT INTO public.agent_comms (from_agent, to_agent, message, message_type) VALUES (%s, %s, %s, %s)",
+            (name, "Kalesh", response, "response")
+        )
+        pg2.commit(); pg2.close()
+
+        return {"success": True, "response": response, "agent": name}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+
+
+

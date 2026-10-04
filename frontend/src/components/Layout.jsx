@@ -18,6 +18,7 @@ const NAV = [
   { path: '/pipelines',      label: 'Pipelines',           color: '#185FA5' },
 
   // Exchange
+  { path: '/mission-control', label: 'Mission Control',  color: '#185FA5', section: 'AI Team' },
   { path: '/exchange',       label: 'Exchange Agent',      color: '#15803D', section: 'Exchange' },
   { path: '/plug-and-play',  label: 'Plug & Play',         color: '#0B5D73', section: 'Migration'},
 

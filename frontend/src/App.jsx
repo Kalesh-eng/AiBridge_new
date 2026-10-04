@@ -29,6 +29,7 @@ import Logs            from './pages/Logs'
 import Cost            from './pages/Cost'
 import PlugAndPlay     from './pages/PlugAndPlay'
 import Exchange        from './pages/Exchange_agent'
+import MissionControl  from './pages/MissionControl'
 import AIBridgeNeonBI  from './pages/AIBridgeNeonBI'
 
 const Stub = ({ name }) => (
@@ -85,6 +86,7 @@ function AppRoutes() {
       <Route path="/sql"            element={<PrivateRoute><SqlScripts /></PrivateRoute>} />
       <Route path="/evolution"      element={<PrivateRoute><SchemaEvolution /></PrivateRoute>} />
       <Route path="/analytics"      element={<PrivateRoute><Analytics /></PrivateRoute>} />
+      <Route path="/mission-control"  element={<PrivateRoute><MissionControl /></PrivateRoute>} />
       <Route path="/exchange"           element={<PrivateRoute><Exchange /></PrivateRoute>} />
       <Route path="/plug-and-play"   element={<PrivateRoute><PlugAndPlay /></PrivateRoute>} />
       <Route path="/neon-bi"        element={<PrivateRoute><AIBridgeNeonBI /></PrivateRoute>} />
