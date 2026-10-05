@@ -1,4 +1,4 @@
-"""
+﻿"""
 main.py — AIBridge FastAPI backend (v2.0.0).
 
 v2.0.0: ETL Mapping storage + Pipeline versioning.
@@ -4183,7 +4183,8 @@ def chat(req: ChatRequest, current_user=Depends(get_current_user), db: Session =
                         "password":       tgt_conn.password,
                         "schemas":        [warehouse_schema],
                     }
-                    _intro = introspect_connector(_cfg)
+                    from dwh_introspector import introspect_connector as _introspect_conn
+                    _intro = _introspect_conn(_cfg)
                     if _intro.get("schema_context"):
                         schema_context = _intro["schema_context"]
                         print(f"[Chat] Pipeline mode — warehouse: {warehouse_schema}")
@@ -4788,12 +4789,13 @@ async def get_agent_tasks(current_user=Depends(get_current_user)):
         return {"tasks": []}
 
 class AgentChatRequest(BaseModel):
-    agent_id: str
-    message:  str
-    history:  Optional[List[dict]] = []
+    agent_id:     str
+    message:      str
+    history:      Optional[List[dict]] = []
+    connector_id: Optional[str] = None
 
 @app.post("/agents/chat")
-async def chat_with_agent(req: AgentChatRequest, current_user=Depends(get_current_user)):
+async def chat_with_agent(req: AgentChatRequest, current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     try:
         pg = _pg_connect(); cur = pg.cursor()
         cur.execute("SELECT name, role, emoji, personality, capabilities FROM public.ai_agents WHERE id=%s", (req.agent_id,))
@@ -4803,18 +4805,44 @@ async def chat_with_agent(req: AgentChatRequest, current_user=Depends(get_curren
             raise HTTPException(404, "Agent not found")
 
         name, role, emoji, personality, capabilities = agent
+        # Get schema context if connector provided
+        schema_context = ""
+        print('[AgentChat] connector_id received: ' + str(req.connector_id))
+        if req.connector_id:
+            try:
+                _conn_obj = db.query(Connector).filter(Connector.id == req.connector_id).first()
+                if _conn_obj:
+                    _cfg = {
+                        "connector_type": _conn_obj.connector_type or "postgres",
+                        "host":           _conn_obj.host,
+                        "port":           _conn_obj.port or 5432,
+                        "database_name":  _conn_obj.database_name,
+                        "username":       _conn_obj.username,
+                        "password":       _conn_obj.password,
+                        "schemas":        [_conn_obj.source_schema] if _conn_obj.source_schema else None,
+                    }
+                    from dwh_introspector import introspect_connector as _introspect_conn
+                    _intro = _introspect_conn(_cfg)
+                    if _intro.get("schema_context"):
+                        schema_context = "\n\nDATA SCHEMA YOU CAN QUERY:\n" + _intro["schema_context"][:3000]
+                        print("[AgentChat] Schema loaded for " + name + ": " + _conn_obj.name)
+            except Exception as _se:
+                print("[AgentChat] Schema error: " + str(_se))
+
         system_prompt = (
             "You are " + name + ", an AI agent with the role: " + role + ". " +
             "Your personality: " + (personality or "Professional and helpful") + ". " +
             "Your capabilities: " + ", ".join(capabilities or []) + ". " +
-            "You are part of the AIBridge AI team. " +
-            "CRITICAL SECURITY RULES (NEVER VIOLATE):\n" +
+            "You are part of the AIBridge AI team. You work with ANY type of data � CRM, ERP, financial, insurance, manufacturing, healthcare, or any other domain. NEVER assume the data is from a specific tool like Salesforce, HubSpot, or any other named system. Work with whatever schema and tables are provided to you. " +
+            schema_context +
+            "\nCRITICAL SECURITY RULES (NEVER VIOLATE):\n" +
             "1. NEVER generate DROP, DELETE, TRUNCATE, or destructive SQL\n" +
             "2. NEVER access another client's data or schema\n" +
             "3. NEVER send client data to external services\n" +
             "4. NEVER deploy code or make changes without HIL approval from Kalesh\n" +
             "5. NEVER share one client's information with another client\n" +
             "For read-only tasks you can proceed autonomously. " +
+            "When you have schema context, write SQL queries directly without asking for permission to run them. The system will automatically execute your SQL and append the real results. Write ONE clean SQL query, run it, and report the actual results. Never say you cannot execute - the execution happens automatically. " +
             "Always be transparent about what you can and cannot do without approval. " +
             "Sign your messages as " + name + "."
         )
@@ -4828,9 +4856,39 @@ async def chat_with_agent(req: AgentChatRequest, current_user=Depends(get_curren
         from ai_provider import ask_ai_text as _ask_ai_agent
         response = _ask_ai_agent(prompt, system_prompt=system_prompt, agent_name=name + 'Agent')
 
-        # Safety check — if agent response contains SQL, validate it
+        # Extract and EXECUTE SQL if connector provided
         import re as _re_safety
         sql_blocks = _re_safety.findall(r'```sql(.*?)```', response, _re_safety.DOTALL)
+        if sql_blocks and req.connector_id:
+            try:
+                import psycopg2, psycopg2.extras
+                # Use the last/longest SQL block
+                exec_sql = sorted(sql_blocks, key=len)[-1].strip()
+                # Safety check first
+                safety = check_sql_safety(exec_sql, allow_destructive=False, script_name="AgentChat")
+                if not safety.get("blocked"):
+                    _conn_exec = db.query(Connector).filter(Connector.id == req.connector_id).first()
+                    if _conn_exec:
+                        pg_exec = psycopg2.connect(
+                            host=_conn_exec.host, port=_conn_exec.port or 5432,
+                            dbname=_conn_exec.database_name,
+                            user=_conn_exec.username, password=_conn_exec.password
+                        )
+                        cur_exec = pg_exec.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+                        cur_exec.execute(exec_sql.rstrip(";").strip() + " LIMIT 20")
+                        exec_rows = cur_exec.fetchall()
+                        exec_cols = [d[0] for d in cur_exec.description] if cur_exec.description else []
+                        pg_exec.close()
+                        if exec_rows:
+                            result_text = "\n\n📊 **Query Results (" + str(len(exec_rows)) + " rows):**\n"
+                            result_text += "| " + " | ".join(exec_cols) + " |\n"
+                            result_text += "|" + "|".join(["---"] * len(exec_cols)) + "|\n"
+                            for row in exec_rows[:10]:
+                                result_text += "| " + " | ".join(str(v) for v in row.values()) + " |\n"
+                            response = response + result_text
+                            print("[AgentChat] SQL executed: " + str(len(exec_rows)) + " rows returned")
+            except Exception as _exec_e:
+                print("[AgentChat] SQL execution error: " + str(_exec_e))
         for sql_block in sql_blocks:
             safety = check_sql_safety(sql_block.strip(), allow_destructive=False, script_name="AgentChat")
             if safety.get("blocked"):
@@ -4854,6 +4912,12 @@ async def chat_with_agent(req: AgentChatRequest, current_user=Depends(get_curren
         raise
     except Exception as e:
         raise HTTPException(500, str(e))
+
+
+
+
+
+
 
 
 

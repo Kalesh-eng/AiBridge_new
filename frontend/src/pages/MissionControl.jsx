@@ -20,6 +20,47 @@ const RISK_COLORS = {
   critical: { bg: '#FFF1F2', border: '#FB7185', text: '#BE123C' },
 }
 
+// Format agent messages — convert markdown to HTML
+function formatAgentMsg(text) {
+  if (!text) return ''
+  let html = text
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // Code inline
+    .replace(/`([^`]+)`/g, '<code style="background:#F3F4F6;padding:1px 5px;border-radius:3px;font-size:12px">$1</code>')
+    // SQL code blocks
+    .replace(/```sql([\s\S]*?)```/gi, (_, sql) =>
+      '<pre style="background:#1E293B;color:#E2E8F0;padding:12px;border-radius:6px;overflow-x:auto;font-size:11px;margin:8px 0">' +
+      sql.trim().replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>')
+    // Other code blocks
+    .replace(/```([\s\S]*?)```/g, (_, code) =>
+      '<pre style="background:#F3F4F6;padding:10px;border-radius:6px;overflow-x:auto;font-size:11px;margin:8px 0">' +
+      code.trim() + '</pre>')
+    // Tables
+    .replace(/(\|.+\|\n?)+/g, (table) => {
+      const rows = table.trim().split('\n').filter(r => r.trim())
+      if (rows.length < 2) return table
+      let out = '<div style="overflow-x:auto;margin:8px 0"><table style="border-collapse:collapse;font-size:11px;width:100%">'
+      rows.forEach((row, i) => {
+        if (row.match(/^\|[-| ]+\|$/)) return
+        const cells = row.split('|').filter((_, j, a) => j > 0 && j < a.length - 1)
+        const tag = i === 0 ? 'th' : 'td'
+        const bg = i === 0 ? 'background:#185FA5;color:#fff' : (i%2===0 ? 'background:#F9FAFB' : '')
+        out += '<tr>' + cells.map(c =>
+          '<' + tag + ' style="padding:6px 10px;border:1px solid #E5E7EB;' + bg + '">' +
+          c.trim() + '</' + tag + '>'
+        ).join('') + '</tr>'
+      })
+      out += '</table></div>'
+      return out
+    })
+    // Newlines
+    .replace(/\n/g, '<br/>')
+  return html
+}
+
 export default function MissionControl() {
   const [agents,      setAgents]      = useState([])
   const [hilQueue,    setHilQueue]    = useState([])
@@ -30,7 +71,9 @@ export default function MissionControl() {
   const [chatAgent,   setChatAgent]   = useState(null)
   const [chatMsg,     setChatMsg]     = useState('')
   const [chatHistory, setChatHistory] = useState([])
-  const [chatLoading, setChatLoading] = useState(false)
+  const [chatLoading,    setChatLoading]    = useState(false)
+  const [chatConnector,  setChatConnector]  = useState('')
+  const [connectors,     setConnectors]     = useState([])
 
   const loadData = useCallback(async () => {
     try {
@@ -52,6 +95,12 @@ export default function MissionControl() {
 
   useEffect(() => {
     loadData()
+    // Load connectors for agent schema selection
+    api.get('/connector/list').then(r => {
+      const conns = (r.data.connectors || []).filter(c => !['csv','excel','duckdb'].includes(c.connector_type))
+      setConnectors(conns)
+      if (conns.length > 0) setChatConnector(conns[0].id)
+    }).catch(() => {})
     const interval = setInterval(loadData, 30000) // refresh every 30s
     return () => clearInterval(interval)
   }, [loadData])
@@ -71,9 +120,10 @@ export default function MissionControl() {
     setChatLoading(true)
     try {
       const r = await api.post('/agents/chat', {
-        agent_id: chatAgent.id,
-        message: chatMsg,
-        history: chatHistory,
+        agent_id:     chatAgent.id,
+        message:      chatMsg,
+        history:      chatHistory,
+        connector_id: chatConnector || null,
       })
       setChatHistory(prev => [...prev, { role: 'assistant', content: r.data.response, agent: chatAgent.name }])
     } catch(e) {
@@ -321,7 +371,7 @@ export default function MissionControl() {
                   </div>
                 ) : (
                   <div>
-                    <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
                       <span style={{ fontSize:20 }}>{chatAgent.emoji}</span>
                       <div>
                         <div style={{ fontSize:12, fontWeight:700 }}>{chatAgent.name}</div>
@@ -332,7 +382,24 @@ export default function MissionControl() {
                           border:'1px solid #E5E7EB', borderRadius:4, background:'#fff',
                           cursor:'pointer', color:'#9CA3AF' }}>← Back</button>
                     </div>
-                    <div style={{ height:200, overflowY:'auto', marginBottom:10,
+                    {/* Schema selector */}
+                    <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:10,
+                      padding:'6px 8px', background:'#F0F9FF', borderRadius:6,
+                      border:'1px solid #BFDBFE' }}>
+                      <span style={{ fontSize:10, color:'#185FA5', fontWeight:600 }}>🗄️ Schema:</span>
+                      <select value={chatConnector} onChange={e => setChatConnector(e.target.value)}
+                        style={{ fontSize:11, padding:'2px 6px', border:'1px solid #BFDBFE',
+                          borderRadius:4, background:'#fff', flex:1, cursor:'pointer' }}>
+                        <option value="">No schema selected</option>
+                        {connectors.map(c => (
+                          <option key={c.id} value={c.id}>{c.name} ({c.source_schema || c.database_name})</option>
+                        ))}
+                      </select>
+                      <span style={{ fontSize:9, color:'#9CA3AF' }}>
+                        {chatConnector ? 'Agent will query this schema' : 'Select to give agent data access'}
+                      </span>
+                    </div>
+                    <div style={{ height:250, overflowY:'auto', marginBottom:10, fontSize:13,
                       border:'1px solid #E5E7EB', borderRadius:6, padding:10 }}>
                       {chatHistory.length === 0 && (
                         <div style={{ fontSize:11, color:'#9CA3AF', fontStyle:'italic' }}>
@@ -344,9 +411,7 @@ export default function MissionControl() {
                           textAlign: m.role==='user' ? 'right' : 'left' }}>
                           <div style={{ display:'inline-block', maxWidth:'85%',
                             padding:'6px 10px', borderRadius:8, fontSize:11,
-                            background: m.role==='user' ? '#185FA5' : '#F3F4F6',
-                            color: m.role==='user' ? '#fff' : '#374151' }}>
-                            {m.role === 'assistant' && (
+                            background: m.role==='user' ? '#185FA5' : '#F3F4F6', color: m.role==='user' ? '#fff' : '#374151', fontSize: 13 }}> {m.role === 'assistant' && (
                               <div style={{ fontSize:9, fontWeight:700,
                                 marginBottom:2, opacity:0.7 }}>{m.agent}</div>
                             )}
@@ -505,4 +570,5 @@ function AgentCard({ agent, onChat }) {
     </div>
   )
 }
+
 
