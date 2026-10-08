@@ -4574,17 +4574,80 @@ async def run_exchange(req: ExchangeRunRequest,
 
                 # Drop and recreate table
                 tgt_cur.execute(f"DROP TABLE IF EXISTS {full_table}")
-                col_defs = []
-                for col, dtype in zip(df.columns, df.dtypes):
-                    if 'int' in str(dtype):    col_defs.append(f'"{col}" BIGINT')
-                    elif 'float' in str(dtype): col_defs.append(f'"{col}" NUMERIC')
-                    elif 'bool' in str(dtype):  col_defs.append(f'"{col}" BOOLEAN')
-                    else:                        col_defs.append(f'"{col}" TEXT')
+                # ── Smart type inference (permanent fix) ─────────────────────
+                import re as _re
+                from datetime import date as _date
+                import pandas as _pd
+
+                _DATE_PATS = [
+                    _re.compile(r'^\d{4}-\d{2}-\d{2}$'),
+                    _re.compile(r'^\d{2}/\d{2}/\d{4}$'),
+                    _re.compile(r'^\d{2}-\d{2}-\d{4}$'),
+                    _re.compile(r'^\d{4}/\d{2}/\d{2}$'),
+                ]
+                _BOOL_VALS = {'true','false','yes','no','1','0','t','f','y','n'}
+
+                def _infer_pg_type(series):
+                    vals = series.dropna().astype(str).str.strip()
+                    vals = vals[vals != '']
+                    if len(vals) == 0:
+                        return 'TEXT', series
+                    sample = vals.head(200)
+                    # Boolean
+                    if sample.str.lower().isin(_BOOL_VALS).all():
+                        bool_map = {'true':True,'yes':True,'1':True,'t':True,'y':True,
+                                    'false':False,'no':False,'0':False,'f':False,'n':False}
+                        return 'BOOLEAN', series.map(
+                            lambda v: bool_map.get(str(v).strip().lower()) if str(v).strip() != '' else None
+                        )
+                    # Currency / numeric
+                    stripped = sample.str.replace(r'[$£€¥,\s]', '', regex=True)
+                    try:
+                        stripped.astype(float)
+                        def _to_num(v):
+                            if v is None or str(v).strip() == '': return None
+                            try: return float(str(v).replace('$','').replace('£','').replace('€','').replace('¥','').replace(',','').strip())
+                            except: return None
+                        return 'NUMERIC', series.map(_to_num)
+                    except (ValueError, TypeError):
+                        pass
+                    # Date
+                    def _is_date(v):
+                        s = str(v).strip()
+                        return any(p.match(s) for p in _DATE_PATS)
+                    if sample.apply(_is_date).all():
+                        def _to_date(v):
+                            if v is None or str(v).strip() == '': return None
+                            try: return _pd.to_datetime(str(v).strip()).date()
+                            except: return None
+                        return 'DATE', series.map(_to_date)
+                    return 'TEXT', series
+
+                # Infer types and cast columns
+                col_defs  = []
+                cast_cols = {}
+                for col in df.columns:
+                    orig_dtype = str(df[col].dtype)
+                    if 'int' in orig_dtype:
+                        col_defs.append(f'"{col}" BIGINT')
+                    elif 'float' in orig_dtype:
+                        col_defs.append(f'"{col}" NUMERIC')
+                    elif 'bool' in orig_dtype:
+                        col_defs.append(f'"{col}" BOOLEAN')
+                    else:
+                        pg_type, casted = _infer_pg_type(df[col])
+                        col_defs.append(f'"{col}" {pg_type}')
+                        if pg_type != 'TEXT':
+                            cast_cols[col] = casted
+                            print(f'[Exchange]   {col} -> {pg_type}')
+
+                for col, casted_series in cast_cols.items():
+                    df[col] = casted_series
 
                 tgt_cur.execute(f"CREATE TABLE {full_table} ({', '.join(col_defs)})")
                 tgt.commit()
 
-                                # Insert — columns already cleaned above, _safe() defined above
+                # Insert
                 col_names    = ', '.join([f'"{c}"' for c in df.columns])
                 placeholders = ', '.join(['%s'] * len(df.columns))
                 cols = list(df.columns)
