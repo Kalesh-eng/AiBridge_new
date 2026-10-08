@@ -1,0 +1,94 @@
+opportunity_id,account_id,account_name,opportunity_name,sales_stage,probability,amount,expected_revenue,close_date,lead_source,assigned_to,date_entered,campaign,days_to_close,is_won
+1,1,TechVision Solutions,Starter Deal - TechVision Solutions,Needs Analysis,30,189592.89,56877.87,2024-11-28,Cold Call,John Smith,2024-07-06,Q4 2024,145,No
+2,1,TechVision Solutions,Professional Deal - TechVision Solutions,Closed Lost,0,385416.49,0.0,2025-10-17,Web Site,Lisa Anderson,2024-04-14,,551,No
+3,2,GlobalMed Corp,Premium Deal - GlobalMed Corp,Closed Lost,0,448508.84,0.0,2024-10-28,LinkedIn,Sarah Johnson,2024-08-10,,79,No
+4,2,GlobalMed Corp,Starter Deal - GlobalMed Corp,Closed Lost,0,450586.36,0.0,2024-08-27,Web Site,David Martinez,2023-05-23,Digital Push,462,No
+5,3,FinanceEdge Ltd,Professional Deal - FinanceEdge Ltd,Closed Lost,0,181909.81,0.0,2024-04-22,Referral,Robert Wilson,2023-12-01,Q2 2024,143,No
+6,6,InsureSmart LLC,Premium Deal - InsureSmart LLC,Closed Lost,0,340146.38,0.0,2026-11-14,Referral,Jennifer Taylor,2023-03-31,Q3 2024,1324,No
+7,6,InsureSmart LLC,Professional Deal - InsureSmart LLC,Prospecting,10,454681.24,45468.12,2026-03-25,Partner,Lisa Anderson,2024-01-05,Q4 2024,810,No
+8,6,InsureSmart LLC,Starter Deal - InsureSmart LLC,Negotiation/Review,80,11034.44,8827.55,2025-12-20,Word of Mouth,Sarah Johnson,2023-12-20,Q2 2024,731,No
+9,6,InsureSmart LLC,Starter Deal - InsureSmart LLC,Closed Lost,0,372056.2,0.0,2026-06-25,Email Campaign,David Martinez,2024-03-01,,846,No
+10,7,EduLearn Systems,Professional Deal - EduLearn Systems,Needs Analysis,30,418578.21,125573.46,2024-06-25,Referral,Robert Wilson,2024-09-04,Q4 2024,-71,No
+11,7,EduLearn Systems,Enterprise Deal - EduLearn Systems,Negotiation/Review,80,37727.31,30181.85,2026-02-08,Web Site,David Martinez,2024-08-27,,530,No
+12,7,EduLearn Systems,Professional Deal - EduLearn Systems,Proposal/Price Quote,70,210184.44,147129.11,2026-08-04,Referral,Mike Davis,2024-07-23,Q4 2024,742,No
+13,8,PropTech Realty,Premium Deal - PropTech Realty,Closed Lost,0,25905.29,0.0,2025-09-14,Word of Mouth,Emily Chen,2023-11-06,Q1 2024,678,No
+14,8,PropTech Realty,Enterprise Deal - PropTech Realty,Prospecting,10,81241.86,8124.19,2026-08-25,Trade Show,David Martinez,2023-11-04,Q2 2024,1025,No
+15,9,LogiFlow Networks,Enterprise Deal - LogiFlow Networks,Value Proposition,40,19079.08,7631.63,2026-10-06,LinkedIn,Jennifer Taylor,2023-10-11,Digital Push,1091,No
+16,9,LogiFlow Networks,Enterprise Deal - LogiFlow Networks,Closed Won,100,434831.23,434831.23,2026-09-01,LinkedIn,John Smith,2024-10-05,Q3 2024,696,Yes
+17,9,LogiFlow Networks,Premium Deal - LogiFlow Networks,Needs Analysis,30,292918.98,87875.69,2025-10-16,Email Campaign,Lisa Anderson,2023-05-30,Q2 2024,870,No
+18,11,DataDrive Analytics,Starter Deal - DataDrive Analytics,Negotiation/Review,80,212659.43,170127.54,2024-04-09,Trade Show,Sarah Johnson,2023-12-31,Digital Push,100,No
+19,11,DataDrive Analytics,Professional Deal - DataDrive Analytics,Value Proposition,40,384389.01,153755.6,2024-07-12,LinkedIn,Lisa Anderson,2023-07-07,,371,No
+20,12,CloudFirst LLC,Enterprise Deal - CloudFirst LLC,Proposal/Price Quote,70,344294.64,241006.25,2026-01-12,LinkedIn,Mike Davis,2024-12-05,Q1 2024,403,No
+21,12,CloudFirst LLC,Premium Deal - CloudFirst LLC,Needs Analysis,30,261494.52,78448.36,2026-09-20,LinkedIn,Mike Davis,2024-01-17,Q1 2024,977,No
+22,13,HealthBridge Corp,Enterprise Deal - HealthBridge Corp,Needs Analysis,30,254174.53,76252.36,2026-12-12,Partner,Jennifer Taylor,2023-07-12,Q1 2024,1249,No
+23,15,ShopNow Retail,Professional Deal - ShopNow Retail,Prospecting,10,242361.52,24236.15,2026-01-12,Word of Mouth,Lisa Anderson,2023-11-16,Q2 2024,788,No
+24,16,BuildRight Construction,Professional Deal - BuildRight Construct,Prospecting,10,373507.81,37350.78,2025-03-31,Email Campaign,Emily Chen,2023-05-02,Q3 2024,699,No
+25,16,BuildRight Construction,Enterprise Deal - BuildRight Construct,Needs Analysis,30,108871.3,32661.39,2026-05-20,Cold Call,John Smith,2023-03-22,Q4 2024,1155,No
+26,17,SafeGuard Insurance,Enterprise Deal - SafeGuard Insurance,Prospecting,10,102193.74,10219.37,2026-11-17,Word of Mouth,Sarah Johnson,2023-02-03,Q3 2024,1383,No
+27,17,SafeGuard Insurance,Enterprise Deal - SafeGuard Insurance,Prospecting,10,37792.44,3779.24,2024-01-22,Cold Call,Emily Chen,2024-11-14,Digital Push,-297,No
+28,17,SafeGuard Insurance,Enterprise Deal - SafeGuard Insurance,Value Proposition,40,96467.0,38586.8,2024-02-29,Email Campaign,Robert Wilson,2023-12-26,Digital Push,65,No
+29,18,LearnFast Academy,Enterprise Deal - LearnFast Academy,Negotiation/Review,80,84475.88,67580.7,2025-05-10,Cold Call,John Smith,2024-05-27,Digital Push,348,No
+30,18,LearnFast Academy,Enterprise Deal - LearnFast Academy,Value Proposition,40,359326.76,143730.7,2024-12-17,Cold Call,Emily Chen,2023-10-16,Digital Push,428,No
+31,19,HomeBase Properties,Enterprise Deal - HomeBase Properties,Negotiation/Review,80,350575.79,280460.63,2026-06-19,Email Campaign,Lisa Anderson,2023-07-09,Q4 2024,1076,No
+32,19,HomeBase Properties,Enterprise Deal - HomeBase Properties,Closed Won,100,111065.63,111065.63,2026-04-14,LinkedIn,Sarah Johnson,2023-08-22,Q4 2024,966,Yes
+33,19,HomeBase Properties,Starter Deal - HomeBase Properties,Qualification,20,262265.15,52453.03,2026-01-09,Web Site,Sarah Johnson,2024-05-22,Q3 2024,597,No
+34,20,SwiftLogistics,Premium Deal - SwiftLogistics,Qualification,20,195466.65,39093.33,2025-09-30,Referral,David Martinez,2024-04-12,Q3 2024,536,No
+35,20,SwiftLogistics,Starter Deal - SwiftLogistics,Closed Won,100,98448.57,98448.57,2026-09-01,Email Campaign,John Smith,2023-03-13,,1268,Yes
+36,20,SwiftLogistics,Enterprise Deal - SwiftLogistics,Closed Lost,0,337687.26,0.0,2026-06-16,Cold Call,Mike Davis,2024-02-10,Q4 2024,857,No
+37,21,InnovateTech Ltd,Starter Deal - InnovateTech Ltd,Qualification,20,372008.92,74401.78,2024-05-12,Referral,Lisa Anderson,2023-06-22,Q2 2024,325,No
+38,21,InnovateTech Ltd,Starter Deal - InnovateTech Ltd,Closed Won,100,65767.27,65767.27,2026-10-19,Trade Show,David Martinez,2024-03-10,Q3 2024,953,Yes
+39,21,InnovateTech Ltd,Starter Deal - InnovateTech Ltd,Closed Lost,0,335005.12,0.0,2026-09-19,Email Campaign,Jennifer Taylor,2024-02-19,Q1 2024,943,No
+40,23,WealthManage Pro,Enterprise Deal - WealthManage Pro,Closed Lost,0,251150.52,0.0,2024-10-02,Cold Call,John Smith,2024-10-05,Q1 2024,-3,No
+41,23,WealthManage Pro,Starter Deal - WealthManage Pro,Closed Lost,0,340663.18,0.0,2026-02-22,Email Campaign,Robert Wilson,2023-07-03,Digital Push,965,No
+42,24,FashionForward Inc,Premium Deal - FashionForward Inc,Qualification,20,381284.86,76256.97,2026-11-30,Word of Mouth,Emily Chen,2024-11-07,Q3 2024,753,No
+43,24,FashionForward Inc,Enterprise Deal - FashionForward Inc,Closed Lost,0,247673.93,0.0,2025-12-04,Web Site,David Martinez,2023-09-25,Q1 2024,801,No
+44,24,FashionForward Inc,Premium Deal - FashionForward Inc,Closed Won,100,227807.18,227807.18,2026-06-25,Web Site,John Smith,2024-01-21,Q2 2024,886,Yes
+45,24,FashionForward Inc,Premium Deal - FashionForward Inc,Proposal/Price Quote,70,442926.61,310048.63,2026-10-03,Email Campaign,Robert Wilson,2023-06-18,,1203,No
+46,25,AutoMation Systems,Premium Deal - AutoMation Systems,Closed Lost,0,383185.51,0.0,2026-10-01,Word of Mouth,Mike Davis,2024-08-05,Digital Push,787,No
+47,25,AutoMation Systems,Starter Deal - AutoMation Systems,Prospecting,10,198735.49,19873.55,2026-02-12,Trade Show,Lisa Anderson,2024-05-21,Q1 2024,632,No
+48,25,AutoMation Systems,Starter Deal - AutoMation Systems,Prospecting,10,297279.39,29727.94,2026-01-20,Web Site,Lisa Anderson,2023-05-12,Q4 2024,984,No
+49,27,SmartClass Education,Enterprise Deal - SmartClass Education,Negotiation/Review,80,496013.03,396810.42,2025-12-20,Referral,Emily Chen,2024-02-26,Q2 2024,663,No
+50,27,SmartClass Education,Starter Deal - SmartClass Education,Proposal/Price Quote,70,298303.18,208812.23,2024-05-14,Cold Call,Lisa Anderson,2024-12-05,Q2 2024,-205,No
+51,27,SmartClass Education,Premium Deal - SmartClass Education,Prospecting,10,271516.32,27151.63,2026-08-01,Partner,Robert Wilson,2023-02-08,Q1 2024,1270,No
+52,28,UrbanRealty Group,Starter Deal - UrbanRealty Group,Prospecting,10,492953.57,49295.36,2026-03-10,Cold Call,Jennifer Taylor,2024-01-22,Q1 2024,778,No
+53,28,UrbanRealty Group,Professional Deal - UrbanRealty Group,Value Proposition,40,171303.89,68521.56,2025-11-26,Trade Show,Lisa Anderson,2024-05-29,Q4 2024,546,No
+54,28,UrbanRealty Group,Starter Deal - UrbanRealty Group,Value Proposition,40,250991.1,100396.44,2025-03-14,Trade Show,John Smith,2023-03-19,Q3 2024,726,No
+55,29,RapidShip Express,Enterprise Deal - RapidShip Express,Closed Won,100,403278.49,403278.49,2024-07-07,LinkedIn,Robert Wilson,2024-10-01,Q1 2024,-86,Yes
+56,29,RapidShip Express,Starter Deal - RapidShip Express,Closed Lost,0,216417.42,0.0,2024-06-06,Trade Show,David Martinez,2023-12-22,,167,No
+57,29,RapidShip Express,Premium Deal - RapidShip Express,Negotiation/Review,80,104038.11,83230.49,2025-05-29,Email Campaign,John Smith,2024-02-16,,468,No
+58,29,RapidShip Express,Starter Deal - RapidShip Express,Needs Analysis,30,290537.43,87161.23,2026-08-15,Partner,John Smith,2023-08-07,Digital Push,1104,No
+59,30,StrategyFirst Consulting,Starter Deal - StrategyFirst Consul,Negotiation/Review,80,233930.91,187144.73,2024-11-04,Partner,David Martinez,2023-09-04,Q3 2024,427,No
+60,32,BioHealth Ltd,Starter Deal - BioHealth Ltd,Closed Won,100,137132.71,137132.71,2024-11-24,Referral,David Martinez,2023-10-21,Q2 2024,400,Yes
+61,34,TrendyShop Inc,Premium Deal - TrendyShop Inc,Value Proposition,40,18713.57,7485.43,2026-08-08,Partner,David Martinez,2023-11-14,,998,No
+62,36,TrustShield Insurance,Starter Deal - TrustShield Insuranc,Needs Analysis,30,139992.42,41997.73,2025-06-13,Email Campaign,John Smith,2023-01-30,,865,No
+63,37,DigitalLearn Corp,Starter Deal - DigitalLearn Corp,Prospecting,10,32387.0,3238.7,2025-10-04,Cold Call,David Martinez,2023-03-27,Q3 2024,922,No
+64,37,DigitalLearn Corp,Enterprise Deal - DigitalLearn Corp,Qualification,20,201463.05,40292.61,2025-04-28,Cold Call,Robert Wilson,2023-05-24,Q4 2024,705,No
+65,37,DigitalLearn Corp,Starter Deal - DigitalLearn Corp,Qualification,20,122848.04,24569.61,2025-10-03,Partner,Emily Chen,2023-05-06,Q4 2024,881,No
+66,38,PrimeProperties LLC,Premium Deal - PrimeProperties LLC,Needs Analysis,30,57872.94,17361.88,2025-07-16,Partner,Robert Wilson,2023-08-08,Digital Push,708,No
+67,40,AdvisoryPro Group,Premium Deal - AdvisoryPro Group,Negotiation/Review,80,351310.78,281048.62,2025-10-10,Word of Mouth,Emily Chen,2023-04-26,Q3 2024,898,No
+68,40,AdvisoryPro Group,Enterprise Deal - AdvisoryPro Group,Needs Analysis,30,184684.02,55405.21,2025-09-23,Web Site,John Smith,2024-01-12,,620,No
+69,40,AdvisoryPro Group,Starter Deal - AdvisoryPro Group,Value Proposition,40,130226.53,52090.61,2025-09-25,Cold Call,Emily Chen,2024-01-29,Q4 2024,605,No
+70,41,Quantum Systems Inc,Starter Deal - Quantum Systems Inc,Prospecting,10,455345.6,45534.56,2025-06-07,Cold Call,Emily Chen,2024-02-07,Q3 2024,486,No
+71,41,Quantum Systems Inc,Starter Deal - Quantum Systems Inc,Value Proposition,40,430411.28,172164.51,2026-06-17,Partner,John Smith,2023-06-14,Q3 2024,1099,No
+72,41,Quantum Systems Inc,Premium Deal - Quantum Systems Inc,Qualification,20,412482.9,82496.58,2026-08-22,LinkedIn,David Martinez,2024-05-18,Q1 2024,826,No
+73,42,CareFirst Medical,Starter Deal - CareFirst Medical,Proposal/Price Quote,70,255635.58,178944.91,2026-05-11,Word of Mouth,John Smith,2023-12-27,Q1 2024,866,No
+74,43,AssetGrow Financial,Premium Deal - AssetGrow Financial,Closed Lost,0,396554.56,0.0,2024-01-07,Referral,Robert Wilson,2023-05-20,Q3 2024,232,No
+75,44,StyleHub Retail,Professional Deal - StyleHub Retail,Qualification,20,59859.96,11971.99,2026-11-23,Partner,Lisa Anderson,2023-09-13,Q4 2024,1167,No
+76,44,StyleHub Retail,Professional Deal - StyleHub Retail,Closed Lost,0,437385.39,0.0,2025-06-17,LinkedIn,Robert Wilson,2023-05-17,Q2 2024,762,No
+77,44,StyleHub Retail,Premium Deal - StyleHub Retail,Qualification,20,210175.73,42035.15,2026-03-16,Referral,John Smith,2023-07-06,Q1 2024,984,No
+78,44,StyleHub Retail,Starter Deal - StyleHub Retail,Value Proposition,40,453888.17,181555.27,2025-02-10,Email Campaign,John Smith,2024-04-18,Q4 2024,298,No
+79,45,SmartFactory Ltd,Starter Deal - SmartFactory Ltd,Closed Won,100,302194.4,302194.4,2024-07-01,Email Campaign,Sarah Johnson,2023-06-02,Q1 2024,395,Yes
+80,45,SmartFactory Ltd,Enterprise Deal - SmartFactory Ltd,Closed Won,100,387812.86,387812.86,2026-10-09,Referral,Emily Chen,2024-04-09,Q2 2024,913,Yes
+81,45,SmartFactory Ltd,Professional Deal - SmartFactory Ltd,Proposal/Price Quote,70,147541.18,103278.83,2026-02-21,Partner,Emily Chen,2024-05-21,Digital Push,641,No
+82,45,SmartFactory Ltd,Premium Deal - SmartFactory Ltd,Value Proposition,40,497627.69,199051.08,2025-01-22,Email Campaign,David Martinez,2023-10-17,Q2 2024,463,No
+83,47,EduPath Online,Starter Deal - EduPath Online,Proposal/Price Quote,70,121565.38,85095.77,2025-05-23,Word of Mouth,Sarah Johnson,2024-04-06,Q1 2024,412,No
+84,47,EduPath Online,Professional Deal - EduPath Online,Closed Lost,0,70936.44,0.0,2026-03-25,Partner,David Martinez,2023-11-28,,848,No
+85,48,MetroRealty Partners,Enterprise Deal - MetroRealty Partners,Proposal/Price Quote,70,41162.53,28813.77,2024-04-30,LinkedIn,Emily Chen,2024-07-24,Q4 2024,-85,No
+86,48,MetroRealty Partners,Enterprise Deal - MetroRealty Partners,Negotiation/Review,80,498386.02,398708.82,2024-04-03,Trade Show,David Martinez,2024-11-17,Q3 2024,-228,No
+87,48,MetroRealty Partners,Professional Deal - MetroRealty Partners,Closed Won,100,337274.7,337274.7,2024-03-25,Trade Show,Mike Davis,2023-05-16,Digital Push,314,Yes
+88,48,MetroRealty Partners,Enterprise Deal - MetroRealty Partners,Closed Lost,0,465511.84,0.0,2024-09-27,LinkedIn,David Martinez,2024-04-24,Q2 2024,156,No
+89,49,GlobalShip Co,Starter Deal - GlobalShip Co,Qualification,20,160068.46,32013.69,2026-10-19,LinkedIn,David Martinez,2023-05-11,Q3 2024,1257,No
+90,49,GlobalShip Co,Starter Deal - GlobalShip Co,Proposal/Price Quote,70,308401.13,215880.79,2026-11-24,Partner,Mike Davis,2023-09-28,Q3 2024,1153,No
+91,50,InsightConsulting,Enterprise Deal - InsightConsulting,Needs Analysis,30,280058.98,84017.69,2026-06-20,Referral,Mike Davis,2024-11-04,Q1 2024,593,No
+92,50,InsightConsulting,Professional Deal - InsightConsulting,Value Proposition,40,95654.95,38261.98,2025-06-16,Word of Mouth,David Martinez,2024-04-26,Q1 2024,416,No
+93,50,InsightConsulting,Premium Deal - InsightConsulting,Closed Lost,0,25191.9,0.0,2026-09-20,Word of Mouth,Sarah Johnson,2024-01-01,,993,No

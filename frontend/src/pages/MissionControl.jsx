@@ -410,7 +410,7 @@ export default function MissionControl() {
                         <div key={i} style={{ marginBottom:8,
                           textAlign: m.role==='user' ? 'right' : 'left' }}>
                           <div style={{ display:'inline-block', maxWidth:'85%',
-                            padding:'6px 10px', borderRadius:8, fontSize:11,
+                            padding:'6px 10px', borderRadius:8, 
                             background: m.role==='user' ? '#185FA5' : '#F3F4F6', color: m.role==='user' ? '#fff' : '#374151', fontSize: 13 }}> {m.role === 'assistant' && (
                               <div style={{ fontSize:9, fontWeight:700,
                                 marginBottom:2, opacity:0.7 }}>{m.agent}</div>
