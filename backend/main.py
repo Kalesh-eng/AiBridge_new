@@ -2061,6 +2061,7 @@ class RefineSQLRequest(BaseModel):
     current_sql:    str
     refinement:     str
     connector_id:   str = ""
+    pipeline_id:    str = ""
     history:        list = []   # list of {"instruction": str, "sql": str} for context
 
 
@@ -4522,22 +4523,54 @@ async def run_exchange(req: ExchangeRunRequest,
                         df = duck.execute(f"SELECT * FROM raw_{table_in_duck}").df()
                     duck.close()
                     print(f"[Exchange] Read {len(df)} rows from DuckDB")
+
+
                 except Exception as e:
                     print(f"[Exchange] Error reading from DuckDB: {e}")
                     continue
 
+                # ── Normalize columns immediately (permanent fix for all CSVs) ──
+                import math as _math, numpy as _np
+
+                def _safe(v):
+                    """Convert any value to a psycopg2-safe Python native."""
+                    if v is None: return None
+                    if isinstance(v, _np.integer): return int(v)
+                    if isinstance(v, _np.floating):
+                        f = float(v)
+                        return None if (_math.isnan(f) or _math.isinf(f)) else f
+                    if isinstance(v, _np.bool_): return bool(v)
+                    if isinstance(v, float):
+                        try: return None if _math.isnan(v) else v
+                        except: return v
+                    if isinstance(v, _np.bytes_): return v.decode('utf-8', errors='replace')
+                    return v
+
+                # Clean column names: lowercase, spaces→underscores, strip special chars
+                def _clean_col(c):
+                    import re as _re
+                    c = str(c).lower().strip()
+                    c = _re.sub(r'[^a-z0-9_]', '_', c)   # replace ALL non-alnum with _
+                    c = _re.sub(r'_+', '_', c).strip('_') # collapse multiple __
+                    return c or 'col'
+
+                # Deduplicate column names (e.g. two 'name' cols → name, name_1)
+                seen = {}
+                new_cols = []
+                for c in df.columns:
+                    base = _clean_col(c)
+                    if base in seen:
+                        seen[base] += 1
+                        new_cols.append(f'{base}_{seen[base]}')
+                    else:
+                        seen[base] = 0
+                        new_cols.append(base)
+                df.columns = new_cols
+                print(f'[Exchange] Columns cleaned: {list(df.columns)}')
                 if df.empty:
                     print(f"[Exchange] Empty file: {file_path}")
                     continue
 
-                # Clean column names
-                df.columns = [
-                    str(c).lower().strip()
-                    .replace(' ','_').replace('-','_')
-                    .replace('(','').replace(')','').replace('/','_')
-                    .replace('.','_').replace('?','').replace('!','')
-                    for c in df.columns
-                ]
 
                 # Drop and recreate table
                 tgt_cur.execute(f"DROP TABLE IF EXISTS {full_table}")
@@ -4551,11 +4584,11 @@ async def run_exchange(req: ExchangeRunRequest,
                 tgt_cur.execute(f"CREATE TABLE {full_table} ({', '.join(col_defs)})")
                 tgt.commit()
 
-                # Insert rows
-                df = df.where(pd.notnull(df), None)
-                rows = [tuple(r) for r in df.values]
+                                # Insert — columns already cleaned above, _safe() defined above
+                col_names    = ', '.join([f'"{c}"' for c in df.columns])
                 placeholders = ', '.join(['%s'] * len(df.columns))
-                col_names = ', '.join([f'"{c}"' for c in df.columns])
+                cols = list(df.columns)
+                rows = [tuple(_safe(rec[c]) for c in cols) for rec in df.to_dict('records')]
                 psycopg2.extras.execute_batch(
                     tgt_cur,
                     f"INSERT INTO {full_table} ({col_names}) VALUES ({placeholders})",
@@ -4921,4 +4954,450 @@ async def chat_with_agent(req: AgentChatRequest, current_user=Depends(get_curren
 
 
 
+
+
+
+@app.post("/exchange/detect-model")
+async def detect_data_model(req: dict, current_user=Depends(get_current_user)):
+    """
+    Scan schema tables and return:
+      - Column metadata + data profiling (null_pct, distinct_count, sample_values)
+      - Row counts + ID uniqueness per table
+      - Link column cross-table match rates
+      - Suggested link column and ID columns
+    Zero row data returned — only aggregate statistics.
+    """
+    schema_name  = req.get("schema_name", "exchange")
+    connector_id = req.get("connector_id")
+
+    try:
+        # ── get connection config ─────────────────────────────────────────
+        conn_cfg = None
+        if connector_id:
+            async with get_db() as db:
+                row = await db.fetchrow(
+                    "SELECT config FROM connectors WHERE id=$1 AND user_id=$2",
+                    connector_id, current_user["id"]
+                )
+                if row:
+                    import json as _json
+                    conn_cfg = _json.loads(row["config"])
+
+        if not conn_cfg:
+            conn_cfg = {
+                "host":     os.getenv("DB_HOST", "localhost"),
+                "port":     int(os.getenv("DB_PORT", 5433)),
+                "database": os.getenv("DB_NAME", "postgres"),
+                "username": os.getenv("DB_USER", "postgres"),
+                "password": os.getenv("DB_PASSWORD", ""),
+            }
+
+        import psycopg2
+        from collections import defaultdict
+
+        pg = psycopg2.connect(
+            host     = conn_cfg.get("host", "localhost"),
+            port     = conn_cfg.get("port", 5433),
+            dbname   = conn_cfg.get("database", "postgres"),
+            user     = conn_cfg.get("username") or conn_cfg.get("user", "postgres"),
+            password = conn_cfg.get("password") or os.getenv("PG_PASSWORD", "postgres123"),
+        )
+        cur = pg.cursor()
+
+        # ── 1. Column catalogue ───────────────────────────────────────────
+        cur.execute("""
+            SELECT table_name, column_name, ordinal_position, data_type
+            FROM information_schema.columns
+            WHERE table_schema = %s
+            ORDER BY table_name, ordinal_position
+        """, (schema_name,))
+        rows = cur.fetchall()
+
+        if not rows:
+            pg.close()
+            return {"error": f"No tables found in schema '{schema_name}'"}
+
+        table_cols = defaultdict(list)
+        for tname, col, pos, dtype in rows:
+            table_cols[tname].append({
+                "column":    col,
+                "position":  pos,
+                "data_type": dtype,
+            })
+
+        all_tables = list(table_cols.keys())
+
+        # ── 2. Per-table profiling ────────────────────────────────────────
+        def pick_id_col(cols):
+            for c in cols:
+                if c["column"].lower() == "id":
+                    return c["column"]
+            for c in cols:
+                if c["column"].lower().endswith("_id") and c["position"] <= 3:
+                    return c["column"]
+            return cols[0]["column"] if cols else None
+
+        def is_textlike(dtype):
+            return any(t in dtype.lower() for t in
+                       ("char", "text", "varchar", "name", "uuid"))
+
+        def is_numeric(dtype):
+            return any(t in dtype.lower() for t in
+                       ("int", "float", "numeric", "decimal", "real", "double"))
+
+        table_profiles = {}
+
+        for tname in all_tables:
+            cols  = table_cols[tname]
+            ftbl  = f"{schema_name}.{tname}"
+            id_col = pick_id_col(cols)
+
+            # row count
+            cur.execute(f"SELECT COUNT(*) FROM {ftbl}")
+            row_count = cur.fetchone()[0]
+
+            # id uniqueness
+            id_uniqueness = None
+            if id_col and row_count > 0:
+                cur.execute(f"SELECT COUNT(DISTINCT {id_col}::text) FROM {ftbl}")
+                distinct_id = cur.fetchone()[0]
+                id_uniqueness = round(distinct_id / row_count, 4)
+
+            # per-column stats
+            col_profiles = []
+            for c in cols:
+                cname = c["column"]
+                dtype = c["data_type"]
+                prof  = {
+                    "column":         cname,
+                    "data_type":      dtype,
+                    "null_pct":       None,
+                    "distinct_count": None,
+                    "sample_values":  [],
+                    "quality":        "ok",   # ok | warn | bad
+                }
+
+                if row_count == 0:
+                    col_profiles.append(prof)
+                    continue
+
+                try:
+                    # null %
+                    cur.execute(f"""
+                        SELECT ROUND(COUNT(*) FILTER (WHERE {cname} IS NULL)
+                               * 100.0 / NULLIF(COUNT(*), 0), 1)
+                        FROM {ftbl}
+                    """)
+                    null_pct = float(cur.fetchone()[0] or 0)
+                    prof["null_pct"] = null_pct
+
+                    # distinct count
+                    cur.execute(f"""
+                        SELECT COUNT(DISTINCT {cname}::text)
+                        FROM {ftbl}
+                        WHERE {cname} IS NOT NULL
+                    """)
+                    distinct_count = cur.fetchone()[0]
+                    prof["distinct_count"] = distinct_count
+
+                    # sample values (text/uuid columns only, max 5)
+                    if is_textlike(dtype) or is_numeric(dtype):
+                        cur.execute(f"""
+                            SELECT DISTINCT {cname}::text
+                            FROM {ftbl}
+                            WHERE {cname} IS NOT NULL
+                            LIMIT 5
+                        """)
+                        prof["sample_values"] = [r[0] for r in cur.fetchall()]
+
+                    # quality flag
+                    if null_pct >= 50:
+                        prof["quality"] = "bad"
+                    elif null_pct >= 20:
+                        prof["quality"] = "warn"
+
+                except Exception as col_err:
+                    prof["error"] = str(col_err)
+
+                col_profiles.append(prof)
+
+            table_profiles[tname] = {
+                "row_count":     row_count,
+                "id_column":     id_col,
+                "id_uniqueness": id_uniqueness,
+                "col_profiles":  col_profiles,
+            }
+
+        # ── 3. Common columns + link candidates ──────────────────────────
+        col_sets = [set(c["column"] for c in cols) for cols in table_cols.values()]
+        # use columns present in >=75% of tables (not strict intersection)
+        from collections import Counter as _Counter
+        col_freq = _Counter(c for s in col_sets for c in s)
+        threshold = max(2, len(col_sets) * 0.75)
+        common = set(col for col, cnt in col_freq.items() if cnt >= threshold)
+
+        skip_cols = {"id", "created_at", "updated_at", "deleted_at",
+                     "created_by", "updated_by"}
+
+        link_candidates = []
+        for col in sorted(common):
+            if col.lower() in skip_cols:
+                continue
+            tables_with = sum(
+                1 for t in all_tables
+                if any(c["column"] == col for c in table_cols[t])
+            )
+            link_candidates.append({
+                "column":         col,
+                "tables_present": tables_with,
+                "coverage_pct":   round(tables_with / len(all_tables) * 100)
+                                  if all_tables else 0,
+            })
+        # exclude generic/non-link columns
+        _exclude = {'address','deleted','description','id','longitude','latitude','geocode_status','assigned_to','assigned_user','created_by','modified_by','date_created','date_modified','campaign_id','lead_source','fax','office_phone','non_primary_e_mails','email_address','do_not_call','photo','assistant','assistant_phone','birthdate','type','industry','rating','ownership'}
+        link_candidates = [c for c in link_candidates if c['column'] not in _exclude]
+        link_candidates.sort(key=lambda x: -x['tables_present'])
+
+        # ── 4. Cross-table link column match rates ────────────────────────
+        cross_table_match = []
+        # prefer account_name or any *_name column as link
+        _pref = next((c["column"] for c in link_candidates if "account" in c["column"] or c["column"].endswith("_name")), None)
+        suggested_link = _pref or (link_candidates[0]["column"] if link_candidates else None)
+        # POC fallback: account_name in any table -> use it
+        if not suggested_link:
+            all_cols = set(c for cols in col_sets for c in cols)
+            if "account_name" in all_cols:
+                suggested_link = "account_name"
+        # POC fallback: account_name in any table -> use it
+        if not suggested_link:
+            all_cols = set(c for cols in col_sets for c in cols)
+            if "account_name" in all_cols:
+                suggested_link = "account_name"
+        # POC fallback: account_name in any table -> use it
+        if not suggested_link:
+            all_cols = set(c for cols in col_sets for c in cols)
+            if "account_name" in all_cols:
+                suggested_link = "account_name"
+
+        if suggested_link and len(all_tables) >= 2:
+            # Use first table as reference (most likely the "accounts" master)
+            ref_table = all_tables[0]
+            ref_fq    = f"{schema_name}.{ref_table}"
+
+            for tname in all_tables[1:]:
+                # check this table has suggested_link
+                has_col = any(c["column"] == suggested_link for c in table_cols[tname])
+                if not has_col:
+                    continue
+                fq = f"{schema_name}.{tname}"
+                try:
+                    cur.execute(f"""
+                        SELECT
+                            COUNT(DISTINCT a.{suggested_link}::text)        AS total_vals,
+                            COUNT(DISTINCT b.{suggested_link}::text)        AS matched_vals,
+                            ROUND(
+                                COUNT(DISTINCT b.{suggested_link}::text)
+                                * 100.0
+                                / NULLIF(COUNT(DISTINCT a.{suggested_link}::text), 0)
+                            , 1)                                             AS match_pct
+                        FROM {fq} a
+                        LEFT JOIN {ref_fq} b
+                            ON a.{suggested_link}::text = b.{suggested_link}::text
+                        WHERE a.{suggested_link} IS NOT NULL
+                    """)
+                    r = cur.fetchone()
+                    match_pct = float(r[2] or 0) if r else 0
+                    cross_table_match.append({
+                        "table_a":       tname,
+                        "table_b":       ref_table,
+                        "link_column":   suggested_link,
+                        "total_vals":    r[0] if r else 0,
+                        "matched_vals":  r[1] if r else 0,
+                        "match_pct":     match_pct,
+                        "quality":       "ok"   if match_pct >= 90
+                                         else "warn" if match_pct >= 60
+                                         else "bad",
+                    })
+                except Exception as e:
+                    cross_table_match.append({
+                        "table_a": tname, "table_b": ref_table,
+                        "link_column": suggested_link,
+                        "error": str(e)
+                    })
+
+        overall_match_rate = (
+            min((c["match_pct"] for c in cross_table_match if "match_pct" in c), default=None)
+            if cross_table_match else None
+        )
+
+        pg.close()
+
+        # ── 5. Build final table_info list ────────────────────────────────
+        table_info = []
+        for tname in all_tables:
+            prof = table_profiles[tname]
+            table_info.append({
+                "table":          tname,
+                "business_name":  tname.replace("_", " ").title(),
+                "columns":        [c["column"] for c in table_cols[tname]],
+                "id_column":      prof["id_column"],
+                "row_count":      prof["row_count"],
+                "id_uniqueness":  prof["id_uniqueness"],
+                "col_profiles":   prof["col_profiles"],
+                "has_link_col":   any(
+                    c["column"] == suggested_link for c in table_cols[tname]
+                ) if suggested_link else False,
+            })
+
+        return {
+            "schema_name":        schema_name,
+            "table_count":        len(table_info),
+            "table_info":         table_info,
+            "link_candidates":    link_candidates,
+            "suggested_link":     suggested_link,
+            "common_columns":     sorted(common),
+            "cross_table_match":  cross_table_match,
+            "overall_match_rate": overall_match_rate,
+        }
+
+    except Exception as e:
+        import traceback
+        print(f"[detect-model] ERROR: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ─────────────────────────────────────────────
+# Exchange: Build Data Model (hkey + skey)
+# ─────────────────────────────────────────────
+class DataModelRequest(BaseModel):
+    schema_name:   str        = "exchange"
+    tables:        list       = []   # [{"table": "accounts", "id_column": "id", "business_name": "Accounts"}]
+    link_column:   str        = "account_name"
+    build_hkey:    bool       = True
+    build_skey:    bool       = True
+
+@app.post("/exchange/build-model")
+async def build_model(req: DataModelRequest, current_user=Depends(get_current_user)):
+    import psycopg2, hashlib
+    log = []
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv("PG_HOST","localhost"),
+            port=int(os.getenv("PG_PORT", 5433)),
+            dbname=os.getenv("PG_DB","postgres"),
+            user=os.getenv("PG_USER","postgres"),
+            password=os.getenv("PG_PASSWORD","postgres123")
+        )
+        cur = conn.cursor()
+        schema = req.schema_name
+
+        # ── 1. Create account_skey_master ──────────────────────────────
+        if req.build_skey and req.tables:
+            # Find a table that has the link column
+            master_table = None
+            for t in req.tables:
+                tname = t.get("table","")
+                cur.execute(
+                    "SELECT column_name FROM information_schema.columns "
+                    "WHERE table_schema=%s AND table_name=%s AND column_name=%s",
+                    (schema, tname, req.link_column)
+                )
+                if cur.fetchone():
+                    master_table = tname
+                    break
+
+            if master_table:
+                master = f"{schema}.account_skey_master"
+                cur.execute(f"DROP TABLE IF EXISTS {master}")
+                cur.execute(f"""
+                    CREATE TABLE {master} AS
+                    SELECT DISTINCT
+                        "{req.link_column}"                                        AS link_value,
+                        MD5(LOWER(TRIM(COALESCE("{req.link_column}"::text,''))))   AS account_skey
+                    FROM {schema}.{master_table}
+                    WHERE "{req.link_column}" IS NOT NULL
+                """)
+                cur.execute(f"SELECT COUNT(*) FROM {master}")
+                cnt = cur.fetchone()[0]
+                conn.commit()
+                log.append(f"✓ Created {master} — {cnt} unique link values")
+            else:
+                log.append(f"⚠ Link column '{req.link_column}' not found in any table — skipping skey master")
+
+        # ── 2. Add hkey + skey columns to each table ───────────────────
+        for t in req.tables:
+            tname     = t.get("table","")
+            id_col    = t.get("id_column","id")
+            full      = f"{schema}.{tname}"
+
+            # Check table exists
+            cur.execute(
+                "SELECT COUNT(*) FROM information_schema.tables "
+                "WHERE table_schema=%s AND table_name=%s",
+                (schema, tname)
+            )
+            if cur.fetchone()[0] == 0:
+                log.append(f"⚠ Table {full} not found — skipped")
+                continue
+
+            # hkey
+            if req.build_hkey:
+                cur.execute(
+                    "SELECT column_name FROM information_schema.columns "
+                    "WHERE table_schema=%s AND table_name=%s AND column_name=%s",
+                    (schema, tname, f"{tname}_hkey")
+                )
+                if not cur.fetchone():
+                    try:
+                        cur.execute(f'ALTER TABLE {full} ADD COLUMN "{tname}_hkey" TEXT')
+                        cur.execute(
+                            f'UPDATE {full} SET "{tname}_hkey" = MD5(COALESCE("{id_col}"::text,''))'
+                        )
+                        conn.commit()
+                        log.append(f"✓ {full}.{tname}_hkey = MD5({id_col})")
+                    except Exception as e:
+                        conn.rollback()
+                        log.append(f"⚠ hkey failed for {full}: {e}")
+                else:
+                    log.append(f"  {full}.{tname}_hkey already exists")
+
+            # skey — join to master
+            if req.build_skey:
+                cur.execute(
+                    "SELECT column_name FROM information_schema.columns "
+                    "WHERE table_schema=%s AND table_name=%s AND column_name='account_skey'",
+                    (schema, tname)
+                )
+                if not cur.fetchone():
+                    # Check if this table has the link column
+                    cur.execute(
+                        "SELECT column_name FROM information_schema.columns "
+                        "WHERE table_schema=%s AND table_name=%s AND column_name=%s",
+                        (schema, tname, req.link_column)
+                    )
+                    has_link = cur.fetchone()
+                    if has_link:
+                        try:
+                            cur.execute(f'ALTER TABLE {full} ADD COLUMN "account_skey" TEXT')
+                            cur.execute(f"""
+                                UPDATE {full} t
+                                SET "account_skey" = m.account_skey
+                                FROM {schema}.account_skey_master m
+                                WHERE LOWER(TRIM(COALESCE(t."{req.link_column}"::text,'')))
+                                    = LOWER(TRIM(COALESCE(m.link_value::text,'')))
+                            """)
+                            conn.commit()
+                            log.append(f"✓ {full}.account_skey linked via {req.link_column}")
+                        except Exception as e:
+                            conn.rollback()
+                            log.append(f"⚠ skey failed for {full}: {e}")
+                    else:
+                        log.append(f"  {full}: no '{req.link_column}' column — skey skipped")
+                else:
+                    log.append(f"  {full}.account_skey already exists")
+
+        conn.close()
+        return {"status": "ok", "log": log}
+
+    except Exception as e:
+        return {"status": "error", "message": str(e), "log": log}
 
