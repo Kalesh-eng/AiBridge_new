@@ -5464,3 +5464,19 @@ async def build_model(req: DataModelRequest, current_user=Depends(get_current_us
     except Exception as e:
         return {"status": "error", "message": str(e), "log": log}
 
+
+@app.get("/ai-commander/health")
+async def ai_commander_health():
+    """Check AI_Commander and all SLM models status."""
+    from ai_commander import health_check
+    return health_check()
+
+
+@app.post("/ai-commander/test")
+async def ai_commander_test(request: dict, current_user=Depends(get_current_user)):
+    """Test AI_Commander routing — send a prompt and see which model responds."""
+    from ai_commander import route_with_commander
+    task_type = request.get("task_type", "general")
+    prompt = request.get("prompt", "")
+    result = route_with_commander(task_type, prompt)
+    return result
