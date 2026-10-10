@@ -1,16 +1,17 @@
+from typing import Optional
 """
-nlm_engine.py — Universal AI ETL.
+nlm_engine.py â Universal AI ETL.
 
 v2.6: Full flat file / no-natural-key support.
       - Data model JSON has has_natural_key + join_on_source_col fields
       - _build_table_instructions handles dims with no ID columns
-      - SCD Type 1/2 without natural key → DISTINCT insert, no ON CONFLICT
+      - SCD Type 1/2 without natural key â DISTINCT insert, no ON CONFLICT
       - Fact JOINs use actual attribute columns when no ID exists
       - Domain mismatch validation (v2.5)
       - No invented ID columns rules in both prompts
-v2.5: Domain mismatch validation — generic guardrail.
+v2.5: Domain mismatch validation â generic guardrail.
 v2.4: Corrected MEASURES vs ATTRIBUTES rule.
-v2.3: Single source table rule — generic intermediate staging.
+v2.3: Single source table rule â generic intermediate staging.
 v2.2: Removed balance exception.
 v2.1: MEASURES vs ATTRIBUTES rule.
 v2.0: Generic FK-driven bridge joins.
@@ -21,9 +22,9 @@ import re
 from ai_provider import ask_ai
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Phase 1 — Schema analysis
-# ─────────────────────────────────────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Phase 1 â Schema analysis
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def analyze_schema(source_description: str, raw_schema: str,
                    data_profile_text: str = "") -> dict:
@@ -87,7 +88,7 @@ DATABASE PROFILE (use real column types, cardinality, sample values):
     staging_tables_str = ", ".join([f"stg_{t}" for t in actual_tables]) if actual_tables else "unknown"
 
     # Build actual column list from schema_analysis entities
-    # This is critical for flat file sources — AI must use EXACT column names
+    # This is critical for flat file sources â AI must use EXACT column names
     actual_columns_section = ""
     entities = schema_analysis.get("entities", [])
     if entities:
@@ -103,12 +104,12 @@ DATABASE PROFILE (use real column types, cardinality, sample values):
                         col_lines.append(f"    - {col}")
         if col_lines:
             actual_columns_section = f"""
-╔══════════════════════════════════════════════════════════════════════╗
-║ ACTUAL SOURCE COLUMNS — USE THESE EXACT NAMES IN SQL                 ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ NEVER invent column names not in this list!                          ║
-║ Use exact case as shown below (wrap in double quotes in SQL)         ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â ACTUAL SOURCE COLUMNS â USE THESE EXACT NAMES IN SQL                 â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â NEVER invent column names not in this list!                          â
+â Use exact case as shown below (wrap in double quotes in SQL)         â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 {chr(10).join(col_lines)}
 """
 
@@ -119,7 +120,7 @@ DATABASE PROFILE (use real column types, cardinality, sample values):
         for fk in fk_relationships:
             fk_lines.append(
                 f"  {fk.get('from_table')}.{fk.get('from_column')} "
-                f"→ {fk.get('to_table')}.{fk.get('to_column')}"
+                f"â {fk.get('to_table')}.{fk.get('to_column')}"
             )
         fk_section = "DISCOVERED FK RELATIONSHIPS:\n" + "\n".join(fk_lines)
     else:
@@ -127,7 +128,7 @@ DATABASE PROFILE (use real column types, cardinality, sample values):
         rels = schema_analysis.get("relationships", [])
         if rels:
             fk_lines = [
-                f"  {r.get('from_table')}.{r.get('join_key')} → {r.get('to_table')}"
+                f"  {r.get('from_table')}.{r.get('join_key')} â {r.get('to_table')}"
                 for r in rels
             ]
             fk_section = "DISCOVERED FK RELATIONSHIPS:\n" + "\n".join(fk_lines)
@@ -179,212 +180,212 @@ Return ONLY valid JSON:
   "source_has_id_columns": true
 }}
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ FLAT FILE vs DATABASE SOURCE — CRITICAL DISTINCTION                  ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ DATABASE SOURCE (multiple tables with _id columns):                  ║
-║   has_natural_key: true                                              ║
-║   natural_key_column: "customer_id" (REAL column in source)         ║
-║   source_has_id_columns: true                                        ║
-║   Fact JOIN: ON dim.customer_id = src.customer_id                   ║
-║                                                                      ║
-║ FLAT FILE SOURCE (single CSV/Excel, NO _id columns):                 ║
-║   has_natural_key: false                                             ║
-║   natural_key_column: null                                           ║
-║   source_has_id_columns: false                                       ║
-║   Surrogate key = SERIAL only (auto-generated)                       ║
-║   Fact JOIN: ON dim.brand = src."Brand"                              ║
-║              AND dim.model = src."Model" (use actual attrs!)         ║
-║                                                                      ║
-║ NEVER invent _id columns that don't exist in the source:             ║
-║   ✗ car_id, seller_id, location_id → if not in source → WRONG!     ║
-║   ✓ Use actual column names: "Brand", "City", "Owner_Type"          ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â FLAT FILE vs DATABASE SOURCE â CRITICAL DISTINCTION                  â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â DATABASE SOURCE (multiple tables with _id columns):                  â
+â   has_natural_key: true                                              â
+â   natural_key_column: "customer_id" (REAL column in source)         â
+â   source_has_id_columns: true                                        â
+â   Fact JOIN: ON dim.customer_id = src.customer_id                   â
+â                                                                      â
+â FLAT FILE SOURCE (single CSV/Excel, NO _id columns):                 â
+â   has_natural_key: false                                             â
+â   natural_key_column: null                                           â
+â   source_has_id_columns: false                                       â
+â   Surrogate key = SERIAL only (auto-generated)                       â
+â   Fact JOIN: ON dim.brand = src."Brand"                              â
+â              AND dim.model = src."Model" (use actual attrs!)         â
+â                                                                      â
+â NEVER invent _id columns that don't exist in the source:             â
+â   â car_id, seller_id, location_id â if not in source â WRONG!     â
+â   â Use actual column names: "Brand", "City", "Owner_Type"          â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 Schema analysis: {json.dumps(schema_analysis)}
 Business requirements: {business_requirements}
 {profile_section}
 {actual_columns_section}
-ACTUAL SOURCE TABLES (ONLY these exist — do NOT invent others):
+ACTUAL SOURCE TABLES (ONLY these exist â do NOT invent others):
   Source tables: {actual_tables_str}
   Staging tables: {staging_tables_str}
 
 {fk_section}
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ GENERIC BRIDGE JOIN RULE — works for ANY domain                      ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ Use the FK relationships above to detect bridge joins.               ║
-║                                                                      ║
-║ STEP 1 — For each fact table, find its direct FKs.                  ║
-║ STEP 2 — For each FK target table, check if it has further FKs.     ║
-║ STEP 3 — Add those secondary FKs as dimension keys in fact table.   ║
-║                                                                      ║
-║ Example (any domain, derived from FK map above):                     ║
-║   transactions.account_id → accounts       (direct FK)              ║
-║   accounts.customer_id    → customers      (secondary FK — bridge!) ║
-║   accounts.branch_id      → branches       (secondary FK — bridge!) ║
-║                                                                      ║
-║   Therefore fact_transactions foreign_keys must include:             ║
-║     account_key  (from dim_account, direct)                          ║
-║     customer_key (from dim_customer, via accounts bridge)            ║
-║     branch_key   (from dim_branch, via accounts bridge)              ║
-║                                                                      ║
-║ This is generic — apply to ANY domain using the FK map above.        ║
-║ Do NOT hardcode table names — derive from FK relationships.          ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â GENERIC BRIDGE JOIN RULE â works for ANY domain                      â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â Use the FK relationships above to detect bridge joins.               â
+â                                                                      â
+â STEP 1 â For each fact table, find its direct FKs.                  â
+â STEP 2 â For each FK target table, check if it has further FKs.     â
+â STEP 3 â Add those secondary FKs as dimension keys in fact table.   â
+â                                                                      â
+â Example (any domain, derived from FK map above):                     â
+â   transactions.account_id â accounts       (direct FK)              â
+â   accounts.customer_id    â customers      (secondary FK â bridge!) â
+â   accounts.branch_id      â branches       (secondary FK â bridge!) â
+â                                                                      â
+â   Therefore fact_transactions foreign_keys must include:             â
+â     account_key  (from dim_account, direct)                          â
+â     customer_key (from dim_customer, via accounts bridge)            â
+â     branch_key   (from dim_branch, via accounts bridge)              â
+â                                                                      â
+â This is generic â apply to ANY domain using the FK map above.        â
+â Do NOT hardcode table names â derive from FK relationships.          â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ FK COLUMNS IN DIMENSIONS — ALWAYS INCLUDE                            ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ For dimension tables, always include ALL FK (_id) columns from the   ║
-║ source table as attributes. These are needed for fact table JOINs.  ║
-║ Do NOT exclude any _id column from dimension attributes.             ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â FK COLUMNS IN DIMENSIONS â ALWAYS INCLUDE                            â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â For dimension tables, always include ALL FK (_id) columns from the   â
+â source table as attributes. These are needed for fact table JOINs.  â
+â Do NOT exclude any _id column from dimension attributes.             â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ SCD TYPE 2 RULE — PRIMARY TABLE ONLY                                 ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ SCD Type 2 change tracking ONLY applies to columns from the PRIMARY  ║
-║ staging table — NEVER from JOINed/enrichment tables.                ║
-║                                                                      ║
-║ ✓ Track: dim_account.balance (from stg_accounts — primary table)    ║
-║ ✗ Track: dim_account.customer_segment (from stg_customers — JOIN)   ║
-║          → customer_segment belongs to dim_customer SCD Type 2      ║
-║                                                                      ║
-║ Each entity tracks its own slowly changing attributes in its own dim.║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â SCD TYPE 2 RULE â PRIMARY TABLE ONLY                                 â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â SCD Type 2 change tracking ONLY applies to columns from the PRIMARY  â
+â staging table â NEVER from JOINed/enrichment tables.                â
+â                                                                      â
+â â Track: dim_account.balance (from stg_accounts â primary table)    â
+â â Track: dim_account.customer_segment (from stg_customers â JOIN)   â
+â          â customer_segment belongs to dim_customer SCD Type 2      â
+â                                                                      â
+â Each entity tracks its own slowly changing attributes in its own dim.â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ MEASURES vs ATTRIBUTES — CORRECT DEFINITION                          ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ FACT table = BUSINESS EVENT MEASURES (transaction quantities):       ║
-║   ✅ price, amount, revenue, cost, salary, fee, tax                  ║
-║   ✅ quantity, count, units_sold, order_count                        ║
-║   ✅ km_driven (usage per event/transaction)                         ║
-║   ✅ duration_mins, hours_worked, bill_amount                        ║
-║   ✅ loan_amount, payment_amount, outstanding                        ║
-║                                                                      ║
-║ DIMENSION table = ENTITY CHARACTERISTICS (descriptive properties):   ║
-║   ✅ engine_cc, horsepower, mileage_kmpl (vehicle specs)             ║
-║   ✅ seats, doors, weight, capacity (physical attributes)            ║
-║   ✅ registration_age, age, tenure (entity age/duration)             ║
-║   ✅ credit_score, rating, grade (entity ratings)                    ║
-║   ✅ year, size, floor_area (entity properties)                      ║
-║   ✅ name, type, status, category, region, color (descriptive)       ║
-║   ✅ is_active, has_insurance, tax_paid (boolean flags)              ║
-║                                                                      ║
-║ KEY QUESTION to classify any column:                                 ║
-║   "Is this a BUSINESS TRANSACTION VALUE                              ║
-║    or an ENTITY PROPERTY / CHARACTERISTIC?"                          ║
-║                                                                      ║
-║   Transaction value  → FACT table                                    ║
-║   Entity property    → DIMENSION table                               ║
-║                                                                      ║
-║ EXAMPLES:                                                            ║
-║   price        → FACT   (what was paid in this transaction)          ║
-║   engine_cc    → DIM    (property of the car entity)                 ║
-║   km_driven    → FACT   (usage measure per listing event)            ║
-║   horsepower   → DIM    (specification of the car entity)            ║
-║   bill_amount  → FACT   (transaction value)                          ║
-║   credit_score → DIM    (property of the customer entity)            ║
-║   seats        → DIM    (physical attribute of car entity)           ║
-║   quantity     → FACT   (event measure)                              ║
-║                                                                      ║
-║ NEVER put entity characteristics in fact tables.                     ║
-║ NEVER put transaction values in dimension tables.                    ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â MEASURES vs ATTRIBUTES â CORRECT DEFINITION                          â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â FACT table = BUSINESS EVENT MEASURES (transaction quantities):       â
+â   â price, amount, revenue, cost, salary, fee, tax                  â
+â   â quantity, count, units_sold, order_count                        â
+â   â km_driven (usage per event/transaction)                         â
+â   â duration_mins, hours_worked, bill_amount                        â
+â   â loan_amount, payment_amount, outstanding                        â
+â                                                                      â
+â DIMENSION table = ENTITY CHARACTERISTICS (descriptive properties):   â
+â   â engine_cc, horsepower, mileage_kmpl (vehicle specs)             â
+â   â seats, doors, weight, capacity (physical attributes)            â
+â   â registration_age, age, tenure (entity age/duration)             â
+â   â credit_score, rating, grade (entity ratings)                    â
+â   â year, size, floor_area (entity properties)                      â
+â   â name, type, status, category, region, color (descriptive)       â
+â   â is_active, has_insurance, tax_paid (boolean flags)              â
+â                                                                      â
+â KEY QUESTION to classify any column:                                 â
+â   "Is this a BUSINESS TRANSACTION VALUE                              â
+â    or an ENTITY PROPERTY / CHARACTERISTIC?"                          â
+â                                                                      â
+â   Transaction value  â FACT table                                    â
+â   Entity property    â DIMENSION table                               â
+â                                                                      â
+â EXAMPLES:                                                            â
+â   price        â FACT   (what was paid in this transaction)          â
+â   engine_cc    â DIM    (property of the car entity)                 â
+â   km_driven    â FACT   (usage measure per listing event)            â
+â   horsepower   â DIM    (specification of the car entity)            â
+â   bill_amount  â FACT   (transaction value)                          â
+â   credit_score â DIM    (property of the customer entity)            â
+â   seats        â DIM    (physical attribute of car entity)           â
+â   quantity     â FACT   (event measure)                              â
+â                                                                      â
+â NEVER put entity characteristics in fact tables.                     â
+â NEVER put transaction values in dimension tables.                    â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-CRITICAL RULES — use names that fit THIS domain, not generic examples:
-- Banking → fact_transactions, dim_account, dim_customer, dim_branch
-- Hospital → fact_visits, dim_patient, dim_doctor, dim_diagnosis
-- School → fact_enrollments, dim_student, dim_course, dim_teacher
-- Manufacturing → fact_production, dim_machine, dim_product, dim_shift
-- The surrogate_key follows the table name: dim_patient → patient_key, dim_branch → branch_key
+CRITICAL RULES â use names that fit THIS domain, not generic examples:
+- Banking â fact_transactions, dim_account, dim_customer, dim_branch
+- Hospital â fact_visits, dim_patient, dim_doctor, dim_diagnosis
+- School â fact_enrollments, dim_student, dim_course, dim_teacher
+- Manufacturing â fact_production, dim_machine, dim_product, dim_shift
+- The surrogate_key follows the table name: dim_patient â patient_key, dim_branch â branch_key
 
 ALWAYS include dim_date (for time-series). Other dims depend on the domain.
 Use SCD Type 2 ONLY for slowly-changing attributes (city, segment, status of customer/patient/account).
 Use SCD Type 1 for everything else.
 Every fact table MUST list ALL its foreign_keys, each with column/references_table/references_column.
 
-CRITICAL — source_table for dimensions MUST start with "stg_" prefix:
-  ✓ source_table: "stg_students"
-  ✗ source_table: "students"
-  ✗ source_table: "school.students"
+CRITICAL â source_table for dimensions MUST start with "stg_" prefix:
+  â source_table: "stg_students"
+  â source_table: "students"
+  â source_table: "school.students"
 The staging tables are always named stg_<original_table_name>.
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ FK COLUMNS RULE — ALWAYS INCLUDE                                     ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ For dimension tables, ALWAYS include ALL foreign key (_id) columns   ║
-║ from the source table as attributes — do NOT exclude customer_id,    ║
-║ branch_id, or any _id columns. These are needed for fact table JOINs.║
-║ Example: dim_account MUST include customer_id and branch_id          ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â FK COLUMNS RULE â ALWAYS INCLUDE                                     â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â For dimension tables, ALWAYS include ALL foreign key (_id) columns   â
+â from the source table as attributes â do NOT exclude customer_id,    â
+â branch_id, or any _id columns. These are needed for fact table JOINs.â
+â Example: dim_account MUST include customer_id and branch_id          â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ MULTI-SOURCE DIMENSIONS — KIMBALL METHODOLOGY                        ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ When a source table has FK columns pointing to other tables,         ║
-║ enrich the dimension with attributes from those referenced tables.   ║
-║                                                                      ║
-║ Example (banking):                                                   ║
-║   accounts.customer_id → stg_customers → add customer_name, segment ║
-║   accounts.branch_id   → stg_branches  → add branch_name, region    ║
-║                                                                      ║
-║   dim_account attributes should include:                             ║
-║     account_id, account_type, balance (from stg_accounts)           ║
-║     customer_id, customer_name, segment (from stg_customers JOIN)   ║
-║     branch_id, branch_name, region (from stg_branches JOIN)         ║
-║                                                                      ║
-║ The source_table field still lists the PRIMARY staging table.        ║
-║ The SQL generator will add JOINs for enrichment tables.              ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â MULTI-SOURCE DIMENSIONS â KIMBALL METHODOLOGY                        â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â When a source table has FK columns pointing to other tables,         â
+â enrich the dimension with attributes from those referenced tables.   â
+â                                                                      â
+â Example (banking):                                                   â
+â   accounts.customer_id â stg_customers â add customer_name, segment â
+â   accounts.branch_id   â stg_branches  â add branch_name, region    â
+â                                                                      â
+â   dim_account attributes should include:                             â
+â     account_id, account_type, balance (from stg_accounts)           â
+â     customer_id, customer_name, segment (from stg_customers JOIN)   â
+â     branch_id, branch_name, region (from stg_branches JOIN)         â
+â                                                                      â
+â The source_table field still lists the PRIMARY staging table.        â
+â The SQL generator will add JOINs for enrichment tables.              â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ FLAT FILE / SINGLE TABLE SOURCE RULE — NO INVENTED ID COLUMNS        ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ When source has only ONE staging table (flat CSV/Excel file):        ║
-║                                                                      ║
-║ DO NOT invent ID columns that don't exist in the source:             ║
-║   ✗ car_id        → not in CSV, do NOT use as natural_key           ║
-║   ✗ seller_id     → not in CSV, do NOT use as natural_key           ║
-║   ✗ location_id   → not in CSV, do NOT use as natural_key           ║
-║                                                                      ║
-║ INSTEAD — use actual source columns as natural keys:                 ║
-║   ✓ Brand + Model + Year → natural key for dim_car                  ║
-║   ✓ City               → natural key for dim_location               ║
-║   ✓ Owner_Type          → natural key for dim_seller                 ║
-║                                                                      ║
-║ Set natural_key_column to an ACTUAL column from the source.          ║
-║ The SQL generator will use SERIAL PRIMARY KEY for surrogate keys.    ║
-║ NEVER set natural_key_column to a column that doesn't exist!         ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â FLAT FILE / SINGLE TABLE SOURCE RULE â NO INVENTED ID COLUMNS        â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â When source has only ONE staging table (flat CSV/Excel file):        â
+â                                                                      â
+â DO NOT invent ID columns that don't exist in the source:             â
+â   â car_id        â not in CSV, do NOT use as natural_key           â
+â   â seller_id     â not in CSV, do NOT use as natural_key           â
+â   â location_id   â not in CSV, do NOT use as natural_key           â
+â                                                                      â
+â INSTEAD â use actual source columns as natural keys:                 â
+â   â Brand + Model + Year â natural key for dim_car                  â
+â   â City               â natural key for dim_location               â
+â   â Owner_Type          â natural key for dim_seller                 â
+â                                                                      â
+â Set natural_key_column to an ACTUAL column from the source.          â
+â The SQL generator will use SERIAL PRIMARY KEY for surrogate keys.    â
+â NEVER set natural_key_column to a column that doesn't exist!         â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ ANTI-HALLUCINATION RULE — STRICTLY ENFORCED                          ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ ONLY create dimension tables for source tables that ACTUALLY EXIST.  ║
-║                                                                      ║
-║ Available staging tables: {staging_tables_str:<40s}║
-║                                                                      ║
-║ NEVER invent dimensions for tables not in the list above.            ║
-║ Example: if stg_term is NOT in the list → do NOT create dim_term     ║
-║ Example: if stg_product is NOT in the list → do NOT create dim_product║
-║                                                                      ║
-║ COLUMN GROUPING RULE — for single staging table sources:          ║
-║ When only ONE staging table exists, you MAY create multiple    ║
-║ dimension tables by grouping related columns into entities.    ║
-║ Example: Brand+Model+Year → dim_car (vehicle attributes)        ║
-║         City → dim_location, Owner_Type → dim_seller           ║
-║                                                                ║
-║ When MULTIPLE staging tables exist:                            ║
-║ Do NOT create dims from column values that are not entities.   ║
-║ Example: enrollments.term → NOT dim_term (just a column value) ║
-║ Example: orders.status   → NOT dim_status (just a column value)║
-║                                                                ║
-║ dim_date is always allowed (generated from date series)        ║
-╚══════════════════════════════════════════════════════════════════════╝"""
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â ANTI-HALLUCINATION RULE â STRICTLY ENFORCED                          â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â ONLY create dimension tables for source tables that ACTUALLY EXIST.  â
+â                                                                      â
+â Available staging tables: {staging_tables_str:<40s}â
+â                                                                      â
+â NEVER invent dimensions for tables not in the list above.            â
+â Example: if stg_term is NOT in the list â do NOT create dim_term     â
+â Example: if stg_product is NOT in the list â do NOT create dim_productâ
+â                                                                      â
+â COLUMN GROUPING RULE â for single staging table sources:          â
+â When only ONE staging table exists, you MAY create multiple    â
+â dimension tables by grouping related columns into entities.    â
+â Example: Brand+Model+Year â dim_car (vehicle attributes)        â
+â         City â dim_location, Owner_Type â dim_seller           â
+â                                                                â
+â When MULTIPLE staging tables exist:                            â
+â Do NOT create dims from column values that are not entities.   â
+â Example: enrollments.term â NOT dim_term (just a column value) â
+â Example: orders.status   â NOT dim_status (just a column value)â
+â                                                                â
+â dim_date is always allowed (generated from date series)        â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ"""
     return ask_ai(prompt)
 
 
@@ -412,13 +413,13 @@ Return ONLY valid JSON:
 Schema: {json.dumps(schema_analysis)}
 Model:  {json.dumps(data_model)}
 
-CRITICAL: All source_table values MUST be "staging.stg_<name>" — NEVER "staging.<name>" without the stg_ prefix."""
+CRITICAL: All source_table values MUST be "staging.stg_<name>" â NEVER "staging.<name>" without the stg_ prefix."""
     return ask_ai(prompt)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Helper — build per-table specs
-# ─────────────────────────────────────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+# Helper â build per-table specs
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def _ensure_stg_prefix(table_name: str) -> str:
     if not table_name:
@@ -431,13 +432,13 @@ def _ensure_stg_prefix(table_name: str) -> str:
 def _build_table_instructions(data_model: dict) -> str:
     lines = []
 
-    # ── Dimensions ───────────────────────────────────────────────────────
+    # ââ Dimensions âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     for dim in data_model.get("dimension_tables", []):
         name      = dim.get("name", "")
         sur_key   = dim.get("surrogate_key", f"{name.replace('dim_', '')}_key")
         has_nat   = dim.get("has_natural_key", True)
         nat_key   = re.sub(r'^source_', '', dim.get("natural_key_column", "id") or "id")
-        # If no natural key (flat file source) — use first attribute as nat_key placeholder
+        # If no natural key (flat file source) â use first attribute as nat_key placeholder
         if not has_nat or nat_key in ("id", "null", "none", "") or nat_key is None:
             has_nat = False
             nat_key = None
@@ -468,14 +469,14 @@ def _build_table_instructions(data_model: dict) -> str:
             if isinstance(a, dict):
                 dim_col = a.get('column', '')
                 src_col = a.get('source', dim_col)
-                col_mapping_lines.append(f"    {dim_col} ← s.\"{src_col}\"")
+                col_mapping_lines.append(f"    {dim_col} â s.\"{src_col}\"")
             else:
-                col_mapping_lines.append(f"    {a} ← s.\"{a}\"")
+                col_mapping_lines.append(f"    {a} â s.\"{a}\"")
         col_mapping_hint = "\n".join(col_mapping_lines)
 
         if name == "dim_date" or "date" in name.lower():
             spec = f"""
-TABLE: warehouse.{name}  (date dimension — idempotent insert)
+TABLE: warehouse.{name}  (date dimension â idempotent insert)
   CREATE TABLE IF NOT EXISTS warehouse.{name} (
     {sur_key} SERIAL PRIMARY KEY,
     full_date DATE UNIQUE NOT NULL,
@@ -488,7 +489,7 @@ TABLE: warehouse.{name}  (date dimension — idempotent insert)
   -- Source data (e.g. manufacturing year, birth year, founding year) often
   -- spans far further back than typical transaction-date dimensions.
   -- Using too narrow a range (e.g. 2020-2030 only) silently DROPS every
-  -- fact row whose year falls outside it when joined via INNER JOIN —
+  -- fact row whose year falls outside it when joined via INNER JOIN â
   -- this caused a real bug where 80% of rows vanished with no error.
   INSERT INTO warehouse.{name} (full_date, year, quarter, month, day, day_of_week, month_name)
     SELECT d::DATE, EXTRACT(YEAR FROM d)::INT, EXTRACT(QUARTER FROM d)::INT,
@@ -502,7 +503,7 @@ TABLE: warehouse.{name}  (date dimension — idempotent insert)
                 change_conditions = " OR ".join([f"d.{c} != s.{c}" for c in tracked]) \
                                     if tracked else "FALSE"
                 spec = f"""
-TABLE: warehouse.{name}  (SCD Type 2 — expire + insert)
+TABLE: warehouse.{name}  (SCD Type 2 â expire + insert)
   -- Source: staging.{src_table}  (must start with stg_)
   CREATE TABLE IF NOT EXISTS warehouse.{name} (
     {sur_key} SERIAL PRIMARY KEY,
@@ -534,14 +535,14 @@ TABLE: warehouse.{name}  (SCD Type 2 — expire + insert)
       WHERE d.{nat_key} = s.{nat_key} AND d.is_current = TRUE
     );"""
             else:
-                # Flat file — no natural key, use DISTINCT insert
+                # Flat file â no natural key, use DISTINCT insert
                 first_two = " AND ".join(
                     [f'd."{a.get("column") if isinstance(a, dict) else a}" = s."{a.get("source", a.get("column")) if isinstance(a, dict) else a}"'
                      for a in attrs[:2]]
                 ) if attrs else "1=0"
                 spec = f"""
-TABLE: warehouse.{name}  (SCD Type 1 — flat file source, no natural key)
-  -- Source: staging.{src_table}  (no ID columns in CSV — surrogate key only)
+TABLE: warehouse.{name}  (SCD Type 1 â flat file source, no natural key)
+  -- Source: staging.{src_table}  (no ID columns in CSV â surrogate key only)
   -- COLUMN MAPPING (use EXACTLY these source column names):
 {col_mapping_hint}
   CREATE TABLE IF NOT EXISTS warehouse.{name} (
@@ -607,8 +608,8 @@ TABLE: warehouse.{name}  (SCD Type 1 - composite business key)
     );"""
 
                 spec = f"""
-TABLE: warehouse.{name}  (SCD Type 1 — flat file source, no natural key)
-  -- Source: staging.{src_table}  (no ID columns in CSV — surrogate key only)
+TABLE: warehouse.{name}  (SCD Type 1 â flat file source, no natural key)
+  -- Source: staging.{src_table}  (no ID columns in CSV â surrogate key only)
   -- COLUMN MAPPING (use EXACTLY these source column names):
 {col_mapping_hint}
   CREATE TABLE IF NOT EXISTS warehouse.{name} (
@@ -626,7 +627,7 @@ TABLE: warehouse.{name}  (SCD Type 1 — flat file source, no natural key)
 
         lines.append(spec)
 
-    # ── Facts ────────────────────────────────────────────────────────────
+    # ââ Facts ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
     for fact in data_model.get("fact_tables", []):
         name         = fact.get("name", "")
         sur_key      = fact.get("surrogate_key", f"{name.replace('fact_', '')}_key")
@@ -634,7 +635,7 @@ TABLE: warehouse.{name}  (SCD Type 1 — flat file source, no natural key)
         business_key = re.sub(r'^source_', '', fact.get("source_business_key_column", "business_key") or "business_key")
         business_src = fact.get("source_business_key_from", "id")
 
-        # For flat file sources (no natural key) — don't use business_key
+        # For flat file sources (no natural key) â don't use business_key
         if not has_nat_key or business_key in ("business_key", "null", "none", "") \
                 or business_src in ("null", "none", "", "id"):
             has_nat_key  = False
@@ -672,12 +673,12 @@ TABLE: warehouse.{name}  (SCD Type 1 — flat file source, no natural key)
                 ref_has_nat  = ref_dim_info.get("has_natural_key", True)
 
                 if ref_has_nat and join_on_src and join_on_dim:
-                    # Has natural key — single column JOIN is safe (unique per natural key)
+                    # Has natural key â single column JOIN is safe (unique per natural key)
                     fk_joins.append(
                         f"  -- {col}: JOIN warehouse.{ref_tbl} d ON d.{join_on_dim} = src.\"{join_on_src}\""
                     )
                 elif not ref_has_nat:
-                    # NO natural key — MUST join on ALL attributes to avoid row multiplication!
+                    # NO natural key â MUST join on ALL attributes to avoid row multiplication!
                     # Joining on only 1-2 attrs when dim has duplicates on those attrs
                     # (different engine_cc/seats but same brand/model/year) causes
                     # cartesian-style row explosion in the fact table.
@@ -694,7 +695,7 @@ TABLE: warehouse.{name}  (SCD Type 1 — flat file source, no natural key)
                         join_cond_str = " AND ".join(join_conditions)
                         fk_joins.append(
                             f"  -- {col}: JOIN warehouse.{ref_tbl} d ON {join_cond_str}\n"
-                            f"  -- ⚠ MUST match ALL {ref_tbl} attributes (no natural key) "
+                            f"  -- â  MUST match ALL {ref_tbl} attributes (no natural key) "
                             f"to avoid row multiplication!"
                         )
                     else:
@@ -739,8 +740,8 @@ TABLE: warehouse.{name}  (SCD Type 1 — flat file source, no natural key)
             on_conflict    = ";"  # no ON CONFLICT for flat file sources
 
         spec = f"""
-TABLE: warehouse.{name}  (fact table — append only)
-  -- {'No natural key — flat file source, surrogate key only' if not has_nat_key else 'Natural key: ' + str(business_key)}
+TABLE: warehouse.{name}  (fact table â append only)
+  -- {'No natural key â flat file source, surrogate key only' if not has_nat_key else 'Natural key: ' + str(business_key)}
   CREATE TABLE IF NOT EXISTS warehouse.{name} (
     {sur_key} SERIAL PRIMARY KEY,{bk_col_def}
     {fk_cols_sql},
@@ -749,7 +750,7 @@ TABLE: warehouse.{name}  (fact table — append only)
   );
 {chr(10).join('  ' + idx for idx in fk_indexes)}
 
-  -- INSERT — JOIN staging with each dim to get surrogate keys
+  -- INSERT â JOIN staging with each dim to get surrogate keys
 {join_hints}
   INSERT INTO warehouse.{name} ({all_insert_cols})
     SELECT {all_select_cols}
@@ -761,9 +762,9 @@ TABLE: warehouse.{name}  (fact table — append only)
     return "\n".join(lines)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 # AUTO-FIX SAFETY NET
-# ─────────────────────────────────────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def sanitize_generated_sql(scripts: list, data_model: dict) -> tuple:
     if not scripts:
@@ -791,27 +792,27 @@ def sanitize_generated_sql(scripts: list, data_model: dict) -> tuple:
             pattern = rf'\bstaging\.{re.escape(src)}\b(?!_)'
             new_sql = re.sub(pattern, f"staging.stg_{src}", sql)
             if new_sql != sql:
-                corrections.append(f"  [{name}] Added missing stg_ prefix: staging.{src} → staging.stg_{src}")
+                corrections.append(f"  [{name}] Added missing stg_ prefix: staging.{src} â staging.stg_{src}")
                 sql = new_sql
 
-        # Fix 4: staging.stg_<schema>.<table> → staging.stg_<table>
-        # Happens when source schema name gets embedded: stg_bank.accounts → stg_accounts
+        # Fix 4: staging.stg_<schema>.<table> â staging.stg_<table>
+        # Happens when source schema name gets embedded: stg_bank.accounts â stg_accounts
         # Pattern: staging.stg_WORD.WORD  (three-part ref with stg_ prefix on middle part)
         bad_schema_ref = re.compile(r'\bstaging\.stg_\w+\.(\w+)\b', re.IGNORECASE)
         def fix_schema_ref(m):
             table = m.group(1)
-            corrections.append(f"  [{name}] Fixed embedded schema ref → staging.stg_{table}")
+            corrections.append(f"  [{name}] Fixed embedded schema ref â staging.stg_{table}")
             return f"staging.stg_{table}"
         new_sql = bad_schema_ref.sub(fix_schema_ref, sql)
         if new_sql != sql:
             sql = new_sql
 
-        # Fix 4b: staging.stg_staging.stg_<table> → staging.stg_<table>
+        # Fix 4b: staging.stg_staging.stg_<table> â staging.stg_<table>
         # Double-prefix bug: stg_staging.stg_patients
         bad_double_ref = re.compile(r'\bstaging\.stg_staging\.(stg_\w+)\b', re.IGNORECASE)
         def fix_double_ref(m):
             table = m.group(1)
-            corrections.append(f"  [{name}] Fixed double-prefix ref → staging.{table}")
+            corrections.append(f"  [{name}] Fixed double-prefix ref â staging.{table}")
             return f"staging.{table}"
         new_sql = bad_double_ref.sub(fix_double_ref, sql)
         if new_sql != sql:
@@ -827,13 +828,13 @@ def sanitize_generated_sql(scripts: list, data_model: dict) -> tuple:
                 model_dims     = {d.get("name") for d in data_model.get("dimension_tables", [])}
                 if candidate in model_dims:
                     fixed_col = f"{guess_singular}_key"
-                    corrections.append(f"  [{name}] Fixed FK → REFERENCES warehouse.{candidate}({fixed_col})")
+                    corrections.append(f"  [{name}] Fixed FK â REFERENCES warehouse.{candidate}({fixed_col})")
                     return f"REFERENCES warehouse.{candidate}({fixed_col})"
             corrections.append(f"  [{name}] Removed invalid FK trailing args")
             return f"REFERENCES warehouse.{tbl}({col})"
         sql = bad_fk_pattern.sub(fix_fk, sql)
 
-        # Fix 3: warehouse.<source_name> → warehouse.dim_<name>
+        # Fix 3: warehouse.<source_name> â warehouse.dim_<name>
         for src in source_tables:
             if not src:
                 continue
@@ -844,7 +845,7 @@ def sanitize_generated_sql(scripts: list, data_model: dict) -> tuple:
             if candidate in model_dims:
                 new_sql = re.sub(pattern, f"warehouse.{candidate}", sql)
                 if new_sql != sql:
-                    corrections.append(f"  [{name}] Fixed warehouse reference: warehouse.{src} → warehouse.{candidate}")
+                    corrections.append(f"  [{name}] Fixed warehouse reference: warehouse.{src} â warehouse.{candidate}")
                     sql = new_sql
 
         if sql != original:
@@ -853,9 +854,9 @@ def sanitize_generated_sql(scripts: list, data_model: dict) -> tuple:
     return scripts, corrections
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 # Main SQL generation
-# ─────────────────────────────────────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def generate_sql(data_model: dict, etl_mapping: dict,
                  fk_relationships: list = None,
@@ -872,12 +873,12 @@ def generate_sql(data_model: dict, etl_mapping: dict,
     actual_cols_hint = ""
     if raw_schema:
         actual_cols_hint = f"""
-╔══════════════════════════════════════════════════════════════════════╗
-║ ACTUAL SOURCE COLUMNS — USE ONLY THESE EXACT NAMES IN SQL           ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ NEVER invent column names! Only use columns listed below.           ║
-║ Wrap column names in double quotes: s."Brand", s."Accidents"        ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â ACTUAL SOURCE COLUMNS â USE ONLY THESE EXACT NAMES IN SQL           â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â NEVER invent column names! Only use columns listed below.           â
+â Wrap column names in double quotes: s."Brand", s."Accidents"        â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 {raw_schema}
 """
 
@@ -886,19 +887,19 @@ def generate_sql(data_model: dict, etl_mapping: dict,
     if actual_staging_tables:
         staging_available = (
             "ACTUALLY EXTRACTED STAGING TABLES (these are the ONLY staging tables that exist):\n" +
-            "\n".join(f"  ✓ staging.{t if t.startswith('stg_') else 'stg_' + t}"
+            "\n".join(f"  â staging.{t if t.startswith('stg_') else 'stg_' + t}"
                       for t in actual_staging_tables) +
             "\n\nAny other staging table MUST be created in the SQL script itself (Step 1)."
         )
     else:
-        staging_available = "EXTRACTED STAGING TABLES: unknown — derive from source tables in data model"
+        staging_available = "EXTRACTED STAGING TABLES: unknown â derive from source tables in data model"
 
     # Build FK map text for bridge join hints
     fk_relationships = fk_relationships or []
     if fk_relationships:
         fk_lines = [
             f"  {fk.get('from_table')}.{fk.get('from_column')} "
-            f"→ {fk.get('to_table')}.{fk.get('to_column')}"
+            f"â {fk.get('to_table')}.{fk.get('to_column')}"
             for fk in fk_relationships
         ]
         fk_map_text = "DISCOVERED FK RELATIONSHIPS (use for bridge joins):\n" + "\n".join(fk_lines)
@@ -919,10 +920,10 @@ def generate_sql(data_model: dict, etl_mapping: dict,
         ex_src  = _ensure_stg_prefix(example_dim.get("source_table", "stg_students"))
         worked_example = f"""
 
-═══════════════════════════════════════════════════════════════════════
-WORKED EXAMPLE — copy this pattern exactly:
-═══════════════════════════════════════════════════════════════════════
-CORRECT (✓):
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+WORKED EXAMPLE â copy this pattern exactly:
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+CORRECT (â):
   CREATE TABLE IF NOT EXISTS warehouse.{ex_name} (
     {ex_key} SERIAL PRIMARY KEY,
     {ex_nat} INTEGER UNIQUE NOT NULL,
@@ -933,260 +934,260 @@ CORRECT (✓):
     FROM staging.{ex_src} s
     ON CONFLICT ({ex_nat}) DO NOTHING;
 
-WRONG (✗):
-  FROM staging.{ex_src.replace('stg_', '')} s    ← missing stg_ prefix
-  FROM school.{ex_src.replace('stg_', '')} s     ← source schema (wrong!)
-  REFERENCES warehouse.students.student_id(...)  ← invalid FK syntax
-═══════════════════════════════════════════════════════════════════════"""
+WRONG (â):
+  FROM staging.{ex_src.replace('stg_', '')} s    â missing stg_ prefix
+  FROM school.{ex_src.replace('stg_', '')} s     â source schema (wrong!)
+  REFERENCES warehouse.students.student_id(...)  â invalid FK syntax
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ"""
 
     prompt = f"""You are a SQL generation AI for a production-grade ETL pipeline.
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ ABSOLUTE NAMING RULES — VIOLATING THESE BREAKS THE PIPELINE          ║
-╠══════════════════════════════════════════════════════════════════════╣
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â ABSOLUTE NAMING RULES â VIOLATING THESE BREAKS THE PIPELINE          â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
 
-║ 0. NEVER use the same name for surrogate key and any attribute  ║
-║    (case-insensitive). PostgreSQL treats Brand/brand as identical! ║
-║    Surrogate key MUST be: <table>_key SERIAL PRIMARY KEY           ║
-║    Example: car_key SERIAL PRIMARY KEY, brand VARCHAR(100)         ║
-║    NEVER: Brand INTEGER UNIQUE, brand VARCHAR -- DUPLICATE ERROR!  ║
-║                                                                    ║
-║ 0c. USE EXACT SOURCE COLUMN NAMES in warehouse schema:          ║
-║     Source has 'Accidents' -> warehouse column MUST be 'accidents'║
-║     Source has 'Horsepower' -> warehouse column MUST be 'horsepower'║
-║     NEVER rename: Accident_History, MaxPower, HorsePower, etc.   ║
-║     warehouse column name = lowercase(source column name)         ║
-║     SQL SELECT must use exact source name: s."Accidents"          ║
-║                                                                   ║
-║ 0c. USE EXACT SOURCE COLUMN NAMES in warehouse schema:          ║
-║     Source has 'Accidents' -> warehouse column MUST be 'accidents'║
-║     Source has 'Horsepower' -> warehouse column MUST be 'horsepower'║
-║     NEVER rename: Accident_History, MaxPower, HorsePower, etc.   ║
-║     warehouse column name = lowercase(source column name)         ║
-║     SQL SELECT must use exact source name: s."Accidents"          ║
-║                                                                   ║
-║ 0b. ALWAYS double-quote ALL source column refs in SELECT:         ║
-║     CORRECT: s."Brand", s."City", s."Owner_Type"                   ║
-║     WRONG:   s.Brand, s.City, s.Owner_Type (folds to lowercase!) ║
-║     RULE: Every staging column reference MUST be s."ColumnName"  ║
-║                                                                   ║
-║ 1. STAGING tables ALWAYS have stg_ prefix:                           ║
-║    ✓ FROM staging.stg_students                                       ║
-║    ✗ FROM staging.students         ← BROKEN                          ║
-║    ✗ FROM school.students          ← BROKEN (source schema)          ║
-║                                                                      ║
-║ 2. WAREHOUSE tables ALWAYS have dim_/fact_ prefix:                   ║
-║    ✓ warehouse.dim_student, warehouse.fact_enrollments               ║
-║    ✗ warehouse.students            ← BROKEN                          ║
-║                                                                      ║
-║ 3. FOREIGN KEY syntax — surrogate keys only:                         ║
-║    ✓ REFERENCES warehouse.dim_student(student_key)                   ║
-║    ✗ REFERENCES warehouse.students.student_id(...)  ← BROKEN         ║
-║                                                                      ║
-║ 4. Data flow: source.<x> → staging.stg_<x> → warehouse.dim_<x>       ║
-║    NEVER read from source schema in warehouse SQL                    ║
-║    ALWAYS read from staging.stg_<x>                                  ║
-╚══════════════════════════════════════════════════════════════════════╝
+â 0. NEVER use the same name for surrogate key and any attribute  â
+â    (case-insensitive). PostgreSQL treats Brand/brand as identical! â
+â    Surrogate key MUST be: <table>_key SERIAL PRIMARY KEY           â
+â    Example: car_key SERIAL PRIMARY KEY, brand VARCHAR(100)         â
+â    NEVER: Brand INTEGER UNIQUE, brand VARCHAR -- DUPLICATE ERROR!  â
+â                                                                    â
+â 0c. USE EXACT SOURCE COLUMN NAMES in warehouse schema:          â
+â     Source has 'Accidents' -> warehouse column MUST be 'accidents'â
+â     Source has 'Horsepower' -> warehouse column MUST be 'horsepower'â
+â     NEVER rename: Accident_History, MaxPower, HorsePower, etc.   â
+â     warehouse column name = lowercase(source column name)         â
+â     SQL SELECT must use exact source name: s."Accidents"          â
+â                                                                   â
+â 0c. USE EXACT SOURCE COLUMN NAMES in warehouse schema:          â
+â     Source has 'Accidents' -> warehouse column MUST be 'accidents'â
+â     Source has 'Horsepower' -> warehouse column MUST be 'horsepower'â
+â     NEVER rename: Accident_History, MaxPower, HorsePower, etc.   â
+â     warehouse column name = lowercase(source column name)         â
+â     SQL SELECT must use exact source name: s."Accidents"          â
+â                                                                   â
+â 0b. ALWAYS double-quote ALL source column refs in SELECT:         â
+â     CORRECT: s."Brand", s."City", s."Owner_Type"                   â
+â     WRONG:   s.Brand, s.City, s.Owner_Type (folds to lowercase!) â
+â     RULE: Every staging column reference MUST be s."ColumnName"  â
+â                                                                   â
+â 1. STAGING tables ALWAYS have stg_ prefix:                           â
+â    â FROM staging.stg_students                                       â
+â    â FROM staging.students         â BROKEN                          â
+â    â FROM school.students          â BROKEN (source schema)          â
+â                                                                      â
+â 2. WAREHOUSE tables ALWAYS have dim_/fact_ prefix:                   â
+â    â warehouse.dim_student, warehouse.fact_enrollments               â
+â    â warehouse.students            â BROKEN                          â
+â                                                                      â
+â 3. FOREIGN KEY syntax â surrogate keys only:                         â
+â    â REFERENCES warehouse.dim_student(student_key)                   â
+â    â REFERENCES warehouse.students.student_id(...)  â BROKEN         â
+â                                                                      â
+â 4. Data flow: source.<x> â staging.stg_<x> â warehouse.dim_<x>       â
+â    NEVER read from source schema in warehouse SQL                    â
+â    ALWAYS read from staging.stg_<x>                                  â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ MULTI-SOURCE DIMENSION RULE — KIMBALL DENORMALIZED DIMS              ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ If a dimension's source table has FK columns (_id) pointing to other ║
-║ staging tables, JOIN those tables to enrich the dimension.           ║
-║ Use LEFT JOIN so missing FK values do NOT drop rows.                 ║
-║                                                                      ║
-║ Generic pattern (derive from FK map below — NOT hardcoded):          ║
-║   INSERT INTO warehouse.dim_X (nat_key, attr1, fk_id, fk_attr)      ║
-║   SELECT a.nat_key, a.attr1, b.fk_id, b.fk_attr                    ║
-║   FROM staging.stg_X a                                              ║
-║   LEFT JOIN staging.stg_Y b ON a.fk_id = b.fk_id                   ║
-║                                                                      ║
-║ SCD Type 2 change tracking ONLY on primary table columns:            ║
-║   ✓ WHERE d.primary_col != s.primary_col  (from stg_X — primary)    ║
-║   ✗ WHERE d.joined_col  != s.joined_col   (from stg_Y — JOIN table) ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â MULTI-SOURCE DIMENSION RULE â KIMBALL DENORMALIZED DIMS              â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â If a dimension's source table has FK columns (_id) pointing to other â
+â staging tables, JOIN those tables to enrich the dimension.           â
+â Use LEFT JOIN so missing FK values do NOT drop rows.                 â
+â                                                                      â
+â Generic pattern (derive from FK map below â NOT hardcoded):          â
+â   INSERT INTO warehouse.dim_X (nat_key, attr1, fk_id, fk_attr)      â
+â   SELECT a.nat_key, a.attr1, b.fk_id, b.fk_attr                    â
+â   FROM staging.stg_X a                                              â
+â   LEFT JOIN staging.stg_Y b ON a.fk_id = b.fk_id                   â
+â                                                                      â
+â SCD Type 2 change tracking ONLY on primary table columns:            â
+â   â WHERE d.primary_col != s.primary_col  (from stg_X â primary)    â
+â   â WHERE d.joined_col  != s.joined_col   (from stg_Y â JOIN table) â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ GENERIC BRIDGE JOIN FOR FACT TABLES                                  ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ {fk_map_text:<68s}║
-║                                                                      ║
-║ Use FK map to find bridge joins for fact tables:                     ║
-║   Step 1: fact FK → dim_A (direct)                                  ║
-║   Step 2: dim_A source has FK → dim_B (secondary/bridge)            ║
-║   Step 3: JOIN staging.stg_A to get dim_B key via bridge            ║
-║                                                                      ║
-║ Pattern (generic):                                                   ║
-║   FROM staging.stg_<fact_src> src                                    ║
-║   JOIN warehouse.dim_A dA ON dA.<A_key> = src.<A_fk>                ║
-║   JOIN staging.stg_A   sA ON sA.<A_nat> = src.<A_fk>  ← bridge     ║
-║   JOIN warehouse.dim_B dB ON dB.<B_key> = sA.<B_fk>   ← via bridge ║
-║   JOIN warehouse.dim_date dd ON dd.full_date = src.<date_col>        ║
-║                                                                      ║
-║ Add ALL discovered dimension keys to fact INSERT column list.        ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â GENERIC BRIDGE JOIN FOR FACT TABLES                                  â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â {fk_map_text:<68s}â
+â                                                                      â
+â Use FK map to find bridge joins for fact tables:                     â
+â   Step 1: fact FK â dim_A (direct)                                  â
+â   Step 2: dim_A source has FK â dim_B (secondary/bridge)            â
+â   Step 3: JOIN staging.stg_A to get dim_B key via bridge            â
+â                                                                      â
+â Pattern (generic):                                                   â
+â   FROM staging.stg_<fact_src> src                                    â
+â   JOIN warehouse.dim_A dA ON dA.<A_key> = src.<A_fk>                â
+â   JOIN staging.stg_A   sA ON sA.<A_nat> = src.<A_fk>  â bridge     â
+â   JOIN warehouse.dim_B dB ON dB.<B_key> = sA.<B_fk>   â via bridge â
+â   JOIN warehouse.dim_date dd ON dd.full_date = src.<date_col>        â
+â                                                                      â
+â Add ALL discovered dimension keys to fact INSERT column list.        â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 {worked_example}
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ SINGLE SOURCE TABLE RULE — CRITICAL FOR FLAT FILE / CSV PIPELINES    ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ When ALL dimension source_tables reference staging tables that do    ║
-║ NOT match any actual extracted staging table, it means the source    ║
-║ is a SINGLE FLAT TABLE (e.g. a CSV file).                            ║
-║                                                                      ║
-║ In this case, the SQL MUST:                                          ║
-║                                                                      ║
-║ STEP 1 — Create intermediate staging tables from the raw staging     ║
-║ table using SELECT DISTINCT (generic, no hardcoding):                ║
-║                                                                      ║
-║   CREATE TABLE IF NOT EXISTS staging.stg_<entity> AS                ║
-║   SELECT DISTINCT <entity_columns>                                   ║
-║   FROM staging.stg_<raw_source_table>;                               ║
-║                                                                      ║
-║ STEP 2 — Load dims FROM the intermediate staging tables              ║
-║ STEP 3 — Load fact FROM the raw staging table directly               ║
-║          joining dims for surrogate keys                             ║
-║                                                                      ║
-║ GENERIC PATTERN (derive table/column names from data model):         ║
-║   Raw staging table = the stg_ table that was actually extracted     ║
-║   Intermediate table = stg_<entity> derived from dim name            ║
-║                                                                      ║
-║ EXAMPLE (generic — adapt names from actual data model):              ║
-║   -- Step 1: Create intermediate staging                             ║
-║   CREATE TABLE IF NOT EXISTS staging.stg_<entity> AS                ║
-║   SELECT DISTINCT <col1>, <col2>                                     ║
-║   FROM staging.stg_<raw_table>;                                      ║
-║                                                                      ║
-║   -- Step 2: Load dim from intermediate staging                      ║
-║   INSERT INTO warehouse.dim_<entity> (<cols>)                        ║
-║   SELECT s.<col1>, s.<col2>                                          ║
-║   FROM staging.stg_<entity> s                                        ║
-║   WHERE NOT EXISTS (SELECT 1 FROM warehouse.dim_<entity> d WHERE d.<nat_key> = s.<nat_key>);                                            ║
-║                                                                      ║
-║   -- Step 3: Load fact from raw staging table                        ║
-║   INSERT INTO warehouse.fact_<name> (<cols>)                         ║
-║   SELECT src.<measure1>, src.<measure2>,                             ║
-║          d.<surrogate_key>                                           ║
-║   FROM staging.stg_<raw_table> src                                   ║
-║   JOIN warehouse.dim_<entity> d ON d.<nat_key> = src.<nat_key>;      ║
-║                                                                      ║
-║ NEVER reference a staging table that was not created in this script  ║
-║ or was not extracted from the source!                                ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â SINGLE SOURCE TABLE RULE â CRITICAL FOR FLAT FILE / CSV PIPELINES    â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â When ALL dimension source_tables reference staging tables that do    â
+â NOT match any actual extracted staging table, it means the source    â
+â is a SINGLE FLAT TABLE (e.g. a CSV file).                            â
+â                                                                      â
+â In this case, the SQL MUST:                                          â
+â                                                                      â
+â STEP 1 â Create intermediate staging tables from the raw staging     â
+â table using SELECT DISTINCT (generic, no hardcoding):                â
+â                                                                      â
+â   CREATE TABLE IF NOT EXISTS staging.stg_<entity> AS                â
+â   SELECT DISTINCT <entity_columns>                                   â
+â   FROM staging.stg_<raw_source_table>;                               â
+â                                                                      â
+â STEP 2 â Load dims FROM the intermediate staging tables              â
+â STEP 3 â Load fact FROM the raw staging table directly               â
+â          joining dims for surrogate keys                             â
+â                                                                      â
+â GENERIC PATTERN (derive table/column names from data model):         â
+â   Raw staging table = the stg_ table that was actually extracted     â
+â   Intermediate table = stg_<entity> derived from dim name            â
+â                                                                      â
+â EXAMPLE (generic â adapt names from actual data model):              â
+â   -- Step 1: Create intermediate staging                             â
+â   CREATE TABLE IF NOT EXISTS staging.stg_<entity> AS                â
+â   SELECT DISTINCT <col1>, <col2>                                     â
+â   FROM staging.stg_<raw_table>;                                      â
+â                                                                      â
+â   -- Step 2: Load dim from intermediate staging                      â
+â   INSERT INTO warehouse.dim_<entity> (<cols>)                        â
+â   SELECT s.<col1>, s.<col2>                                          â
+â   FROM staging.stg_<entity> s                                        â
+â   WHERE NOT EXISTS (SELECT 1 FROM warehouse.dim_<entity> d WHERE d.<nat_key> = s.<nat_key>);                                            â
+â                                                                      â
+â   -- Step 3: Load fact from raw staging table                        â
+â   INSERT INTO warehouse.fact_<name> (<cols>)                         â
+â   SELECT src.<measure1>, src.<measure2>,                             â
+â          d.<surrogate_key>                                           â
+â   FROM staging.stg_<raw_table> src                                   â
+â   JOIN warehouse.dim_<entity> d ON d.<nat_key> = src.<nat_key>;      â
+â                                                                      â
+â NEVER reference a staging table that was not created in this script  â
+â or was not extracted from the source!                                â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ DIM_DATE JOIN RULE — ADAPT TO AVAILABLE DATE COLUMN                  ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ Check what date/time columns actually exist in the source:           ║
-║                                                                      ║
-║ Full date column exists (e.g. transaction_date, order_date):         ║
-║   JOIN warehouse.dim_date dd ON dd.full_date = src."date_col"::DATE ║
-║                                                                      ║
-║ Only year column exists (e.g. Year, manufacturing_year):             ║
-║   JOIN warehouse.dim_date dd ON dd.year = src."Year"                 ║
-║                                                                      ║
-║ No date or year column exists:                                       ║
-║   OMIT dim_date FK — do not join dim_date at all                     ║
-║                                                                      ║
-║ NEVER invent date columns that don't exist in source!                ║
-║   ✗ src."listing_date"    → doesn't exist in CSV!                   ║
-║   ✗ src."transaction_date" → doesn't exist if not in column list!   ║
-║   ✓ src."Year"            → use year join when only year exists      ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â DIM_DATE JOIN RULE â ADAPT TO AVAILABLE DATE COLUMN                  â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â Check what date/time columns actually exist in the source:           â
+â                                                                      â
+â Full date column exists (e.g. transaction_date, order_date):         â
+â   JOIN warehouse.dim_date dd ON dd.full_date = src."date_col"::DATE â
+â                                                                      â
+â Only year column exists (e.g. Year, manufacturing_year):             â
+â   JOIN warehouse.dim_date dd ON dd.year = src."Year"                 â
+â                                                                      â
+â No date or year column exists:                                       â
+â   OMIT dim_date FK â do not join dim_date at all                     â
+â                                                                      â
+â NEVER invent date columns that don't exist in source!                â
+â   â src."listing_date"    â doesn't exist in CSV!                   â
+â   â src."transaction_date" â doesn't exist if not in column list!   â
+â   â src."Year"            â use year join when only year exists      â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ CRITICAL: COMPOSITE JOIN RULE — PREVENTS ROW MULTIPLICATION          ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ When joining fact to a dimension that has NO natural key:            ║
-║                                                                      ║
-║ ✗ WRONG — joining on only 2-3 attributes:                           ║
-║   JOIN dim_car dc ON dc.brand = src."Brand"                         ║
-║     AND dc.model = src."Model" AND dc.year = src."Year"             ║
-║   → If dim_car has multiple rows with same brand+model+year          ║
-║     (different engine_cc/seats/mileage = genuinely different cars)   ║
-║   → EACH source row matches MULTIPLE dim rows                        ║
-║   → Fact table EXPLODES: 10,000 source rows → 7,800,000 fact rows!  ║
-║                                                                      ║
-║ ✓ CORRECT — join on ALL dim attributes (the full composite key):    ║
-║   JOIN dim_car dc ON dc.brand = src."Brand"                         ║
-║     AND dc.model = src."Model" AND dc.year = src."Year"             ║
-║     AND dc.fuel_type = src."Fuel_Type"                              ║
-║     AND dc.transmission = src."Transmission"                        ║
-║     AND dc.engine_cc = src."Engine_CC"                              ║
-║     AND dc.mileage_kmpl = src."Mileage_kmpl"                        ║
-║     AND dc.seats = src."Seats"                                       ║
-║     AND dc.owner_type = src."Owner_Type"                             ║
-║   → Each combination is now unique → exactly 1 match per source row ║
-║                                                                      ║
-║ RULE: For ANY dimension without a natural key, the fact JOIN MUST   ║
-║ include EVERY attribute column of that dimension in the ON clause.   ║
-║ Never join on a subset — verify row count after design:              ║
-║   fact row count MUST equal source row count (for 1:1 grain facts)   ║
-║                                                                ║
-║ FLOAT/NUMERIC COLUMN EXCEPTION — CRITICAL:                    ║
-║ NEVER join on float or decimal columns (NUMERIC, FLOAT,        ║
-║ DOUBLE, REAL, DECIMAL) — float precision mismatches cause     ║
-║ 0 rows to match even when values look identical.               ║
-║                                                                ║
-║ ✓ JOIN on: text, varchar, integer, boolean columns            ║
-║ ✗ NEVER JOIN on: engine_cc (float), mileage_kmpl (float),    ║
-║                    price (decimal), amount (numeric)           ║
-║                                                                ║
-║ If removing float columns makes the join non-unique, add more  ║
-║ TEXT columns to the JOIN until each combination is unique.     ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â CRITICAL: COMPOSITE JOIN RULE â PREVENTS ROW MULTIPLICATION          â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â When joining fact to a dimension that has NO natural key:            â
+â                                                                      â
+â â WRONG â joining on only 2-3 attributes:                           â
+â   JOIN dim_car dc ON dc.brand = src."Brand"                         â
+â     AND dc.model = src."Model" AND dc.year = src."Year"             â
+â   â If dim_car has multiple rows with same brand+model+year          â
+â     (different engine_cc/seats/mileage = genuinely different cars)   â
+â   â EACH source row matches MULTIPLE dim rows                        â
+â   â Fact table EXPLODES: 10,000 source rows â 7,800,000 fact rows!  â
+â                                                                      â
+â â CORRECT â join on ALL dim attributes (the full composite key):    â
+â   JOIN dim_car dc ON dc.brand = src."Brand"                         â
+â     AND dc.model = src."Model" AND dc.year = src."Year"             â
+â     AND dc.fuel_type = src."Fuel_Type"                              â
+â     AND dc.transmission = src."Transmission"                        â
+â     AND dc.engine_cc = src."Engine_CC"                              â
+â     AND dc.mileage_kmpl = src."Mileage_kmpl"                        â
+â     AND dc.seats = src."Seats"                                       â
+â     AND dc.owner_type = src."Owner_Type"                             â
+â   â Each combination is now unique â exactly 1 match per source row â
+â                                                                      â
+â RULE: For ANY dimension without a natural key, the fact JOIN MUST   â
+â include EVERY attribute column of that dimension in the ON clause.   â
+â Never join on a subset â verify row count after design:              â
+â   fact row count MUST equal source row count (for 1:1 grain facts)   â
+â                                                                â
+â FLOAT/NUMERIC COLUMN EXCEPTION â CRITICAL:                    â
+â NEVER join on float or decimal columns (NUMERIC, FLOAT,        â
+â DOUBLE, REAL, DECIMAL) â float precision mismatches cause     â
+â 0 rows to match even when values look identical.               â
+â                                                                â
+â â JOIN on: text, varchar, integer, boolean columns            â
+â â NEVER JOIN on: engine_cc (float), mileage_kmpl (float),    â
+â                    price (decimal), amount (numeric)           â
+â                                                                â
+â If removing float columns makes the join non-unique, add more  â
+â TEXT columns to the JOIN until each combination is unique.     â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-╔══════════════════════════════════════════════════════════════════════╗
-║ NO INVENTED ID COLUMNS — FOR FLAT FILE SOURCES                       ║
-╠══════════════════════════════════════════════════════════════════════╣
-║ If the staging table has NO _id columns (flat CSV/Excel source):     ║
-║                                                                      ║
-║ DO NOT reference non-existent ID columns in SQL:                     ║
-║   ✗ s.car_id      → column doesn't exist in CSV!                    ║
-║   ✗ s.seller_id   → column doesn't exist in CSV!                    ║
-║   ✗ s.location_id → column doesn't exist in CSV!                    ║
-║                                                                      ║
-║ INSTEAD — use ACTUAL columns from the staging table:                 ║
-║   ✓ s."Brand"     → actual column in CSV                            ║
-║   ✓ s."City"      → actual column in CSV                            ║
-║   ✓ s."Owner_Type" → actual column in CSV                           ║
-║                                                                      ║
-║ For SCD Type 2 dim with no natural key:                              ║
-║   Use surrogate key (SERIAL) only — no natural key JOIN              ║
-║   INSERT SELECT DISTINCT actual_columns FROM staging.stg_<entity>   ║
-║   ON CONFLICT DO NOTHING                                             ║
-║                                                                      ║
-║ For fact table JOINs with dims that have no natural key:             ║
-║   JOIN warehouse.dim_<entity> d ON d.<attr> = src."<ActualCol>"     ║
-║   where <attr> and <ActualCol> are REAL columns, not invented IDs   ║
-╚══════════════════════════════════════════════════════════════════════╝
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+â NO INVENTED ID COLUMNS â FOR FLAT FILE SOURCES                       â
+â âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ£
+â If the staging table has NO _id columns (flat CSV/Excel source):     â
+â                                                                      â
+â DO NOT reference non-existent ID columns in SQL:                     â
+â   â s.car_id      â column doesn't exist in CSV!                    â
+â   â s.seller_id   â column doesn't exist in CSV!                    â
+â   â s.location_id â column doesn't exist in CSV!                    â
+â                                                                      â
+â INSTEAD â use ACTUAL columns from the staging table:                 â
+â   â s."Brand"     â actual column in CSV                            â
+â   â s."City"      â actual column in CSV                            â
+â   â s."Owner_Type" â actual column in CSV                           â
+â                                                                      â
+â For SCD Type 2 dim with no natural key:                              â
+â   Use surrogate key (SERIAL) only â no natural key JOIN              â
+â   INSERT SELECT DISTINCT actual_columns FROM staging.stg_<entity>   â
+â   ON CONFLICT DO NOTHING                                             â
+â                                                                      â
+â For fact table JOINs with dims that have no natural key:             â
+â   JOIN warehouse.dim_<entity> d ON d.<attr> = src."<ActualCol>"     â
+â   where <attr> and <ActualCol> are REAL columns, not invented IDs   â
+ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 
 
-═══════════════════════════════════════════════════════════════════════
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 {staging_available}
-═══════════════════════════════════════════════════════════════════════
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 {actual_cols_hint}
 
-═══════════════════════════════════════════════════════════════════════
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 PER-TABLE SQL SPECIFICATIONS (follow these EXACTLY)
-═══════════════════════════════════════════════════════════════════════
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 {table_instructions}
-═══════════════════════════════════════════════════════════════════════
+âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 YOUR TASK:
 1. For each table above, output a script that follows the spec exactly
 2. Use the EXACT column names shown in the spec
 3. Use the EXACT FK references (REFERENCES warehouse.dim_X(X_key))
 4. For fact INSERTs:
-   - If dim has natural key → JOIN on natural key column
-   - If dim has NO natural key (flat file) → JOIN on actual attribute columns
+   - If dim has natural key â JOIN on natural key column
+   - If dim has NO natural key (flat file) â JOIN on actual attribute columns
      e.g. JOIN warehouse.dim_car dc ON dc.brand = src."Brand" AND dc.model = src."Model"
 5. ALL staging.<table> references MUST use stg_ prefix
 6. ALL warehouse.<table> references MUST be dim_<x>, fact_<x>, or dim_date
 7. NEVER reference a column that doesn't exist in the staging table
-8. If source has no ID columns → use SERIAL surrogate key only, no natural key in INSERT
+8. If source has no ID columns â use SERIAL surrogate key only, no natural key in INSERT
 
 Return ONLY valid JSON in this format:
 {{
@@ -1238,9 +1239,9 @@ Instruction: {user_instruction}"""
     return ask_ai(prompt)
 
 
-# ── Domain mismatch validation ────────────────────────────────────────────────
+# ââ Domain mismatch validation ââââââââââââââââââââââââââââââââââââââââââââââââ
 
-# Domain keyword map — each domain has source column keywords and requirement keywords
+# Domain keyword map â each domain has source column keywords and requirement keywords
 _DOMAIN_KEYWORDS = {
     "automotive": {
         "source":       ["brand", "model", "fuel_type", "transmission", "mileage",
@@ -1292,13 +1293,13 @@ def _detect_domain(text: str, keyword_list: list) -> int:
 
 
 def _validate_domain_match(raw_schema: str, business_requirements: str,
-                            schema_analysis: dict) -> str | None:
+                            schema_analysis: dict) -> Optional[str]:
     """
     Detect domain from source schema columns, then check if business
     requirements match that domain. Returns error message if mismatch,
     None if everything is fine.
 
-    Generic — works for ANY domain combination.
+    Generic â works for ANY domain combination.
     No hardcoding of specific table or column names.
     """
     # Build combined source text from schema + analysis
@@ -1332,9 +1333,9 @@ def _validate_domain_match(raw_schema: str, business_requirements: str,
 
     # Only validate if we have confident domain detection (score >= 2)
     if best_source_score < 4 or best_req_score < 4:
-        return None  # Not enough signal — skip validation
+        return None  # Not enough signal â skip validation
 
-    # Mismatch: source domain ≠ requirements domain
+    # Mismatch: source domain â  requirements domain
     if best_source_domain != best_req_domain:
         source_cols = schema_analysis.get("entities", [{}])[0].get("columns", [])[:5]
         return (
@@ -1348,7 +1349,7 @@ def _validate_domain_match(raw_schema: str, business_requirements: str,
     return None  # No mismatch
 
 
-# ── PHASE 1 ──────────────────────────────────────────────────────────────────
+# ââ PHASE 1 ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 def _fix_source_column_names(data_model: dict, raw_schema: str) -> dict:
     """
@@ -1358,14 +1359,14 @@ def _fix_source_column_names(data_model: dict, raw_schema: str) -> dict:
     is "Accidents". This function corrects source column mappings by fuzzy-
     matching attribute names to actual column names from raw_schema.
     
-    Generic — works for any domain, any column names.
+    Generic â works for any domain, any column names.
     """
     import re
 
     # Parse actual column names AND their data types from raw_schema text
     # Format: "  column_name (data_type)" e.g. "Engine_CC (numeric(20,6))"
-    actual_cols = {}       # lowercase_no_underscore → actual_name
-    actual_col_types = {}  # actual_name → data_type string (as reported by DB)
+    actual_cols = {}       # lowercase_no_underscore â actual_name
+    actual_col_types = {}  # actual_name â data_type string (as reported by DB)
     for line in raw_schema.split("\n"):
         line = line.strip()
         m = re.match(r'(\w+)\s*\(([^)]*)\)', line)
@@ -1385,7 +1386,7 @@ def _fix_source_column_names(data_model: dict, raw_schema: str) -> dict:
     if not actual_cols:
         return data_model
 
-    def best_match(attr_name: str) -> str | None:
+    def best_match(attr_name: str) -> Optional[str]:
         """Find best matching actual column for an attribute name."""
         key = attr_name.lower().replace("_", "")
         # Direct match
@@ -1394,11 +1395,11 @@ def _fix_source_column_names(data_model: dict, raw_schema: str) -> dict:
         # Underscore match
         if attr_name.lower() in actual_cols:
             return actual_cols[attr_name.lower()]
-        # Partial match — find actual col that contains this attr or vice versa
+        # Partial match â find actual col that contains this attr or vice versa
         for actual_key, actual_name in actual_cols.items():
             if key in actual_key or actual_key in key:
                 return actual_name
-        # Fuzzy fallback — catches cases like "accident_history" vs "Accidents"
+        # Fuzzy fallback â catches cases like "accident_history" vs "Accidents"
         # where neither is a substring of the other but they're clearly the
         # same concept. A pure substring check misses these; this previously
         # caused dim_car to be built with an attribute that has NO matching
@@ -1427,7 +1428,7 @@ def _fix_source_column_names(data_model: dict, raw_schema: str) -> dict:
         if not dtype:
             return fallback
         if "numeric" in dtype or "decimal" in dtype:
-            # e.g. "numeric(20,6)" → keep exact precision/scale
+            # e.g. "numeric(20,6)" â keep exact precision/scale
             m = re.search(r'\((\d+)\s*,\s*(\d+)\)', dtype)
             if m:
                 return f"NUMERIC({m.group(1)},{m.group(2)})"
@@ -1464,9 +1465,9 @@ def _fix_source_column_names(data_model: dict, raw_schema: str) -> dict:
                 # Try to find actual column that matches this attribute
                 matched = best_match(col) or best_match(src)
                 if matched and matched != src:
-                    print(f"[ModelFix] {dim.get('name')}.{col}: source '{src}' → '{matched}'")
+                    print(f"[ModelFix] {dim.get('name')}.{col}: source '{src}' â '{matched}'")
                     attr = {**attr, "source": matched}
-                # Override declared type to match source's actual precision —
+                # Override declared type to match source's actual precision â
                 # critical for numeric/decimal columns used in fact-to-dim JOINs,
                 # since a mismatched precision (e.g. dim NUMERIC(10,2) vs source
                 # NUMERIC(20,6)) causes silent equality-match failures.
@@ -1474,7 +1475,7 @@ def _fix_source_column_names(data_model: dict, raw_schema: str) -> dict:
                 exact_type = sql_type_for_source(final_src, attr.get("type", "VARCHAR(100)"))
                 if exact_type != attr.get("type"):
                     print(f"[ModelFix] {dim.get('name')}.{col}: type "
-                          f"'{attr.get('type')}' → '{exact_type}' (matches source precision)")
+                          f"'{attr.get('type')}' â '{exact_type}' (matches source precision)")
                     attr = {**attr, "type": exact_type}
             fixed_attrs.append(attr)
         dim["attributes"] = fixed_attrs
@@ -1488,12 +1489,12 @@ def _fix_source_column_names(data_model: dict, raw_schema: str) -> dict:
                 src = m.get("source", col)
                 matched = best_match(col) or best_match(src)
                 if matched and matched != src:
-                    print(f"[ModelFix] {fact.get('name')}.{col}: source '{src}' → '{matched}'")
+                    print(f"[ModelFix] {fact.get('name')}.{col}: source '{src}' â '{matched}'")
                     m = {**m, "source": matched}
             fixed_measures.append(m)
         fact["measures"] = fixed_measures
 
-        # Fix dim_date FK — if source has no date col but has Year → use year join
+        # Fix dim_date FK â if source has no date col but has Year â use year join
         fixed_fks = []
         for fk in fact.get("foreign_keys", []):
             if isinstance(fk, dict):
@@ -1506,7 +1507,7 @@ def _fix_source_column_names(data_model: dict, raw_schema: str) -> dict:
                         year_col = actual_cols.get("year") or actual_cols.get("Year") or \
                                    next((v for k, v in actual_cols.items() if "year" in k.lower()), None)
                         if year_col:
-                            print(f"[ModelFix] dim_date join: '{join_src}' → year join on '{year_col}'")
+                            print(f"[ModelFix] dim_date join: '{join_src}' â year join on '{year_col}'")
                             fk = {**fk, "join_on_source_col": year_col, "join_on_dim_col": "year"}
             fixed_fks.append(fk)
         fact["foreign_keys"] = fixed_fks
@@ -1525,7 +1526,7 @@ def run_phase_1_model_design(source_description, raw_schema,
     if connector_config:
         try:
             from data_profiler import build_full_profile, format_profile_for_ai
-            print(f"\n[ETL Agent] Smart mode ENABLED — profiling schema '{source_schema}'...")
+            print(f"\n[ETL Agent] Smart mode ENABLED â profiling schema '{source_schema}'...")
             profile_result = build_full_profile(
                 connector_config, schema=source_schema,
                 sample_rows=5, enable_overlap_detection=True
@@ -1534,10 +1535,10 @@ def run_phase_1_model_design(source_description, raw_schema,
                 profile_text  = format_profile_for_ai(profile_result["profile"])
                 raw_tables    = list(profile_result["profile"].get("tables", {}).keys())
 
-                # ── CROSS-PIPELINE CONTAMINATION FIX ──────────────────────────
+                # ââ CROSS-PIPELINE CONTAMINATION FIX ââââââââââââââââââââââââââ
                 # The profiler may return tables from ALL schemas (staging, warehouse,
                 # raw, other source schemas). We must filter to ONLY the current
-                # source schema tables — bare table names, no schema prefix.
+                # source schema tables â bare table names, no schema prefix.
                 source_tables = [
                     t for t in raw_tables
                     if not t.startswith("staging.")
@@ -1557,19 +1558,19 @@ def run_phase_1_model_design(source_description, raw_schema,
                         and not t.startswith("raw.")
                     ]
 
-            print(f"[ETL Agent] ✓ Profile built ({len(profile_text)} chars)")
-            print(f"[ETL Agent] ✓ Source tables: {source_tables}")
+            print(f"[ETL Agent] â Profile built ({len(profile_text)} chars)")
+            print(f"[ETL Agent] â Source tables: {source_tables}")
         except Exception as e:
-            print(f"[ETL Agent] ⚠ Profiling skipped: {e}")
+            print(f"[ETL Agent] â  Profiling skipped: {e}")
 
-    print("[Phase 1 — Step 1/2] Analyzing schema...")
+    print("[Phase 1 â Step 1/2] Analyzing schema...")
     schema = analyze_schema(source_description, raw_schema, profile_text)
 
     # Extract source tables from schema analysis if not from profiler
     if not source_tables:
         source_tables = [e.get("name", "") for e in schema.get("entities", []) if e.get("name")]
 
-    # Final safety filter — remove any schema-prefixed or system tables
+    # Final safety filter â remove any schema-prefixed or system tables
     source_tables = [
         t.split(".")[-1] if "." in t else t
         for t in source_tables
@@ -1579,28 +1580,28 @@ def run_phase_1_model_design(source_description, raw_schema,
     seen = set()
     source_tables = [t for t in source_tables if not (t in seen or seen.add(t))]
 
-    print(f"[ETL Agent] ✓ Source tables: {source_tables}")
+    print(f"[ETL Agent] â Source tables: {source_tables}")
 
-    # ── Domain mismatch validation ────────────────────────────────────────────
-    # Domain mismatch check disabled � was incorrectly blocking valid pipelines
+    # ââ Domain mismatch validation ââââââââââââââââââââââââââââââââââââââââââââ
+    # Domain mismatch check disabled  was incorrectly blocking valid pipelines
     # mismatch = _validate_domain_match(raw_schema, business_requirements, schema)
-    # ─────────────────────────────────────────────────────────────────────────
+    # âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-    print("[Phase 1 — Step 2/2] Generating data model...")
+    print("[Phase 1 â Step 2/2] Generating data model...")
     model = generate_data_model(
         schema, business_requirements, profile_text,
         source_tables, fk_relationships=fk_relationships
     )
 
-    # ── Fix source column names using actual raw_schema ───────────────────────
+    # ââ Fix source column names using actual raw_schema âââââââââââââââââââââââ
     # AI sometimes invents source column names (e.g. Accident_History vs Accidents)
     # Post-process data model to correct source column names from actual schema
     if raw_schema:
         print(f'[ModelFix] DEBUG: raw_schema present={bool(raw_schema)}, len={len(raw_schema) if raw_schema else 0}')
         model = _fix_source_column_names(model, raw_schema)
-    # ─────────────────────────────────────────────────────────────────────────
+    # âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-    print("[ETL Agent] ✓ Phase 1 complete — awaiting user approval")
+    print("[ETL Agent] â Phase 1 complete â awaiting user approval")
 
     return {
         "phase":            "model_design",
@@ -1612,14 +1613,14 @@ def run_phase_1_model_design(source_description, raw_schema,
     }
 
 
-# ── PHASE 2 ──────────────────────────────────────────────────────────────────
+# ââ PHASE 2 ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 
 
 def validate_and_fix_sql_columns(scripts: list, actual_columns: list,
                                   data_model: dict) -> tuple:
     """
-    Post-generation validation — scan every src."column" reference in
+    Post-generation validation â scan every src."column" reference in
     generated SQL and remove/fix any that don't exist in the actual
     source schema. Also removes dim_date JOINs if no date/year column
     exists in the source.
@@ -1680,7 +1681,7 @@ def validate_and_fix_sql_columns(scripts: list, actual_columns: list,
                 condition = dim_date_join.group(2)
 
                 if not has_any_date:
-                    # No date or year column at all — remove dim_date JOIN entirely
+                    # No date or year column at all â remove dim_date JOIN entirely
                     sql = re.sub(
                         r'JOIN\s+warehouse\.dim_date\s+\w+\s+ON\s+[^\n;]+',
                         "", sql, flags=re.IGNORECASE
@@ -1691,7 +1692,7 @@ def validate_and_fix_sql_columns(scripts: list, actual_columns: list,
                         f"  [{name}] Removed dim_date JOIN (no date/year column in source)"
                     )
                 elif has_year_col and not has_date_col:
-                    # Only year column exists — fix the JOIN to use year
+                    # Only year column exists â fix the JOIN to use year
                     # Constrain to Jan 1st to avoid row multiplication
                     # (365 rows per year in dim_date, need exactly 1 match)
                     correct_join = (
@@ -1705,10 +1706,10 @@ def validate_and_fix_sql_columns(scripts: list, actual_columns: list,
                     )
                     corrections.append(
                         f'  [{name}] Fixed dim_date JOIN: year-only source '
-                        f'→ {alias_dd}.year = src."{year_col}" AND month=1 AND day=1'
+                        f'â {alias_dd}.year = src."{year_col}" AND month=1 AND day=1'
                     )
                 elif has_date_col and date_col:
-                    # Full date column exists — fix to use it if AI used wrong column
+                    # Full date column exists â fix to use it if AI used wrong column
                     # Only fix if the current join references a non-existent column
                     invented_col = re.search(
                         r'src\."(\w+)"', condition, re.IGNORECASE
@@ -1726,7 +1727,7 @@ def validate_and_fix_sql_columns(scripts: list, actual_columns: list,
                             )
                             corrections.append(
                                 f'  [{name}] Fixed dim_date JOIN: '
-                                f'"{col_used}" → "{date_col}"'
+                                f'"{col_used}" â "{date_col}"'
                             )
 
         # Fix 2: Remove any src."col" or s."col" references to non-existent columns
@@ -1755,7 +1756,7 @@ def validate_and_fix_sql_columns(scripts: list, actual_columns: list,
                     return alias + '."'  + exact + '"'
                 return m.group(0)
 
-            # Column not in source — remove it
+            # Column not in source â remove it
             corrections.append(
             corrections.append("  [" + name + "] Removed non-existent column: " + col + " (not in source)")
             )
@@ -1765,9 +1766,9 @@ def validate_and_fix_sql_columns(scripts: list, actual_columns: list,
 
         # Fix 3: If we removed columns, clean up dangling commas and empty SELECTs
         if sql_fixed != sql:
-            # Clean up multiple commas: ,  , → ,
+            # Clean up multiple commas: ,  , â ,
             sql_fixed = re.sub(r',\s*,', ',', sql_fixed)
-            # Clean up SELECT followed by comma: SELECT , → SELECT
+            # Clean up SELECT followed by comma: SELECT , â SELECT
             sql_fixed = re.sub(r'SELECT\s*,', 'SELECT ', sql_fixed, flags=re.IGNORECASE)
             # Clean up trailing commas before FROM/WHERE/JOIN
             sql_fixed = re.sub(r',\s*(FROM|WHERE|JOIN|ON)\b', r' \1', sql_fixed, flags=re.IGNORECASE)
@@ -1789,7 +1790,7 @@ def run_phase_2_sql_generation(schema_analysis: dict,
                                fk_relationships: list = None,
                                actual_staging_tables: list = None,
                                raw_schema: str = "") -> dict:
-    print("[Phase 2 — Step 1/2] Generating ETL mappings...")
+    print("[Phase 2 â Step 1/2] Generating ETL mappings...")
     mappings = generate_etl_mapping(schema_analysis, data_model)
 
     # Derive actual staging table names from source tables in data model
@@ -1801,7 +1802,7 @@ def run_phase_2_sql_generation(schema_analysis: dict,
         ]
 
     print(f"[Phase 2] Actual staging tables available: {actual_staging_tables}")
-    print("[Phase 2 — Step 2/2] Generating SQL (with hardened prompt + auto-fix)...")
+    print("[Phase 2 â Step 2/2] Generating SQL (with hardened prompt + auto-fix)...")
     sql = generate_sql(data_model, mappings,
                        fk_relationships=fk_relationships,
                        actual_staging_tables=actual_staging_tables,
@@ -1814,7 +1815,7 @@ def run_phase_2_sql_generation(schema_analysis: dict,
     missing    = required - generated
 
     if missing:
-        print(f"[ETL Agent] ⚠ AI missed {len(missing)} scripts: {missing}")
+        print(f"[ETL Agent] â  AI missed {len(missing)} scripts: {missing}")
         print(f"[ETL Agent] Retrying SQL generation...")
         sql = generate_sql(data_model, mappings,
                            actual_staging_tables=actual_staging_tables,
@@ -1822,7 +1823,7 @@ def run_phase_2_sql_generation(schema_analysis: dict,
 
     scripts, corrections = sanitize_generated_sql(sql.get("scripts", []), data_model)
     sql["scripts"] = scripts
-# Extract actual column names — try raw_schema first, fall back to schema_analysis
+# Extract actual column names â try raw_schema first, fall back to schema_analysis
     import re as _re
     actual_cols = []
     if raw_schema:
@@ -1848,17 +1849,17 @@ def run_phase_2_sql_generation(schema_analysis: dict,
         )
         sql["scripts"] = scripts
         if col_corrections:
-            print(f"[ETL Agent] 🔧 Column validation fixed {len(col_corrections)} issues:")
+            print(f"[ETL Agent] ð§ Column validation fixed {len(col_corrections)} issues:")
             for c in col_corrections:
                 print(c)
             corrections.extend(col_corrections)
 
     if corrections:
-        print(f"[ETL Agent] 🔧 Auto-fixed {len(corrections)} SQL issues:")
+        print(f"[ETL Agent] ð§ Auto-fixed {len(corrections)} SQL issues:")
         for c in corrections:
             print(c)
     else:
-        print(f"[ETL Agent] ✓ Generated SQL passed sanity check — no auto-fixes needed")
+        print(f"[ETL Agent] â Generated SQL passed sanity check â no auto-fixes needed")
 
     if warehouse_schema != "warehouse" or staging_schema != "staging":
         for script in sql.get("scripts", []):
@@ -1868,13 +1869,13 @@ def run_phase_2_sql_generation(schema_analysis: dict,
             if staging_schema != "staging":
                 s = s.replace("staging.", f'{staging_schema}.')
             script["sql"] = s
-        print(f"[ETL Agent] ✓ Rewrote SQL to use schemas: {staging_schema}, {warehouse_schema}")
+        print(f"[ETL Agent] â Rewrote SQL to use schemas: {staging_schema}, {warehouse_schema}")
 
     # Inject individual staging CREATE TABLE scripts for each stg_<entity>
     # Create individual staging tables per dim/fact script.
     # Each dim gets its own stg_<entity> table with only its columns.
     # This avoids shared stg table mismatches and float precision issues.
-    # Fully generic — no hardcoding of table/column names.
+    # Fully generic â no hardcoding of table/column names.
     import re as _re_stg
     _raw_stg = (actual_staging_tables or [""])[0] if actual_staging_tables else ""
     if _raw_stg:
@@ -1916,7 +1917,7 @@ def run_phase_2_sql_generation(schema_analysis: dict,
                     _created_stg_tables[_target_stg].update(_cols_used)
         # Generate CREATE TABLE scripts for each individual staging table
         for _target_stg, _cols_used in sorted(_created_stg_tables.items()):
-            # Use ALL columns from raw staging — simpler and more reliable
+            # Use ALL columns from raw staging â simpler and more reliable
             # Use only the columns this entity needs - deduped
             if _cols_used:
                 _seen_cols = set()
@@ -1943,7 +1944,7 @@ def run_phase_2_sql_generation(schema_analysis: dict,
         if _inject_scripts:
             sql["scripts"] = _inject_scripts + sql.get("scripts", [])
 
-    print(f"[ETL Agent] ✓ Phase 2 complete ({len(sql.get('scripts', []))} scripts)")
+    print(f"[ETL Agent] â Phase 2 complete ({len(sql.get('scripts', []))} scripts)")
 
     return {
         "phase":        "sql_generation",

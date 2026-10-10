@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-01T09:35:59.383052",
+  "last_updated": "2026-10-08T21:52:57.307831",
   "pipelines": {
     "9ce672fd-3840-4a0d-9b1c-43fd8881c654": {
       "name": "1st Pipeline 5/10/2026",
@@ -290,6 +290,95 @@
           "attributes": [
             "category",
             "sub_category"
+          ]
+        }
+      ]
+    },
+    "abaf6b00-4481-49c8-a87a-6a7cdd95dfa5": {
+      "name": "anthropic_biling_test2",
+      "id": "abaf6b00-4481-49c8-a87a-6a7cdd95dfa5",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "anthropic_biling_test2",
+          "grain": "one row per student enrollment in a course per term",
+          "measures": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "enrollment_date_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "anthropic_biling_test2",
+          "scd_type": 2,
+          "natural_key": "source_student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "anthropic_biling_test2",
+          "scd_type": 2,
+          "natural_key": "source_course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "anthropic_biling_test2",
+          "scd_type": 1,
+          "natural_key": "source_teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "anthropic_biling_test2",
+          "scd_type": 1,
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
           ]
         }
       ]
@@ -723,6 +812,217 @@
           "scd_type": "2",
           "natural_key": "order_date",
           "attributes": [
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "17bfa2d9-3bb0-4151-b2af-1c2f722a1c21": {
+      "name": "antrhorpic",
+      "id": "17bfa2d9-3bb0-4151-b2af-1c2f722a1c21",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "antrhorpic",
+          "grain": "one row per student enrollment in a course per term",
+          "measures": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "enrollment_date_key",
+            "term_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "antrhorpic",
+          "scd_type": 2,
+          "natural_key": "source_student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "antrhorpic",
+          "scd_type": 2,
+          "natural_key": "source_course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "antrhorpic",
+          "scd_type": 1,
+          "natural_key": "source_teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "antrhorpic",
+          "scd_type": 1,
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_term",
+          "pipeline": "antrhorpic",
+          "scd_type": 1,
+          "natural_key": "source_term",
+          "attributes": [
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    },
+    "f863e58d-ff40-496f-a2ef-bbd5748a30c4": {
+      "name": "removing_source_from_column_name",
+      "id": "f863e58d-ff40-496f-a2ef-bbd5748a30c4",
+      "fact_tables": [
+        {
+          "name": "fact_enrollments",
+          "pipeline": "removing_source_from_column_name",
+          "grain": "one row per student enrollment in a course per term",
+          "measures": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "student_key",
+            "course_key",
+            "enrollment_date_key",
+            "term_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_student",
+          "pipeline": "removing_source_from_column_name",
+          "scd_type": 2,
+          "natural_key": "student_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_teacher",
+          "pipeline": "removing_source_from_column_name",
+          "scd_type": 1,
+          "natural_key": "teacher_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_course",
+          "pipeline": "removing_source_from_column_name",
+          "scd_type": 2,
+          "natural_key": "course_id",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_date",
+          "pipeline": "removing_source_from_column_name",
+          "scd_type": 1,
+          "natural_key": "full_date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_term",
+          "pipeline": "removing_source_from_column_name",
+          "scd_type": 1,
+          "natural_key": "term",
+          "attributes": [
+            "",
+            "",
             "",
             "",
             ""
@@ -1248,306 +1548,6 @@
           "scd_type": "1",
           "natural_key": "teacher_name",
           "attributes": [
-            ""
-          ]
-        }
-      ]
-    },
-    "abaf6b00-4481-49c8-a87a-6a7cdd95dfa5": {
-      "name": "anthropic_biling_test2",
-      "id": "abaf6b00-4481-49c8-a87a-6a7cdd95dfa5",
-      "fact_tables": [
-        {
-          "name": "fact_enrollments",
-          "pipeline": "anthropic_biling_test2",
-          "grain": "one row per student enrollment in a course per term",
-          "measures": [
-            "",
-            "",
-            "",
-            "",
-            ""
-          ],
-          "foreign_keys": [
-            "student_key",
-            "course_key",
-            "enrollment_date_key"
-          ]
-        }
-      ],
-      "dimension_tables": [
-        {
-          "name": "dim_student",
-          "pipeline": "anthropic_biling_test2",
-          "scd_type": 2,
-          "natural_key": "source_student_id",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_course",
-          "pipeline": "anthropic_biling_test2",
-          "scd_type": 2,
-          "natural_key": "source_course_id",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_teacher",
-          "pipeline": "anthropic_biling_test2",
-          "scd_type": 1,
-          "natural_key": "source_teacher_id",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_date",
-          "pipeline": "anthropic_biling_test2",
-          "scd_type": 1,
-          "natural_key": "full_date",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        }
-      ]
-    },
-    "17bfa2d9-3bb0-4151-b2af-1c2f722a1c21": {
-      "name": "antrhorpic",
-      "id": "17bfa2d9-3bb0-4151-b2af-1c2f722a1c21",
-      "fact_tables": [
-        {
-          "name": "fact_enrollments",
-          "pipeline": "antrhorpic",
-          "grain": "one row per student enrollment in a course per term",
-          "measures": [
-            "",
-            "",
-            "",
-            "",
-            ""
-          ],
-          "foreign_keys": [
-            "student_key",
-            "course_key",
-            "enrollment_date_key",
-            "term_key"
-          ]
-        }
-      ],
-      "dimension_tables": [
-        {
-          "name": "dim_student",
-          "pipeline": "antrhorpic",
-          "scd_type": 2,
-          "natural_key": "source_student_id",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_course",
-          "pipeline": "antrhorpic",
-          "scd_type": 2,
-          "natural_key": "source_course_id",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_teacher",
-          "pipeline": "antrhorpic",
-          "scd_type": 1,
-          "natural_key": "source_teacher_id",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_date",
-          "pipeline": "antrhorpic",
-          "scd_type": 1,
-          "natural_key": "full_date",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_term",
-          "pipeline": "antrhorpic",
-          "scd_type": 1,
-          "natural_key": "source_term",
-          "attributes": [
-            "",
-            "",
-            ""
-          ]
-        }
-      ]
-    },
-    "f863e58d-ff40-496f-a2ef-bbd5748a30c4": {
-      "name": "removing_source_from_column_name",
-      "id": "f863e58d-ff40-496f-a2ef-bbd5748a30c4",
-      "fact_tables": [
-        {
-          "name": "fact_enrollments",
-          "pipeline": "removing_source_from_column_name",
-          "grain": "one row per student enrollment in a course per term",
-          "measures": [
-            "",
-            "",
-            "",
-            "",
-            ""
-          ],
-          "foreign_keys": [
-            "student_key",
-            "course_key",
-            "enrollment_date_key",
-            "term_key"
-          ]
-        }
-      ],
-      "dimension_tables": [
-        {
-          "name": "dim_student",
-          "pipeline": "removing_source_from_column_name",
-          "scd_type": 2,
-          "natural_key": "student_id",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_teacher",
-          "pipeline": "removing_source_from_column_name",
-          "scd_type": 1,
-          "natural_key": "teacher_id",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_course",
-          "pipeline": "removing_source_from_column_name",
-          "scd_type": 2,
-          "natural_key": "course_id",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_date",
-          "pipeline": "removing_source_from_column_name",
-          "scd_type": 1,
-          "natural_key": "full_date",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_term",
-          "pipeline": "removing_source_from_column_name",
-          "scd_type": 1,
-          "natural_key": "term",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
             ""
           ]
         }
@@ -3454,6 +3454,115 @@
       "fact_tables": [],
       "dimension_tables": []
     },
+    "f3571ec8-f20d-437d-88af-83522e8204df": {
+      "name": "used_cars_new_hint",
+      "id": "f3571ec8-f20d-437d-88af-83522e8204df",
+      "fact_tables": [
+        {
+          "name": "fact_car_listings",
+          "pipeline": "used_cars_new_hint",
+          "grain": "one row per car listing",
+          "measures": [
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "date_key",
+            "car_key",
+            "location_key",
+            "seller_key",
+            "transmission_key",
+            "fuel_type_key",
+            "accident_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_date",
+          "pipeline": "used_cars_new_hint",
+          "scd_type": "1",
+          "natural_key": "date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_car",
+          "pipeline": "used_cars_new_hint",
+          "scd_type": "1",
+          "natural_key": "brand",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "used_cars_new_hint",
+          "scd_type": "1",
+          "natural_key": "city",
+          "attributes": [
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "used_cars_new_hint",
+          "scd_type": "1",
+          "natural_key": "owner_type",
+          "attributes": [
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_transmission",
+          "pipeline": "used_cars_new_hint",
+          "scd_type": "1",
+          "natural_key": "transmission",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_fuel_type",
+          "pipeline": "used_cars_new_hint",
+          "scd_type": "1",
+          "natural_key": "fuel_type",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_accident",
+          "pipeline": "used_cars_new_hint",
+          "scd_type": "1",
+          "natural_key": "accident",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
+    },
     "08fd2531-9139-4fc2-bea6-7ab29534d9c8": {
       "name": "Migration: automotive retail \u2014 7/12/2026 \u2014 dim_date",
       "id": "08fd2531-9139-4fc2-bea6-7ab29534d9c8",
@@ -3679,6 +3788,104 @@
       "id": "eb38f224-3fe4-4821-ac99-bf650b924c1f",
       "fact_tables": [],
       "dimension_tables": []
+    },
+    "53f12091-c895-4d29-aded-531a9a1f9544": {
+      "name": "testinggggg",
+      "id": "53f12091-c895-4d29-aded-531a9a1f9544",
+      "fact_tables": [
+        {
+          "name": "fact_car_listings",
+          "pipeline": "testinggggg",
+          "grain": "one row per car listing",
+          "measures": [
+            "",
+            ""
+          ],
+          "foreign_keys": [
+            "date_key",
+            "car_key",
+            "location_key",
+            "seller_key",
+            "transmission_key",
+            "fuel_type_key"
+          ]
+        }
+      ],
+      "dimension_tables": [
+        {
+          "name": "dim_date",
+          "pipeline": "testinggggg",
+          "scd_type": "1",
+          "natural_key": "date",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_car",
+          "pipeline": "testinggggg",
+          "scd_type": "1",
+          "natural_key": "brand, model, year",
+          "attributes": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_location",
+          "pipeline": "testinggggg",
+          "scd_type": "1",
+          "natural_key": "city",
+          "attributes": [
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_seller",
+          "pipeline": "testinggggg",
+          "scd_type": "1",
+          "natural_key": "owner_type",
+          "attributes": [
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "name": "dim_transmission",
+          "pipeline": "testinggggg",
+          "scd_type": "1",
+          "natural_key": "transmission",
+          "attributes": [
+            ""
+          ]
+        },
+        {
+          "name": "dim_fuel_type",
+          "pipeline": "testinggggg",
+          "scd_type": "1",
+          "natural_key": "fuel_type",
+          "attributes": [
+            ""
+          ]
+        }
+      ]
     },
     "9f3eb5c4-d56e-4ae6-ae6e-1135183fc829": {
       "name": "Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_dim_seller",
@@ -3932,213 +4139,6 @@
             "",
             "",
             "",
-            ""
-          ]
-        }
-      ]
-    },
-    "f3571ec8-f20d-437d-88af-83522e8204df": {
-      "name": "used_cars_new_hint",
-      "id": "f3571ec8-f20d-437d-88af-83522e8204df",
-      "fact_tables": [
-        {
-          "name": "fact_car_listings",
-          "pipeline": "used_cars_new_hint",
-          "grain": "one row per car listing",
-          "measures": [
-            "",
-            ""
-          ],
-          "foreign_keys": [
-            "date_key",
-            "car_key",
-            "location_key",
-            "seller_key",
-            "transmission_key",
-            "fuel_type_key",
-            "accident_key"
-          ]
-        }
-      ],
-      "dimension_tables": [
-        {
-          "name": "dim_date",
-          "pipeline": "used_cars_new_hint",
-          "scd_type": "1",
-          "natural_key": "date",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_car",
-          "pipeline": "used_cars_new_hint",
-          "scd_type": "1",
-          "natural_key": "brand",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_location",
-          "pipeline": "used_cars_new_hint",
-          "scd_type": "1",
-          "natural_key": "city",
-          "attributes": [
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_seller",
-          "pipeline": "used_cars_new_hint",
-          "scd_type": "1",
-          "natural_key": "owner_type",
-          "attributes": [
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_transmission",
-          "pipeline": "used_cars_new_hint",
-          "scd_type": "1",
-          "natural_key": "transmission",
-          "attributes": [
-            ""
-          ]
-        },
-        {
-          "name": "dim_fuel_type",
-          "pipeline": "used_cars_new_hint",
-          "scd_type": "1",
-          "natural_key": "fuel_type",
-          "attributes": [
-            ""
-          ]
-        },
-        {
-          "name": "dim_accident",
-          "pipeline": "used_cars_new_hint",
-          "scd_type": "1",
-          "natural_key": "accident",
-          "attributes": [
-            ""
-          ]
-        }
-      ]
-    },
-    "53f12091-c895-4d29-aded-531a9a1f9544": {
-      "name": "testinggggg",
-      "id": "53f12091-c895-4d29-aded-531a9a1f9544",
-      "fact_tables": [
-        {
-          "name": "fact_car_listings",
-          "pipeline": "testinggggg",
-          "grain": "one row per car listing",
-          "measures": [
-            "",
-            ""
-          ],
-          "foreign_keys": [
-            "date_key",
-            "car_key",
-            "location_key",
-            "seller_key",
-            "transmission_key",
-            "fuel_type_key"
-          ]
-        }
-      ],
-      "dimension_tables": [
-        {
-          "name": "dim_date",
-          "pipeline": "testinggggg",
-          "scd_type": "1",
-          "natural_key": "date",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_car",
-          "pipeline": "testinggggg",
-          "scd_type": "1",
-          "natural_key": "brand, model, year",
-          "attributes": [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_location",
-          "pipeline": "testinggggg",
-          "scd_type": "1",
-          "natural_key": "city",
-          "attributes": [
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_seller",
-          "pipeline": "testinggggg",
-          "scd_type": "1",
-          "natural_key": "owner_type",
-          "attributes": [
-            "",
-            "",
-            ""
-          ]
-        },
-        {
-          "name": "dim_transmission",
-          "pipeline": "testinggggg",
-          "scd_type": "1",
-          "natural_key": "transmission",
-          "attributes": [
-            ""
-          ]
-        },
-        {
-          "name": "dim_fuel_type",
-          "pipeline": "testinggggg",
-          "scd_type": "1",
-          "natural_key": "fuel_type",
-          "attributes": [
             ""
           ]
         }
@@ -5173,25 +5173,6 @@
             "insured_key",
             "incident_key",
             "vehicle_key"
-          ],
-          "columns": [
-            "claim_key (integer)",
-            "period_id (bigint)",
-            "policy_number (integer)",
-            "date_key (integer)",
-            "policy_key (integer)",
-            "insured_key (integer)",
-            "incident_key (integer)",
-            "vehicle_key (integer)",
-            "total_claim_amount (numeric)",
-            "injury_claim (numeric)",
-            "property_claim (numeric)",
-            "vehicle_claim (numeric)",
-            "policy_annual_premium (numeric)",
-            "umbrella_limit (numeric)",
-            "capital_gains (numeric)",
-            "capital_loss (numeric)",
-            "loaded_at (timestamp without time zone)"
           ]
         }
       ],
@@ -5232,16 +5213,6 @@
             "",
             "",
             ""
-          ],
-          "columns": [
-            "policy_key (integer)",
-            "policy_number (bigint)",
-            "policy_bind_date (character varying)",
-            "policy_state (character varying)",
-            "policy_csl (character varying)",
-            "policy_deductable (bigint)",
-            "months_as_customer (bigint)",
-            "updated_at (timestamp without time zone)"
           ]
         },
         {
@@ -5259,17 +5230,6 @@
             "",
             "",
             ""
-          ],
-          "columns": [
-            "insured_key (integer)",
-            "insured_zip (bigint)",
-            "insured_sex (character varying)",
-            "insured_education_level (character varying)",
-            "insured_occupation (character varying)",
-            "insured_hobbies (character varying)",
-            "insured_relationship (character varying)",
-            "age (bigint)",
-            "updated_at (timestamp without time zone)"
           ]
         },
         {
@@ -5294,23 +5254,6 @@
             "",
             "",
             ""
-          ],
-          "columns": [
-            "incident_key (integer)",
-            "incident_type (character varying)",
-            "collision_type (character varying)",
-            "incident_severity (character varying)",
-            "authorities_contacted (character varying)",
-            "incident_state (character varying)",
-            "incident_city (character varying)",
-            "incident_location (character varying)",
-            "incident_hour_of_the_day (bigint)",
-            "number_of_vehicles_involved (bigint)",
-            "property_damage (character varying)",
-            "bodily_injuries (bigint)",
-            "witnesses (bigint)",
-            "police_report_available (character varying)",
-            "updated_at (timestamp without time zone)"
           ]
         },
         {
@@ -5323,13 +5266,6 @@
             "",
             "",
             ""
-          ],
-          "columns": [
-            "vehicle_key (integer)",
-            "auto_make (character varying)",
-            "auto_model (character varying)",
-            "auto_year (bigint)",
-            "updated_at (timestamp without time zone)"
           ]
         }
       ]
@@ -5434,6 +5370,59 @@
         "day_of_week"
       ]
     },
+    "fact_enrollments": {
+      "name": "fact_enrollments",
+      "pipeline": "deepseek",
+      "grain": "one row per enrollment",
+      "measures": [
+        "",
+        ""
+      ],
+      "foreign_keys": [
+        "student_key",
+        "course_key",
+        "date_key"
+      ]
+    },
+    "dim_student": {
+      "name": "dim_student",
+      "pipeline": "deepseek",
+      "scd_type": "2",
+      "natural_key": "student_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "dim_course": {
+      "name": "dim_course",
+      "pipeline": "deepseek",
+      "scd_type": "1",
+      "natural_key": "course_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "dim_teacher": {
+      "name": "dim_teacher",
+      "pipeline": "deepseek",
+      "scd_type": "1",
+      "natural_key": "teacher_id",
+      "attributes": [
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
     "fact_orders": {
       "name": "fact_orders",
       "pipeline": "Demo Pipeline 5/20/2026",
@@ -5507,18 +5496,15 @@
         ""
       ]
     },
-    "fact_enrollments": {
-      "name": "fact_enrollments",
-      "pipeline": "deepseek",
-      "grain": "one row per enrollment",
-      "measures": [
+    "dim_term": {
+      "name": "dim_term",
+      "pipeline": "testing_billing",
+      "scd_type": 1,
+      "natural_key": "source_term",
+      "attributes": [
+        "",
         "",
         ""
-      ],
-      "foreign_keys": [
-        "student_key",
-        "course_key",
-        "date_key"
       ]
     },
     "dim_students": {
@@ -5545,56 +5531,6 @@
       "scd_type": "1",
       "natural_key": "teacher_name",
       "attributes": [
-        ""
-      ]
-    },
-    "dim_student": {
-      "name": "dim_student",
-      "pipeline": "deepseek",
-      "scd_type": "2",
-      "natural_key": "student_id",
-      "attributes": [
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""
-      ]
-    },
-    "dim_course": {
-      "name": "dim_course",
-      "pipeline": "deepseek",
-      "scd_type": "1",
-      "natural_key": "course_id",
-      "attributes": [
-        "",
-        "",
-        "",
-        "",
-        ""
-      ]
-    },
-    "dim_teacher": {
-      "name": "dim_teacher",
-      "pipeline": "deepseek",
-      "scd_type": "1",
-      "natural_key": "teacher_id",
-      "attributes": [
-        "",
-        "",
-        "",
-        ""
-      ]
-    },
-    "dim_term": {
-      "name": "dim_term",
-      "pipeline": "testing_billing",
-      "scd_type": 1,
-      "natural_key": "source_term",
-      "attributes": [
-        "",
-        "",
         ""
       ]
     },
@@ -5929,25 +5865,6 @@
         "insured_key",
         "incident_key",
         "vehicle_key"
-      ],
-      "columns": [
-        "claim_key (integer)",
-        "period_id (bigint)",
-        "policy_number (integer)",
-        "date_key (integer)",
-        "policy_key (integer)",
-        "insured_key (integer)",
-        "incident_key (integer)",
-        "vehicle_key (integer)",
-        "total_claim_amount (numeric)",
-        "injury_claim (numeric)",
-        "property_claim (numeric)",
-        "vehicle_claim (numeric)",
-        "policy_annual_premium (numeric)",
-        "umbrella_limit (numeric)",
-        "capital_gains (numeric)",
-        "capital_loss (numeric)",
-        "loaded_at (timestamp without time zone)"
       ]
     },
     "dim_policy": {
@@ -5962,16 +5879,6 @@
         "",
         "",
         ""
-      ],
-      "columns": [
-        "policy_key (integer)",
-        "policy_number (bigint)",
-        "policy_bind_date (character varying)",
-        "policy_state (character varying)",
-        "policy_csl (character varying)",
-        "policy_deductable (bigint)",
-        "months_as_customer (bigint)",
-        "updated_at (timestamp without time zone)"
       ]
     },
     "dim_insured": {
@@ -5989,17 +5896,6 @@
         "",
         "",
         ""
-      ],
-      "columns": [
-        "insured_key (integer)",
-        "insured_zip (bigint)",
-        "insured_sex (character varying)",
-        "insured_education_level (character varying)",
-        "insured_occupation (character varying)",
-        "insured_hobbies (character varying)",
-        "insured_relationship (character varying)",
-        "age (bigint)",
-        "updated_at (timestamp without time zone)"
       ]
     },
     "dim_incident": {
@@ -6024,23 +5920,6 @@
         "",
         "",
         ""
-      ],
-      "columns": [
-        "incident_key (integer)",
-        "incident_type (character varying)",
-        "collision_type (character varying)",
-        "incident_severity (character varying)",
-        "authorities_contacted (character varying)",
-        "incident_state (character varying)",
-        "incident_city (character varying)",
-        "incident_location (character varying)",
-        "incident_hour_of_the_day (bigint)",
-        "number_of_vehicles_involved (bigint)",
-        "property_damage (character varying)",
-        "bodily_injuries (bigint)",
-        "witnesses (bigint)",
-        "police_report_available (character varying)",
-        "updated_at (timestamp without time zone)"
       ]
     },
     "dim_vehicle": {
@@ -6053,13 +5932,6 @@
         "",
         "",
         ""
-      ],
-      "columns": [
-        "vehicle_key (integer)",
-        "auto_make (character varying)",
-        "auto_model (character varying)",
-        "auto_year (bigint)",
-        "updated_at (timestamp without time zone)"
       ]
     },
     "dq_audit_log": {
@@ -6142,6 +6014,18 @@
       "to": "dim_product.product_key"
     },
     {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.enrollment_date_key",
+      "to": "dim_enrollment_date.enrollment_date_key"
+    },
+    {
       "from": "fact_orders.customer_key",
       "to": "dim_customer.customer_key"
     },
@@ -6218,6 +6102,38 @@
       "to": "dim_order_date.order_date_key"
     },
     {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.enrollment_date_key",
+      "to": "dim_enrollment_date.enrollment_date_key"
+    },
+    {
+      "from": "fact_enrollments.term_key",
+      "to": "dim_term.term_key"
+    },
+    {
+      "from": "fact_enrollments.student_key",
+      "to": "dim_student.student_key"
+    },
+    {
+      "from": "fact_enrollments.course_key",
+      "to": "dim_course.course_key"
+    },
+    {
+      "from": "fact_enrollments.enrollment_date_key",
+      "to": "dim_enrollment_date.enrollment_date_key"
+    },
+    {
+      "from": "fact_enrollments.term_key",
+      "to": "dim_term.term_key"
+    },
+    {
       "from": "fact_orders.customer_id_key",
       "to": "dim_customer_id.customer_id_key"
     },
@@ -6288,50 +6204,6 @@
     {
       "from": "fact_enrollments.course_id_key",
       "to": "dim_course_id.course_id_key"
-    },
-    {
-      "from": "fact_enrollments.student_key",
-      "to": "dim_student.student_key"
-    },
-    {
-      "from": "fact_enrollments.course_key",
-      "to": "dim_course.course_key"
-    },
-    {
-      "from": "fact_enrollments.enrollment_date_key",
-      "to": "dim_enrollment_date.enrollment_date_key"
-    },
-    {
-      "from": "fact_enrollments.student_key",
-      "to": "dim_student.student_key"
-    },
-    {
-      "from": "fact_enrollments.course_key",
-      "to": "dim_course.course_key"
-    },
-    {
-      "from": "fact_enrollments.enrollment_date_key",
-      "to": "dim_enrollment_date.enrollment_date_key"
-    },
-    {
-      "from": "fact_enrollments.term_key",
-      "to": "dim_term.term_key"
-    },
-    {
-      "from": "fact_enrollments.student_key",
-      "to": "dim_student.student_key"
-    },
-    {
-      "from": "fact_enrollments.course_key",
-      "to": "dim_course.course_key"
-    },
-    {
-      "from": "fact_enrollments.enrollment_date_key",
-      "to": "dim_enrollment_date.enrollment_date_key"
-    },
-    {
-      "from": "fact_enrollments.term_key",
-      "to": "dim_term.term_key"
     },
     {
       "from": "fact_enrollments.student_key",
@@ -6678,6 +6550,34 @@
       "to": "dim_seller.seller_key"
     },
     {
+      "from": "fact_car_listings.date_key",
+      "to": "dim_date.date_key"
+    },
+    {
+      "from": "fact_car_listings.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listings.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listings.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listings.transmission_key",
+      "to": "dim_transmission.transmission_key"
+    },
+    {
+      "from": "fact_car_listings.fuel_type_key",
+      "to": "dim_fuel_type.fuel_type_key"
+    },
+    {
+      "from": "fact_car_listings.accident_key",
+      "to": "dim_accident.accident_key"
+    },
+    {
       "from": "fact_car_listing.car_key",
       "to": "dim_car.car_key"
     },
@@ -6726,54 +6626,6 @@
       "to": "dim_date.date_key"
     },
     {
-      "from": "fact_car_listings.car_key",
-      "to": "dim_car.car_key"
-    },
-    {
-      "from": "fact_car_listings.location_key",
-      "to": "dim_location.location_key"
-    },
-    {
-      "from": "fact_car_listings.seller_key",
-      "to": "dim_seller.seller_key"
-    },
-    {
-      "from": "fact_car_listings.date_key",
-      "to": "dim_date.date_key"
-    },
-    {
-      "from": "fact_car_listings.car_key",
-      "to": "dim_car.car_key"
-    },
-    {
-      "from": "fact_car_listings.location_key",
-      "to": "dim_location.location_key"
-    },
-    {
-      "from": "fact_car_listings.seller_key",
-      "to": "dim_seller.seller_key"
-    },
-    {
-      "from": "fact_car_listings.date_key",
-      "to": "dim_date.date_key"
-    },
-    {
-      "from": "fact_car_listings.car_key",
-      "to": "dim_car.car_key"
-    },
-    {
-      "from": "fact_car_listings.location_key",
-      "to": "dim_location.location_key"
-    },
-    {
-      "from": "fact_car_listings.seller_key",
-      "to": "dim_seller.seller_key"
-    },
-    {
-      "from": "fact_car_listings.date_key",
-      "to": "dim_date.date_key"
-    },
-    {
       "from": "fact_car_listings.date_key",
       "to": "dim_date.date_key"
     },
@@ -6798,8 +6650,16 @@
       "to": "dim_fuel_type.fuel_type_key"
     },
     {
-      "from": "fact_car_listings.accident_key",
-      "to": "dim_accident.accident_key"
+      "from": "fact_car_listings.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listings.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listings.seller_key",
+      "to": "dim_seller.seller_key"
     },
     {
       "from": "fact_car_listings.date_key",
@@ -6818,12 +6678,24 @@
       "to": "dim_seller.seller_key"
     },
     {
-      "from": "fact_car_listings.transmission_key",
-      "to": "dim_transmission.transmission_key"
+      "from": "fact_car_listings.date_key",
+      "to": "dim_date.date_key"
     },
     {
-      "from": "fact_car_listings.fuel_type_key",
-      "to": "dim_fuel_type.fuel_type_key"
+      "from": "fact_car_listings.car_key",
+      "to": "dim_car.car_key"
+    },
+    {
+      "from": "fact_car_listings.location_key",
+      "to": "dim_location.location_key"
+    },
+    {
+      "from": "fact_car_listings.seller_key",
+      "to": "dim_seller.seller_key"
+    },
+    {
+      "from": "fact_car_listings.date_key",
+      "to": "dim_date.date_key"
     },
     {
       "from": "fact_car_listings.date_key",
@@ -7046,5 +6918,5 @@
       "to": "dim_vehicle.vehicle_key"
     }
   ],
-  "schema_context": "=== AIBridge Warehouse Knowledge Graph ===\n\n\nPipeline: 1st Pipeline 5/10/2026\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: product_name, category, sub_category\n  DIM: dim_date (SCD Type 1)\n    Attributes: year, month, day, quarter\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Pipeline 5/10/2026\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_date (SCD Type 1)\n    Attributes: year, month, day, week_day, quarter\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category\n\nPipeline: Pipeline1 5/10/2026\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_order_date (SCD Type 1)\n    Attributes: year, quarter, month, day_of_month, week_of_year, day_of_week\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category\n\nPipeline: Ecommerce DWH Pipeline\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: product_name, category, subcategory\n  DIM: dim_date (SCD Type 1)\n    Attributes: year, month, day, week_of_year, quarter\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Ecommerce DWH Pipeline 2\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_order_date (SCD Type 1)\n    Attributes: year, quarter, month, day_of_month, week_of_year, day_of_week\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category\n\nPipeline: Ecommerce DWH Pipeline k\n  FACT: fact_orders\n    Grain: one row per order\n    Measures: order_id, total_amount, discount\n    FK keys: customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: first_name, last_name, email, city, country, segment\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 1)\n    Attributes: name, category, sub_category, cost_price, selling_price\n  DIM: dim_order_items (SCD Type 1)\n    Attributes: order_id, product_id, qty, unit_price\n  DIM: dim_order (SCD Type 1)\n    Attributes: customer_id, order_date, status\n  DIM: dim_payment (SCD Type 1)\n    Attributes: method, amount, status\n\nPipeline: Ecommerce DWH Pipelinekkk\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: name, category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline log test\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline_testing _logs\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: product_name, category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 1)\n    Attributes: category, sub_category, cost_price, selling_price\n\nPipeline: Demo Pipeline 5/20/2026\n  FACT: fact_orders\n    Grain: one row per order\n    Measures: \n    FK keys: customer_id_key, order_date_key\n  DIM: dim_customers (SCD Type 1)\n    Attributes: , \n  DIM: dim_orders (SCD Type 1)\n    Attributes: , \n  DIM: dim_products (SCD Type 1)\n    Attributes: , \n  DIM: dim_date (SCD Type 2)\n    Attributes: , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Demo Pipeline 5/20/2026\n  FACT: fact_orders\n    Grain: one row per order\n    Measures: \n    FK keys: customer_id_key, order_date_key\n  DIM: dim_customers (SCD Type 1)\n    Attributes: \n  DIM: dim_orders (SCD Type 1)\n    Attributes: \n  DIM: dim_date (SCD Type 1)\n    Attributes: \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_products (SCD Type 1)\n    Attributes: \n\nPipeline: DWH_School\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key, student_id_key\n  DIM: dim_students (SCD Type 1)\n    Attributes: \n  DIM: dim_courses (SCD Type 1)\n    Attributes: \n  DIM: dim_teachers (SCD Type 1)\n    Attributes: \n\nPipeline: school dwh\n  FACT: fact_enrollments\n    Grain: one row per student-course\n    Measures: \n    FK keys: student_id, course_id\n  DIM: dim_student (SCD Type 1)\n    Attributes: , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , \n\nPipeline: scl dwh\n  FACT: fact_enrollments\n    Grain: one row per enrollment\n    Measures: \n    FK keys: student_key, course_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: scl test\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key, student_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: scl test\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: term_key, course_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_term (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n\nPipeline: test log\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: test 2\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: student_id_key, course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: test bob\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  FACT: fact_grades\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  FACT: fact_attendance\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: stdt\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: student_id_key, course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: anthropic_biling_test2\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: antrhorpic\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key, term_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_term (SCD Type 1)\n    Attributes: , , \n\nPipeline: removing_source_from_column_name\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key, term_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_term (SCD Type 1)\n    Attributes: , , , , \n\nPipeline: testing_billing\n  FACT: fact_enrollments\n    Grain: one row per enrollment per student per course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key, term_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_term (SCD Type 1)\n    Attributes: , , \n\nPipeline: test_with_Gemini\n\nPipeline: agents_1st_run\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course for a term\n    Measures: , , \n    FK keys: student_key, course_key, teacher_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: agents_autorecovery\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course for a term\n    Measures: , , \n    FK keys: student_key, course_key, teacher_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: planner_agent_test\n  FACT: fact_enrollments\n    Grain: one row per enrollment\n    Measures: , \n    FK keys: student_key, course_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 2)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: anthropic_billing_test\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: test_term_table error\n  FACT: fact_enrollment\n    Grain: one row per student enrollment in a course per term\n    Measures: , , \n    FK keys: student_key, course_key, enrollment_date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: doctor_1st_run\n  FACT: fact_visits\n    Grain: one row per visit\n    Measures: , , \n    FK keys: patient_key, doctor_key, diagnosis_key, visit_date_key\n  DIM: dim_patient (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_doctor (SCD Type 2)\n    Attributes: , , , , \n  DIM: dim_diagnosis (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: deepseek\n  FACT: fact_enrollments\n    Grain: one row per enrollment\n    Measures: , \n    FK keys: student_key, course_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: DEEPSEEK_HOSPITAL\n  FACT: fact_visits\n    Grain: one row per visit\n    Measures: , \n    FK keys: patient_key, doctor_key, diagnosis_key, date_key\n  DIM: dim_patient (SCD Type 2)\n    Attributes: , , , , , , \n  DIM: dim_doctor (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_diagnosis (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: bank\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: dq_test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: dq_test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: dq_test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: bank_db_testing\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: vcl test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, seller_key, location_key, date_key\n  DIM: dim_car (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: testing\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, seller_key, location_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration - migrated\n\nPipeline: car_test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, seller_key, location_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: roll\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: date_key, car_key, seller_key, location_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n\nPipeline: Migration - migrated\n\nPipeline: Migration - migrated\n\nPipeline: rollback_test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, seller_key, location_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive \u2014 7/11/2026\n\nPipeline: remove_pg_hardcode\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive retail \u2014 7/11/2026\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 dbt project (7 models)\n\nPipeline: test_2369\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: car_test_final\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: flatfile_stg_tables\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: date_key, car_key, location_key, seller_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_dim_car\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 dim_date\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 dim_location\n\nPipeline: stg_table_test\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: stg_Test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: test den\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 dim_location\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_dim_seller\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 fact_car_listing\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_fact_car_listings\n\nPipeline: fltfile_stg_table_Test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: scd_pipeline\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive \u2014 7/13/2026 \u2014 dbt project (7 models)\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 m_load_dim_car\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 dim_date\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 m_load_fact_car_listings\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 m_load_dim_seller\n\nPipeline: used_cars\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: used_cars_new_hint\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: date_key, car_key, location_key, seller_key, transmission_key, fuel_type_key, accident_key\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: , , \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: , , \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_transmission (SCD Type 1)\n    Attributes: \n  DIM: dim_fuel_type (SCD Type 1)\n    Attributes: \n  DIM: dim_accident (SCD Type 1)\n    Attributes: \n\nPipeline: testinggggg\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: date_key, car_key, location_key, seller_key, transmission_key, fuel_type_key\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: , , \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: , , \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_transmission (SCD Type 1)\n    Attributes: \n  DIM: dim_fuel_type (SCD Type 1)\n    Attributes: \n\nPipeline: car_K\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: date_key, car_key, location_key, seller_key, transmission_key, fuel_type_key\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_transmission (SCD Type 1)\n    Attributes: \n  DIM: dim_fuel_type (SCD Type 1)\n    Attributes: \n\nPipeline: bank_tes\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, transaction_date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: test2369\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: js\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: nnnn\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: ttttttttt\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: ccccccc\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: t\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: zzzzzzz\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: used_cars\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: bank_Test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Banking_demo\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: ins_poc\n  FACT: fact_claims\n    Grain: one row per claim\n    Measures: , , , , , , \n    FK keys: date_key, policy_key, insured_key, incident_key, vehicle_key\n    Columns: claim_key (integer), period_id (bigint), policy_number (integer), date_key (integer), policy_key (integer), insured_key (integer), incident_key (integer), vehicle_key (integer), total_claim_amount (numeric), injury_claim (numeric)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_policy (SCD Type 1)\n    Attributes: , , , , , \n    Columns: policy_key (integer), policy_number (bigint), policy_bind_date (character varying), policy_state (character varying), policy_csl (character varying), policy_deductable (bigint), months_as_customer (bigint), updated_at (timestamp without time zone)\n  DIM: dim_insured (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: insured_key (integer), insured_zip (bigint), insured_sex (character varying), insured_education_level (character varying), insured_occupation (character varying), insured_hobbies (character varying), insured_relationship (character varying), age (bigint)\n  DIM: dim_incident (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: incident_key (integer), incident_type (character varying), collision_type (character varying), incident_severity (character varying), authorities_contacted (character varying), incident_state (character varying), incident_city (character varying), incident_location (character varying)\n  DIM: dim_vehicle (SCD Type 1)\n    Attributes: , , , \n    Columns: vehicle_key (integer), auto_make (character varying), auto_model (character varying), auto_year (bigint), updated_at (timestamp without time zone)\n\nRelationships (FK joins):\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_orders.customer_key \u2192 dim_customer.customer_key\n  fact_orders.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_orders.customer_id_key \u2192 dim_customer_id.customer_id_key\n  fact_orders.order_date_key \u2192 dim_order_date.order_date_key\n  fact_orders.customer_id_key \u2192 dim_customer_id.customer_id_key\n  fact_orders.order_date_key \u2192 dim_order_date.order_date_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_grades.course_id_key \u2192 dim_course_id.course_id_key\n  fact_attendance.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.teacher_key \u2192 dim_teacher.teacher_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.teacher_key \u2192 dim_teacher.teacher_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollment.student_key \u2192 dim_student.student_key\n  fact_enrollment.course_key \u2192 dim_course.course_key\n  fact_enrollment.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_visits.patient_key \u2192 dim_patient.patient_key\n  fact_visits.doctor_key \u2192 dim_doctor.doctor_key\n  fact_visits.diagnosis_key \u2192 dim_diagnosis.diagnosis_key\n  fact_visits.visit_date_key \u2192 dim_visit_date.visit_date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_visits.patient_key \u2192 dim_patient.patient_key\n  fact_visits.doctor_key \u2192 dim_doctor.doctor_key\n  fact_visits.diagnosis_key \u2192 dim_diagnosis.diagnosis_key\n  fact_visits.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.transmission_key \u2192 dim_transmission.transmission_key\n  fact_car_listings.fuel_type_key \u2192 dim_fuel_type.fuel_type_key\n  fact_car_listings.accident_key \u2192 dim_accident.accident_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.transmission_key \u2192 dim_transmission.transmission_key\n  fact_car_listings.fuel_type_key \u2192 dim_fuel_type.fuel_type_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.transmission_key \u2192 dim_transmission.transmission_key\n  fact_car_listings.fuel_type_key \u2192 dim_fuel_type.fuel_type_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.transaction_date_key \u2192 dim_transaction_date.transaction_date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_claims.date_key \u2192 dim_date.date_key\n  fact_claims.policy_key \u2192 dim_policy.policy_key\n  fact_claims.insured_key \u2192 dim_insured.insured_key\n  fact_claims.incident_key \u2192 dim_incident.incident_key\n  fact_claims.vehicle_key \u2192 dim_vehicle.vehicle_key"
+  "schema_context": "=== AIBridge Warehouse Knowledge Graph ===\n\n\nPipeline: 1st Pipeline 5/10/2026\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: product_name, category, sub_category\n  DIM: dim_date (SCD Type 1)\n    Attributes: year, month, day, quarter\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Pipeline 5/10/2026\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_date (SCD Type 1)\n    Attributes: year, month, day, week_day, quarter\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category\n\nPipeline: Pipeline1 5/10/2026\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_order_date (SCD Type 1)\n    Attributes: year, quarter, month, day_of_month, week_of_year, day_of_week\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category\n\nPipeline: Ecommerce DWH Pipeline\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: product_name, category, subcategory\n  DIM: dim_date (SCD Type 1)\n    Attributes: year, month, day, week_of_year, quarter\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Ecommerce DWH Pipeline 2\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_order_date (SCD Type 1)\n    Attributes: year, quarter, month, day_of_month, week_of_year, day_of_week\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category\n\nPipeline: anthropic_biling_test2\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Ecommerce DWH Pipeline k\n  FACT: fact_orders\n    Grain: one row per order\n    Measures: order_id, total_amount, discount\n    FK keys: customer_key, product_key\n  DIM: dim_customer (SCD Type 2)\n    Attributes: first_name, last_name, email, city, country, segment\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 1)\n    Attributes: name, category, sub_category, cost_price, selling_price\n  DIM: dim_order_items (SCD Type 1)\n    Attributes: order_id, product_id, qty, unit_price\n  DIM: dim_order (SCD Type 1)\n    Attributes: customer_id, order_date, status\n  DIM: dim_payment (SCD Type 1)\n    Attributes: method, amount, status\n\nPipeline: Ecommerce DWH Pipelinekkk\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: name, category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline log test\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline_testing _logs\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 1)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 2)\n    Attributes: product_name, category, sub_category, cost_price, selling_price\n\nPipeline: Ecommerce DWH Pipeline\n  FACT: fact_sales\n    Grain: one row per order line item\n    Measures: quantity, unit_price, line_total\n    FK keys: date_key, customer_key, product_key\n  DIM: dim_date (SCD Type 2)\n    Attributes: year, month, day\n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: customer_name, email, segment, country\n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_product (SCD Type 1)\n    Attributes: category, sub_category, cost_price, selling_price\n\nPipeline: Demo Pipeline 5/20/2026\n  FACT: fact_orders\n    Grain: one row per order\n    Measures: \n    FK keys: customer_id_key, order_date_key\n  DIM: dim_customers (SCD Type 1)\n    Attributes: , \n  DIM: dim_orders (SCD Type 1)\n    Attributes: , \n  DIM: dim_products (SCD Type 1)\n    Attributes: , \n  DIM: dim_date (SCD Type 2)\n    Attributes: , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: antrhorpic\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key, term_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_term (SCD Type 1)\n    Attributes: , , \n\nPipeline: removing_source_from_column_name\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key, term_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_term (SCD Type 1)\n    Attributes: , , , , \n\nPipeline: Demo Pipeline 5/20/2026\n  FACT: fact_orders\n    Grain: one row per order\n    Measures: \n    FK keys: customer_id_key, order_date_key\n  DIM: dim_customers (SCD Type 1)\n    Attributes: \n  DIM: dim_orders (SCD Type 1)\n    Attributes: \n  DIM: dim_date (SCD Type 1)\n    Attributes: \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_products (SCD Type 1)\n    Attributes: \n\nPipeline: DWH_School\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key, student_id_key\n  DIM: dim_students (SCD Type 1)\n    Attributes: \n  DIM: dim_courses (SCD Type 1)\n    Attributes: \n  DIM: dim_teachers (SCD Type 1)\n    Attributes: \n\nPipeline: school dwh\n  FACT: fact_enrollments\n    Grain: one row per student-course\n    Measures: \n    FK keys: student_id, course_id\n  DIM: dim_student (SCD Type 1)\n    Attributes: , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , \n\nPipeline: scl dwh\n  FACT: fact_enrollments\n    Grain: one row per enrollment\n    Measures: \n    FK keys: student_key, course_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: scl test\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key, student_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: scl test\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: term_key, course_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_term (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n\nPipeline: test log\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: test 2\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: student_id_key, course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: test bob\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  FACT: fact_grades\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  FACT: fact_attendance\n    Grain: one row per student\n    Measures: \n    FK keys: course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: stdt\n  FACT: fact_enrollments\n    Grain: one row per student\n    Measures: \n    FK keys: student_id_key, course_id_key\n  DIM: dim_student (SCD Type 1)\n    Attributes: \n  DIM: dim_course (SCD Type 1)\n    Attributes: \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: \n\nPipeline: testing_billing\n  FACT: fact_enrollments\n    Grain: one row per enrollment per student per course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key, term_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_term (SCD Type 1)\n    Attributes: , , \n\nPipeline: test_with_Gemini\n\nPipeline: agents_1st_run\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course for a term\n    Measures: , , \n    FK keys: student_key, course_key, teacher_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: agents_autorecovery\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course for a term\n    Measures: , , \n    FK keys: student_key, course_key, teacher_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: planner_agent_test\n  FACT: fact_enrollments\n    Grain: one row per enrollment\n    Measures: , \n    FK keys: student_key, course_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 2)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: anthropic_billing_test\n  FACT: fact_enrollments\n    Grain: one row per student enrollment in a course per term\n    Measures: , , , , \n    FK keys: student_key, course_key, enrollment_date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , , \n  DIM: dim_course (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: test_term_table error\n  FACT: fact_enrollment\n    Grain: one row per student enrollment in a course per term\n    Measures: , , \n    FK keys: student_key, course_key, enrollment_date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: doctor_1st_run\n  FACT: fact_visits\n    Grain: one row per visit\n    Measures: , , \n    FK keys: patient_key, doctor_key, diagnosis_key, visit_date_key\n  DIM: dim_patient (SCD Type 2)\n    Attributes: , , , , , , , \n  DIM: dim_doctor (SCD Type 2)\n    Attributes: , , , , \n  DIM: dim_diagnosis (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: deepseek\n  FACT: fact_enrollments\n    Grain: one row per enrollment\n    Measures: , \n    FK keys: student_key, course_key, date_key\n  DIM: dim_student (SCD Type 2)\n    Attributes: , , , , , \n  DIM: dim_course (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_teacher (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: DEEPSEEK_HOSPITAL\n  FACT: fact_visits\n    Grain: one row per visit\n    Measures: , \n    FK keys: patient_key, doctor_key, diagnosis_key, date_key\n  DIM: dim_patient (SCD Type 2)\n    Attributes: , , , , , , \n  DIM: dim_doctor (SCD Type 1)\n    Attributes: , , , , \n  DIM: dim_diagnosis (SCD Type 1)\n    Attributes: , , , \n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: bank\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: dq_test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: dq_test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: dq_test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: bank_db_testing\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: vcl test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, seller_key, location_key, date_key\n  DIM: dim_car (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: testing\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, seller_key, location_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration - migrated\n\nPipeline: car_test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, seller_key, location_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: roll\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: date_key, car_key, seller_key, location_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n\nPipeline: Migration - migrated\n\nPipeline: Migration - migrated\n\nPipeline: rollback_test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, seller_key, location_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive \u2014 7/11/2026\n\nPipeline: remove_pg_hardcode\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive retail \u2014 7/11/2026\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 dbt project (7 models)\n\nPipeline: test_2369\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: car_test_final\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: flatfile_stg_tables\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: date_key, car_key, location_key, seller_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_dim_car\n\nPipeline: used_cars_new_hint\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: date_key, car_key, location_key, seller_key, transmission_key, fuel_type_key, accident_key\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: , , \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: , , \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_transmission (SCD Type 1)\n    Attributes: \n  DIM: dim_fuel_type (SCD Type 1)\n    Attributes: \n  DIM: dim_accident (SCD Type 1)\n    Attributes: \n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 dim_date\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 dim_location\n\nPipeline: stg_table_test\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: stg_Test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: test den\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 dim_location\n\nPipeline: testinggggg\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: date_key, car_key, location_key, seller_key, transmission_key, fuel_type_key\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: , , \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: , , \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_transmission (SCD Type 1)\n    Attributes: \n  DIM: dim_fuel_type (SCD Type 1)\n    Attributes: \n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_dim_seller\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 fact_car_listing\n\nPipeline: Migration: automotive retail \u2014 7/12/2026 \u2014 m_load_fact_car_listings\n\nPipeline: fltfile_stg_table_Test\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: scd_pipeline\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Migration: automotive \u2014 7/13/2026 \u2014 dbt project (7 models)\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 m_load_dim_car\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 dim_date\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 m_load_fact_car_listings\n\nPipeline: Migration: automotive retail \u2014 7/24/2026 \u2014 m_load_dim_seller\n\nPipeline: used_cars\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: car_K\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: date_key, car_key, location_key, seller_key, transmission_key, fuel_type_key\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_transmission (SCD Type 1)\n    Attributes: \n  DIM: dim_fuel_type (SCD Type 1)\n    Attributes: \n\nPipeline: bank_tes\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, transaction_date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: test2369\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: js\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: nnnn\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: ttttttttt\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: ccccccc\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: t\n  FACT: fact_car_listings\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: zzzzzzz\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: used_cars\n  FACT: fact_car_listing\n    Grain: one row per car listing\n    Measures: , \n    FK keys: car_key, location_key, seller_key, date_key\n    Columns: car_listing_key (integer), period_id (bigint), car_key (integer), location_key (integer), seller_key (integer), date_key (integer), price (numeric), kms_driven (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_car (SCD Type 1)\n    Attributes: , , , , , , , \n    Columns: car_key (integer), brand (character varying), model (character varying), year (bigint), mileage_kmpl (double precision), engine_cc (double precision), horsepower (double precision), fuel_type (character varying)\n  DIM: dim_location (SCD Type 1)\n    Attributes: \n    Columns: location_key (integer), city (character varying), updated_at (timestamp without time zone)\n  DIM: dim_seller (SCD Type 1)\n    Attributes: \n    Columns: seller_key (integer), owner_type (character varying), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: bank_Test\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: Banking_demo\n  FACT: fact_transactions\n    Grain: one row per transaction\n    Measures: \n    FK keys: account_key, customer_key, branch_key, date_key\n    Columns: transaction_key (integer), period_id (bigint), transaction_id (integer), account_key (integer), customer_key (integer), branch_key (integer), date_key (integer), amount (numeric), loaded_at (timestamp without time zone)\n  DIM: dim_account (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: account_key (integer), account_id (integer), customer_id (integer), branch_id (integer), account_number (character varying), account_type (character varying), balance (numeric), status (character varying)\n  DIM: dim_customer (SCD Type 2)\n    Attributes: , , , , , , , \n    Columns: customer_key (integer), customer_id (integer), full_name (character varying), email (character varying), phone (character varying), pan_number (character varying), city (character varying), customer_segment (character varying)\n  DIM: dim_branch (SCD Type 1)\n    Attributes: , , , , , \n    Columns: branch_key (integer), branch_id (integer), branch_name (character varying), city (character varying), state (character varying), ifsc_code (character varying), opened_date (date), updated_at (timestamp without time zone)\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n\nPipeline: ins_poc\n  FACT: fact_claims\n    Grain: one row per claim\n    Measures: , , , , , , \n    FK keys: date_key, policy_key, insured_key, incident_key, vehicle_key\n  DIM: dim_date (SCD Type 1)\n    Attributes: , , , , , \n    Columns: date_key (integer), full_date (date), year (integer), quarter (integer), month (integer), day (integer), day_of_week (integer), month_name (character varying)\n  DIM: dim_policy (SCD Type 1)\n    Attributes: , , , , , \n  DIM: dim_insured (SCD Type 1)\n    Attributes: , , , , , , , \n  DIM: dim_incident (SCD Type 1)\n    Attributes: , , , , , , , \n  DIM: dim_vehicle (SCD Type 1)\n    Attributes: , , , \n\nRelationships (FK joins):\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_orders.customer_key \u2192 dim_customer.customer_key\n  fact_orders.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_sales.date_key \u2192 dim_date.date_key\n  fact_sales.customer_key \u2192 dim_customer.customer_key\n  fact_sales.product_key \u2192 dim_product.product_key\n  fact_orders.customer_id_key \u2192 dim_customer_id.customer_id_key\n  fact_orders.order_date_key \u2192 dim_order_date.order_date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_orders.customer_id_key \u2192 dim_customer_id.customer_id_key\n  fact_orders.order_date_key \u2192 dim_order_date.order_date_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_grades.course_id_key \u2192 dim_course_id.course_id_key\n  fact_attendance.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_id_key \u2192 dim_student_id.student_id_key\n  fact_enrollments.course_id_key \u2192 dim_course_id.course_id_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollments.term_key \u2192 dim_term.term_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.teacher_key \u2192 dim_teacher.teacher_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.teacher_key \u2192 dim_teacher.teacher_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_enrollment.student_key \u2192 dim_student.student_key\n  fact_enrollment.course_key \u2192 dim_course.course_key\n  fact_enrollment.enrollment_date_key \u2192 dim_enrollment_date.enrollment_date_key\n  fact_visits.patient_key \u2192 dim_patient.patient_key\n  fact_visits.doctor_key \u2192 dim_doctor.doctor_key\n  fact_visits.diagnosis_key \u2192 dim_diagnosis.diagnosis_key\n  fact_visits.visit_date_key \u2192 dim_visit_date.visit_date_key\n  fact_enrollments.student_key \u2192 dim_student.student_key\n  fact_enrollments.course_key \u2192 dim_course.course_key\n  fact_enrollments.date_key \u2192 dim_date.date_key\n  fact_visits.patient_key \u2192 dim_patient.patient_key\n  fact_visits.doctor_key \u2192 dim_doctor.doctor_key\n  fact_visits.diagnosis_key \u2192 dim_diagnosis.diagnosis_key\n  fact_visits.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.transmission_key \u2192 dim_transmission.transmission_key\n  fact_car_listings.fuel_type_key \u2192 dim_fuel_type.fuel_type_key\n  fact_car_listings.accident_key \u2192 dim_accident.accident_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.transmission_key \u2192 dim_transmission.transmission_key\n  fact_car_listings.fuel_type_key \u2192 dim_fuel_type.fuel_type_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.transmission_key \u2192 dim_transmission.transmission_key\n  fact_car_listings.fuel_type_key \u2192 dim_fuel_type.fuel_type_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.transaction_date_key \u2192 dim_transaction_date.transaction_date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listings.car_key \u2192 dim_car.car_key\n  fact_car_listings.location_key \u2192 dim_location.location_key\n  fact_car_listings.seller_key \u2192 dim_seller.seller_key\n  fact_car_listings.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_car_listing.car_key \u2192 dim_car.car_key\n  fact_car_listing.location_key \u2192 dim_location.location_key\n  fact_car_listing.seller_key \u2192 dim_seller.seller_key\n  fact_car_listing.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_transactions.account_key \u2192 dim_account.account_key\n  fact_transactions.customer_key \u2192 dim_customer.customer_key\n  fact_transactions.branch_key \u2192 dim_branch.branch_key\n  fact_transactions.date_key \u2192 dim_date.date_key\n  fact_claims.date_key \u2192 dim_date.date_key\n  fact_claims.policy_key \u2192 dim_policy.policy_key\n  fact_claims.insured_key \u2192 dim_insured.insured_key\n  fact_claims.incident_key \u2192 dim_incident.incident_key\n  fact_claims.vehicle_key \u2192 dim_vehicle.vehicle_key"
 }

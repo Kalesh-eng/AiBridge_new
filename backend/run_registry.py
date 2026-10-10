@@ -1,3 +1,4 @@
+from typing import Optional
 """
 run_registry.py — In-memory tracking for background pipeline executions.
 
@@ -39,7 +40,7 @@ def create_run(pipeline_id: str, pipeline_name: str = "") -> str:
     return run_id
 
 
-def get_run(run_id: str) -> dict | None:
+def get_run(run_id: str) -> Optional[dict]:
     with _lock:
         run = _runs.get(run_id)
         return dict(run) if run else None

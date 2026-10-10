@@ -1,0 +1,4 @@
+exchange_files/*.csv
+exchange_files/*.xlsx
+exchange_files/*.json
+exchange_files/*.txt

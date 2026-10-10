@@ -1,3 +1,4 @@
+from typing import Optional
 """
 schema_cache.py — AIBridge Schema Cache
 
@@ -29,7 +30,7 @@ def _normalize_schema(schema_text: str) -> str:
     return "\n".join(sorted(lines))
 
 
-def get_cached_design(pipeline_id: str, schema_hash: str, db) -> dict | None:
+def get_cached_design(pipeline_id: str, schema_hash: str, db) -> Optional[dict]:
     try:
         from database import Pipeline
         pipeline = db.query(Pipeline).filter(

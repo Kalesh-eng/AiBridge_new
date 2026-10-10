@@ -1,3 +1,4 @@
+from typing import Optional
 """
 nlm_engine.py — Universal AI ETL.
 
@@ -1229,7 +1230,7 @@ def _detect_domain(text: str, keyword_list: list) -> int:
 
 
 def _validate_domain_match(raw_schema: str, business_requirements: str,
-                            schema_analysis: dict) -> str | None:
+                            schema_analysis: dict) -> Optional[str]:
     """
     Detect domain from source schema columns, then check if business
     requirements match that domain. Returns error message if mismatch,
@@ -1322,7 +1323,7 @@ def _fix_source_column_names(data_model: dict, raw_schema: str) -> dict:
     if not actual_cols:
         return data_model
 
-    def best_match(attr_name: str) -> str | None:
+    def best_match(attr_name: str) -> Optional[str]:
         """Find best matching actual column for an attribute name."""
         key = attr_name.lower().replace("_", "")
         # Direct match
