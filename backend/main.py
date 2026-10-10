@@ -2021,6 +2021,12 @@ def nl_to_sql(req: NLToSQLRequest, current_user=Depends(get_current_user),
                 print(f"[NL2SQL] Connector mode — schema: {warehouse_schema}")
 
         from ai_provider import ask_ai
+        try:
+            from ai_commander import route_with_commander
+            _use_commander = True
+        except ImportError:
+            _use_commander = False
+
         prompt = f"""You are a PostgreSQL expert. Your ONLY job is to return a JSON object containing a SQL query.
 
 WAREHOUSE SCHEMA:
@@ -2043,7 +2049,31 @@ USER QUESTION: {req.question}
 
 Respond with ONLY the JSON object, nothing else:"""
 
-        result = ask_ai(prompt, agent_name="AnalyticsAgent")
+        if _use_commander:
+            commander_result = route_with_commander(
+                task_type="sql",
+                prompt=req.question,
+                system=f"Schema:\n{schema_text if schema_text else f'use {warehouse_schema}.fact_* and {warehouse_schema}.dim_* tables'}\n\nReturn ONLY JSON: {{\"sql\": \"SELECT ...\"}}",
+                cloud_fallback_fn=lambda p, s: ask_ai(prompt, agent_name="AnalyticsAgent")
+            )
+            if commander_result.get("source", "").startswith("slm"):
+                raw = commander_result.get("response", "")
+                import json as _json
+                try:
+                    parsed = _json.loads(raw)
+                    result = parsed
+                except Exception:
+                    result = {"sql": raw.strip().replace("```sql","").replace("```","").strip()}
+            else:
+                result = commander_result.get("response", {})
+                if isinstance(result, str):
+                    try:
+                        import json as _json
+                        result = _json.loads(result)
+                    except Exception:
+                        result = {"sql": result}
+        else:
+            result = ask_ai(prompt, agent_name="AnalyticsAgent")
         sql    = result.get("sql", "").strip().replace("```sql","").replace("```","").strip()
 
         if not sql:
