@@ -68,12 +68,43 @@ export default function ExchangeAgent() {
   }
 
   const runSavedMapping = async (mapping) => {
-    setTab(0)
-    setMappingName(mapping.name)
-    setTargetSchema(mapping.target_schema || 'exchange_dwh')
-    if (mapping.target_connector_id) setTargetConnId(mapping.target_connector_id)
-    setStatus('Mapping loaded — please add your files and click Run Now or Save & Run')
-    setError(null)
+    try {
+      const res = await api.get('/exchange/mapping/' + mapping.id)
+      const data = res.data
+      setMappingName(data.mapping_name || mapping.name)
+      setTargetSchema(data.target_schema || 'exchange_dwh')
+      if (data.target_connector_id) setTargetConnId(data.target_connector_id)
+      // Reconstruct file entries from saved table data so Tab 0 renders them
+      if (data.tables && data.tables.length > 0) {
+        const reconstructed = data.tables.map((t, idx) => ({
+          file: null,
+          name: t.source_name || t.target_table,
+          tableName: t.target_table,
+          order: idx + 1,
+          enabled: t.enabled !== false,
+          loadMode: t.load_mode || 'full',
+          requirements: '',
+          rowLimit: null,
+          rowFilter: '',
+          dependsOn: [],
+          columns: [],
+          preview: null,
+          _fromSavedMapping: true,
+              _connectorId: t.source_connector_id || null,
+        }))
+        setFiles(reconstructed)
+      }
+      setTab(0)
+      setStatus('Mapping "' + (data.mapping_name || mapping.name) + '" loaded — review and click Run Now')
+      setError(null)
+    } catch(e) {
+      setMappingName(mapping.name)
+      setTargetSchema(mapping.target_schema || 'exchange_dwh')
+      if (mapping.target_connector_id) setTargetConnId(mapping.target_connector_id)
+      setTab(0)
+      setStatus('Mapping loaded (partial) — re-upload files to run')
+      setError(null)
+    }
   }
 
   const deleteSavedMapping = async (mappingId, mappingName) => {
@@ -172,6 +203,22 @@ export default function ExchangeAgent() {
       // Upload files and get connector IDs
       const uploadedFiles = []
       for (const f of enabledFiles) {
+        if (f._fromSavedMapping && !f.file) {
+          if (f._connectorId) {
+            uploadedFiles.push({
+              connector_id: f._connectorId,
+              table_name:   f.tableName,
+              file_name:    f.name,
+              load_mode:    f.loadMode,
+              requirements: f.requirements || globalReq,
+              row_limit:    f.rowLimit,
+              row_filter:   f.rowFilter,
+              depends_on:   f.dependsOn,
+              columns:      [],
+            })
+          }
+          continue
+        }
         setStatus(`Uploading ${f.name}...`)
         const formData = new FormData()
         formData.append('file', f.file)
@@ -218,7 +265,7 @@ export default function ExchangeAgent() {
         setError(r.data.error || 'Exchange failed')
       }
     } catch (e) {
-      setError(e.response?.data?.detail || e.message)
+      const det = e.response?.data?.detail; setError(Array.isArray(det) ? det.map(d=>d.msg||JSON.stringify(d)).join('; ') : (det || e.message || 'Unknown error'))
     }
     setLoading(false)
   }
@@ -727,7 +774,7 @@ export default function ExchangeAgent() {
                         border:'none', borderRadius:6, fontSize:11, cursor:'pointer', fontWeight:600 }}>
                         ▶ Load & Run
                       </button>
-                      <button onClick={() => { setMappingName(m.name); setTargetSchema(m.target_schema); setTab(0) }}
+                      <button onClick={() => { runSavedMapping(m) }}
                         style={{ padding:'6px 12px', background:'#fff', color:'#185FA5',
                         border:'1px solid #185FA5', borderRadius:6, fontSize:11, cursor:'pointer' }}>
                         ✎ Edit

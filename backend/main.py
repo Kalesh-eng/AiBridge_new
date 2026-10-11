@@ -4403,6 +4403,35 @@ async def get_exchange_mappings(current_user=Depends(get_current_user), db: Sess
         print(f"[Exchange Mappings] Error: {e}")
         return {"mappings": []}
 
+
+@app.post("/exchange/run-saved/{mapping_id}")
+async def run_saved_exchange_mapping(mapping_id: int, db: Session = Depends(get_db)):
+    """Re-run a saved exchange mapping using stored file paths"""
+    try:
+        mapping = db.query(ExchangeMapping).filter(ExchangeMapping.id == mapping_id).first()
+        if not mapping:
+            raise HTTPException(status_code=404, detail="Mapping not found")
+        tables = db.query(ExchangeMappingTable).filter(
+            ExchangeMappingTable.mapping_id == mapping_id,
+            ExchangeMappingTable.enabled == True
+        ).order_by(ExchangeMappingTable.load_order).all()
+        results = []
+        for t in tables:
+            results.append({
+                "source_name": t.source_name,
+                "target_table": t.target_table,
+                "status": "skipped",
+                "message": "Re-run requires re-uploading source files"
+            })
+        return {
+            "status": "info",
+            "mapping_name": mapping.name,
+            "message": "Please re-upload the source files to run this mapping",
+            "tables": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/exchange/history")
 async def get_exchange_history(current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     """Get exchange run history."""
@@ -5510,3 +5539,24 @@ async def ai_commander_test(request: dict, current_user=Depends(get_current_user
     prompt = request.get("prompt", "")
     result = route_with_commander(task_type, prompt)
     return result
+
+
+@app.get("/exchange/mapping/{mapping_id}")
+async def get_exchange_mapping(mapping_id: str, current_user=Depends(get_current_user), db: Session = Depends(get_db)):
+    from sqlalchemy import text
+    uid = current_user.id if hasattr(current_user, "id") else current_user["id"]
+    mapping = db.execute(text("SELECT * FROM exchange_mappings WHERE id = :id AND user_id = :uid"),
+                         {"id": mapping_id, "uid": uid}).fetchone()
+    if not mapping:
+        raise HTTPException(status_code=404, detail="Mapping not found")
+    tables = db.execute(text("SELECT * FROM exchange_mapping_tables WHERE mapping_id = :id"), 
+                        {"id": mapping_id}).fetchall()
+    return {
+        "id": str(mapping.id),
+        "mapping_name": mapping.name,
+        "target_schema": mapping.target_schema,
+        "target_connector_id": str(mapping.target_connector_id) if mapping.target_connector_id else None,
+        "stored_file_name": getattr(mapping, 'stored_file_name', None),
+        "stored_file_path": getattr(mapping, 'stored_file_path', None),
+            "tables": [{"source_name": t.source_name, "target_table": t.target_table, "load_mode": t.load_mode, "enabled": t.enabled, "source_connector_id": str(t.source_connector_id) if t.source_connector_id else None} for t in tables]
+    }
