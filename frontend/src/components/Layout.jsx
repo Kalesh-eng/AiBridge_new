@@ -19,6 +19,7 @@ const NAV = [
 
   // Exchange
   { path: '/mission-control', label: 'Mission Control',  color: '#185FA5', section: 'AI Team' },
+  { path: '/office', label: '🏢 Virtual Office', icon: '🏢', color: '#4A90D9' },
   { path: '/exchange',       label: 'Exchange Agent',      color: '#15803D', section: 'Exchange' },
   { path: '/plug-and-play',  label: 'Plug & Play',         color: '#0B5D73', section: 'Migration'},
 

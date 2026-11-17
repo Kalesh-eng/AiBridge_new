@@ -56,7 +56,7 @@ from agents import (
 )
 
 load_dotenv()
-
+from agents.messaging.routes import router as messaging_router
 app = FastAPI(title="AIBridge API", version="1.8.0")
 
 app.add_middleware(
@@ -64,6 +64,7 @@ app.add_middleware(
     allow_origins=["*"], allow_credentials=True,
     allow_methods=["*"], allow_headers=["*"],
 )
+app.include_router(messaging_router)
 
 
 @app.on_event("startup")
@@ -2017,6 +2018,7 @@ def nl_to_sql(req: NLToSQLRequest, current_user=Depends(get_current_user),
         if not schema_text and req.connector_id:
             c = db.query(Connector).filter(Connector.id == req.connector_id).first()
             if c:
+                warehouse_schema = getattr(c, 'source_schema', None) or warehouse_schema
                 schema_text = get_full_schema_for_ai(_cfg(c), source_schema=warehouse_schema)
                 print(f"[NL2SQL] Connector mode — schema: {warehouse_schema}")
 
@@ -2041,6 +2043,8 @@ STRICT RULES:
 5. JOIN dimension tables to the fact table using _key columns
 6. Only SELECT statements
 7. Always add LIMIT 100 at the end
+8. For duration/interval columns use EXTRACT(EPOCH FROM col)::bigint for seconds, never nest to_char() inside to_char()
+9. Never use to_char() on a numeric value — only use to_char() on timestamps and dates
 
 EXAMPLE OUTPUT for "total sales by city":
 {{"sql": "SELECT d.city, SUM(f.amount) AS total FROM {warehouse_schema}.fact_sales f JOIN {warehouse_schema}.dim_location d ON f.location_key = d.location_key GROUP BY d.city ORDER BY total DESC LIMIT 100"}}
@@ -2123,6 +2127,7 @@ def refine_sql(req: RefineSQLRequest, current_user=Depends(get_current_user),
         if not schema_text and req.connector_id:
             c = db.query(Connector).filter(Connector.id == req.connector_id).first()
             if c:
+                warehouse_schema = getattr(c, 'source_schema', None) or warehouse_schema
                 schema_text = get_full_schema_for_ai(_cfg(c), source_schema=warehouse_schema)
                 print(f"[NL2SQL] Connector mode — schema: {warehouse_schema}")
 
@@ -5560,3 +5565,84 @@ async def get_exchange_mapping(mapping_id: str, current_user=Depends(get_current
         "stored_file_path": getattr(mapping, 'stored_file_path', None),
             "tables": [{"source_name": t.source_name, "target_table": t.target_table, "load_mode": t.load_mode, "enabled": t.enabled, "source_connector_id": str(t.source_connector_id) if t.source_connector_id else None} for t in tables]
     }
+
+
+# ── WebSocket: Mission Control real-time feed ─────────────────────────────
+import asyncio as _asyncio
+import agent_bus
+from fastapi import WebSocket, WebSocketDisconnect
+
+def _ws_decode_token(token: str):
+    """Accept tokens signed with any secret the app uses; return (payload, error)."""
+    from jose import jwt as _jwt, ExpiredSignatureError
+    if not token:
+        return None, "no token sent (log in again)"
+    secrets = [os.getenv(k) for k in ("SECRET_KEY", "JWT_SECRET_KEY", "JWT_SECRET")]
+    secrets.append("aibridge-super-secret-key-change-this-in-production")
+    last_err = "unknown"
+    for secret in dict.fromkeys(s for s in secrets if s):
+        try:
+            return _jwt.decode(token, secret, algorithms=["HS256"]), None
+        except ExpiredSignatureError:
+            return None, "token expired (log in again)"
+        except Exception as e:
+            last_err = f"{type(e).__name__}: {e}"
+    return None, last_err
+
+
+@app.websocket("/ws/agents")
+async def ws_agents(websocket: WebSocket):
+    token = websocket.query_params.get("token", "")
+    payload, err = _ws_decode_token(token)
+    if not payload:
+        print(f"[ws/agents] rejected: {err}")
+        await websocket.close(code=1008)
+        return
+    await websocket.accept()
+    agent_bus.register(websocket)
+
+    try:
+        pg = _pg_connect(); cur = pg.cursor()
+        cur.execute("SELECT id,name,role,emoji,status,layer,current_task,tasks_today,tasks_total,last_active,capabilities,personality FROM public.ai_agents")
+        cols = [d[0] for d in cur.description]
+        agents_rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+
+        cur.execute("SELECT id,agent_name,title,description,risk_level,status,created_at,responded_at FROM public.agent_hil_queue ORDER BY created_at DESC LIMIT 50")
+        hil_cols = [d[0] for d in cur.description]
+        hil_rows = [dict(zip(hil_cols, r)) for r in cur.fetchall()]
+
+        cur.execute("SELECT id,agent_name,task_type,description,status,hil_required,hil_approved,created_at FROM public.agent_tasks ORDER BY created_at DESC LIMIT 100")
+        task_cols = [d[0] for d in cur.description]
+        tasks_rows = [dict(zip(task_cols, r)) for r in cur.fetchall()]
+
+        cur.execute("SELECT from_agent,to_agent,message,created_at FROM public.agent_comms ORDER BY created_at DESC LIMIT 50")
+        comm_cols = [d[0] for d in cur.description]
+        comms_rows = [dict(zip(comm_cols, r)) for r in cur.fetchall()]
+        pg.close()
+
+        import json as _json
+        from datetime import datetime as _dt
+        def _serial(obj):
+            if isinstance(obj, _dt): return obj.isoformat()
+            raise TypeError(str(type(obj)))
+
+        await websocket.send_text(_json.dumps({
+            "type": "snapshot",
+            "agents": agents_rows,
+            "hil":    hil_rows,
+            "tasks":  tasks_rows,
+            "comms":  comms_rows,
+        }, default=_serial))
+
+        while True:
+            try:
+                data = await _asyncio.wait_for(websocket.receive_text(), timeout=25)
+                if data == "ping":
+                    await websocket.send_text("pong")
+            except _asyncio.TimeoutError:
+                await websocket.send_text("pong")
+
+    except WebSocketDisconnect:
+        pass
+    finally:
+        agent_bus.unregister(websocket)

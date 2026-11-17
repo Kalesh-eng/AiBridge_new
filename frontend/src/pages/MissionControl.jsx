@@ -1,8 +1,9 @@
 /**
  * MissionControl.jsx — AI Team Mission Control Dashboard
  * Visual view of all AI agents, their status, tasks, and HIL queue
+ * WebSocket-powered: live updates, no polling
  */
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { PageHeader, PageBody } from '../components/Layout'
 import api from '../api/api'
 
@@ -20,25 +21,26 @@ const RISK_COLORS = {
   critical: { bg: '#FFF1F2', border: '#FB7185', text: '#BE123C' },
 }
 
+const WS_STATUS = {
+  connecting:   { label: '🟡 Connecting…', color: '#D97706' },
+  live:         { label: '🟢 Live',         color: '#15803D' },
+  reconnecting: { label: '🟡 Reconnecting…',color: '#D97706' },
+  offline:      { label: '🔴 Offline',      color: '#DC2626' },
+}
+
 // Format agent messages — convert markdown to HTML
 function formatAgentMsg(text) {
   if (!text) return ''
   let html = text
-    // Bold
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    // Italic
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    // Code inline
     .replace(/`([^`]+)`/g, '<code style="background:#F3F4F6;padding:1px 5px;border-radius:3px;font-size:12px">$1</code>')
-    // SQL code blocks
     .replace(/```sql([\s\S]*?)```/gi, (_, sql) =>
       '<pre style="background:#1E293B;color:#E2E8F0;padding:12px;border-radius:6px;overflow-x:auto;font-size:11px;margin:8px 0">' +
       sql.trim().replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>')
-    // Other code blocks
     .replace(/```([\s\S]*?)```/g, (_, code) =>
       '<pre style="background:#F3F4F6;padding:10px;border-radius:6px;overflow-x:auto;font-size:11px;margin:8px 0">' +
       code.trim() + '</pre>')
-    // Tables
     .replace(/(\|.+\|\n?)+/g, (table) => {
       const rows = table.trim().split('\n').filter(r => r.trim())
       if (rows.length < 2) return table
@@ -56,9 +58,15 @@ function formatAgentMsg(text) {
       out += '</table></div>'
       return out
     })
-    // Newlines
     .replace(/\n/g, '<br/>')
   return html
+}
+
+// ── Get WS token from api.js (same JWT stored in localStorage/axios headers)
+function getWsToken() {
+  try {
+    return localStorage.getItem('aibridge_token') || ''
+  } catch { return '' }
 }
 
 export default function MissionControl() {
@@ -66,15 +74,22 @@ export default function MissionControl() {
   const [hilQueue,    setHilQueue]    = useState([])
   const [comms,       setComms]       = useState([])
   const [tasks,       setTasks]       = useState([])
-  const [view,        setView]        = useState('team') // team | hil | comms | timeline
+  const [view,        setView]        = useState('team')
   const [loading,     setLoading]     = useState(true)
+  const [wsStatus,    setWsStatus]    = useState('connecting')
   const [chatAgent,   setChatAgent]   = useState(null)
   const [chatMsg,     setChatMsg]     = useState('')
   const [chatHistory, setChatHistory] = useState([])
-  const [chatLoading,    setChatLoading]    = useState(false)
-  const [chatConnector,  setChatConnector]  = useState('')
-  const [connectors,     setConnectors]     = useState([])
+  const [chatLoading, setChatLoading] = useState(false)
+  const [chatConnector, setChatConnector] = useState('')
+  const [connectors,    setConnectors]    = useState([])
 
+  const wsRef       = useRef(null)
+  const retryRef    = useRef(null)
+  const retryCount  = useRef(0)
+  const mountedRef  = useRef(true)
+
+  // ── REST fallback (used only before WS connects or on demand) ──────────────
   const loadData = useCallback(async () => {
     try {
       const [agentsR, hilR, commsR, tasksR] = await Promise.all([
@@ -84,34 +99,154 @@ export default function MissionControl() {
         api.get('/agents/tasks'),
       ])
       setAgents(agentsR.data.agents || [])
-      setHilQueue(hilR.data.queue || [])
-      setComms(commsR.data.comms || [])
-      setTasks(tasksR.data.tasks || [])
+      setHilQueue(hilR.data.queue  || [])
+      setComms(commsR.data.comms   || [])
+      setTasks(tasksR.data.tasks   || [])
     } catch(e) {
-      console.log('Mission Control load error:', e)
+      console.log('Mission Control REST fallback error:', e)
     }
     setLoading(false)
   }, [])
 
+  // ── WebSocket ──────────────────────────────────────────────────────────────
+  const connectWs = useCallback(() => {
+    if (!mountedRef.current) return
+
+    const token = getWsToken()
+    if (!token) {
+      // No token yet — retry in 2s (login may still be completing)
+      retryRef.current = setTimeout(connectWs, 2000)
+      return
+    }
+    const base  = (window.location.protocol === 'https:' ? 'wss' : 'ws') +
+                  '://' + (import.meta.env.VITE_API_HOST || 'localhost:8888')
+    const url   = `${base}/ws/agents?token=${encodeURIComponent(token)}`
+
+    setWsStatus('connecting')
+    const ws = new WebSocket(url)
+    wsRef.current = ws
+
+    ws.onopen = () => {
+      retryCount.current = 0
+      setWsStatus('live')
+      setLoading(false)
+    }
+
+    ws.onmessage = (evt) => {
+      let data
+      try { data = JSON.parse(evt.data) } catch { return }
+
+      switch (data.type) {
+        case 'snapshot':
+          setAgents(data.agents  || [])
+          setHilQueue(data.hil   || [])
+          setTasks(data.tasks    || [])
+          setComms(data.comms    || [])
+          setLoading(false)
+          break
+
+        case 'agent_update':
+          setAgents(prev => prev.map(a =>
+            a.id === data.agent.id ? { ...a, ...data.agent } : a
+          ))
+          break
+
+        case 'hil_new':
+          setHilQueue(prev => [data.item, ...prev])
+          break
+
+        case 'hil_resolved':
+          setHilQueue(prev => prev.map(h =>
+            h.id === data.id ? { ...h, status: data.resolution } : h
+          ))
+          break
+
+        case 'task_update':
+          setTasks(prev => {
+            const idx = prev.findIndex(t => t.id === data.task.id)
+            if (idx >= 0) {
+              const next = [...prev]
+              next[idx] = { ...next[idx], ...data.task }
+              return next
+            }
+            return [data.task, ...prev]
+          })
+          break
+
+        case 'comm':
+          setComms(prev => [{
+            from_agent: data.from_agent,
+            to_agent:   data.to_agent,
+            message:    data.message,
+            created_at: new Date().toISOString(),
+          }, ...prev.slice(0, 99)])
+          break
+
+        default:
+          break
+      }
+    }
+
+    ws.onclose = () => {
+      if (!mountedRef.current) return
+      setWsStatus('reconnecting')
+      // Exponential backoff: 1s, 2s, 4s, 8s, max 30s
+      const delay = Math.min(1000 * Math.pow(2, retryCount.current), 30000)
+      retryCount.current += 1
+      retryRef.current = setTimeout(connectWs, delay)
+    }
+
+    ws.onerror = () => {
+      ws.close()
+    }
+
+    // Send ping every 20s to keep the connection alive
+    const pingInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send('ping')
+      }
+    }, 20000)
+
+    // Store cleanup so onclose can clear it
+    ws._pingInterval = pingInterval
+  }, [])
+
   useEffect(() => {
+    mountedRef.current = true
+
+    // Start with REST data while WS connects
     loadData()
-    // Load connectors for agent schema selection
+
+    // Load connectors
     api.get('/connector/list').then(r => {
       const conns = (r.data.connectors || []).filter(c => !['csv','excel','duckdb'].includes(c.connector_type))
       setConnectors(conns)
       if (conns.length > 0) setChatConnector(conns[0].id)
     }).catch(() => {})
-    const interval = setInterval(loadData, 30000) // refresh every 30s
-    return () => clearInterval(interval)
-  }, [loadData])
 
+    connectWs()
+
+    return () => {
+      mountedRef.current = false
+      clearTimeout(retryRef.current)
+      if (wsRef.current) {
+        clearInterval(wsRef.current._pingInterval)
+        wsRef.current.onclose = null  // prevent reconnect on unmount
+        wsRef.current.close()
+      }
+    }
+  }, [connectWs, loadData])
+
+  // ── HIL approval ──────────────────────────────────────────────────────────
   const approveHIL = async (id, response) => {
     try {
       await api.post('/agents/hil/' + id + '/respond', { response })
-      loadData()
+      // Optimistic update — WS will confirm
+      setHilQueue(prev => prev.map(h => h.id === id ? { ...h, status: response } : h))
     } catch(e) { console.log('HIL response error:', e) }
   }
 
+  // ── Chat ──────────────────────────────────────────────────────────────────
   const sendChat = async () => {
     if (!chatMsg.trim() || !chatAgent) return
     const userMsg = { role: 'user', content: chatMsg }
@@ -125,9 +260,11 @@ export default function MissionControl() {
         history:      chatHistory,
         connector_id: chatConnector || null,
       })
-      setChatHistory(prev => [...prev, { role: 'assistant', content: r.data.response, agent: chatAgent.name }])
+      setChatHistory(prev => [...prev,
+        { role: 'assistant', content: r.data.response, agent: chatAgent.name }])
     } catch(e) {
-      setChatHistory(prev => [...prev, { role: 'assistant', content: 'Error: ' + e.message, agent: chatAgent.name }])
+      setChatHistory(prev => [...prev,
+        { role: 'assistant', content: 'Error: ' + e.message, agent: chatAgent.name }])
     }
     setChatLoading(false)
   }
@@ -137,6 +274,7 @@ export default function MissionControl() {
   const pendingHIL     = hilQueue.filter(h => h.status === 'pending')
 
   const card = { border:'1px solid #E5E7EB', borderRadius:10, padding:'14px 16px', background:'#fff' }
+  const ws   = WS_STATUS[wsStatus] || WS_STATUS.offline
 
   return (
     <>
@@ -145,6 +283,14 @@ export default function MissionControl() {
         subtitle="AI Team — real-time status, HIL approvals, agent communications"
         action={
           <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+            {/* Live status pill */}
+            <div style={{ fontSize:11, color: ws.color, fontWeight:600,
+              padding:'4px 10px', borderRadius:20,
+              background: ws.color + '18',
+              border: '1px solid ' + ws.color + '44' }}>
+              {ws.label}
+            </div>
+
             {pendingHIL.length > 0 && (
               <div style={{ background:'#DC2626', color:'#fff', borderRadius:20,
                 padding:'4px 12px', fontSize:11, fontWeight:700 }}>
@@ -274,9 +420,7 @@ export default function MissionControl() {
                           border: '1px solid ' + (RISK_COLORS[item.risk_level]?.border || '#FED7AA') }}>
                           {item.risk_level?.toUpperCase()} RISK
                         </span>
-                        <span style={{ fontSize:11, color:'#6B7280' }}>
-                          {item.agent_name}
-                        </span>
+                        <span style={{ fontSize:11, color:'#6B7280' }}>{item.agent_name}</span>
                         <span style={{ fontSize:10, color:'#9CA3AF', marginLeft:'auto' }}>
                           {new Date(item.created_at).toLocaleTimeString()}
                         </span>
@@ -410,8 +554,10 @@ export default function MissionControl() {
                         <div key={i} style={{ marginBottom:8,
                           textAlign: m.role==='user' ? 'right' : 'left' }}>
                           <div style={{ display:'inline-block', maxWidth:'85%',
-                            padding:'6px 10px', borderRadius:8, 
-                            background: m.role==='user' ? '#185FA5' : '#F3F4F6', color: m.role==='user' ? '#fff' : '#374151', fontSize: 13 }}> {m.role === 'assistant' && (
+                            padding:'6px 10px', borderRadius:8,
+                            background: m.role==='user' ? '#185FA5' : '#F3F4F6',
+                            color: m.role==='user' ? '#fff' : '#374151', fontSize:13 }}>
+                            {m.role === 'assistant' && (
                               <div style={{ fontSize:9, fontWeight:700,
                                 marginBottom:2, opacity:0.7 }}>{m.agent}</div>
                             )}
@@ -508,8 +654,7 @@ function AgentCard({ agent, onChat }) {
           <div style={{ fontSize:10, color:'#6B7280' }}>{agent.role}</div>
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:4,
-          padding:'2px 8px', borderRadius:20,
-          background: sc.bg }}>
+          padding:'2px 8px', borderRadius:20, background: sc.bg }}>
           <div style={{ width:6, height:6, borderRadius:'50%', background: sc.dot }} />
           <span style={{ fontSize:9, fontWeight:700, color: sc.text,
             textTransform:'uppercase' }}>{agent.status}</span>
@@ -517,8 +662,7 @@ function AgentCard({ agent, onChat }) {
       </div>
 
       {/* Current task */}
-      <div style={{ fontSize:11, color:'#6B7280', fontStyle:'italic',
-        minHeight:16 }}>
+      <div style={{ fontSize:11, color:'#6B7280', fontStyle:'italic', minHeight:16 }}>
         {agent.current_task || 'Waiting for tasks...'}
       </div>
 
@@ -570,5 +714,3 @@ function AgentCard({ agent, onChat }) {
     </div>
   )
 }
-
-

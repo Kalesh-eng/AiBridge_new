@@ -478,6 +478,7 @@ def _ask_deepseek(prompt: str, agent_name: str = None, pipeline_id: str = None) 
     try:
         response = client.chat.completions.create(
             model       = "deepseek-chat",
+            response_format = {"type": "json_object"},
             max_tokens  = 8000,
             temperature = 0.1,
             messages    = [
@@ -606,7 +607,6 @@ def _ask_openai(prompt: str, agent_name: str = None, pipeline_id: str = None) ->
     resp = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
-        response_format={"type": "json_object"},
         max_tokens=8000
     )
     elapsed = time.time() - start

@@ -3,8 +3,8 @@
  * Added: DataQuality (/quality), Scheduler (/scheduler), PipelineLogs (/logs)
  */
 
+import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
 import { AuthProvider, useAuth } from './components/AuthContext'
 import { ErrorBoundary, ToastProvider } from './components/ErrorBoundary'
 import Layout from './components/Layout'
@@ -31,6 +31,9 @@ import PlugAndPlay     from './pages/PlugAndPlay'
 import Exchange        from './pages/Exchange_agent'
 import MissionControl  from './pages/MissionControl'
 import AIBridgeNeonBI  from './pages/AIBridgeNeonBI'
+
+// Lazy-load VirtualOffice so any import error is isolated and won't crash the whole app
+const VirtualOffice = React.lazy(() => import('./pages/VirtualOffice'))
 
 const Stub = ({ name }) => (
   <div style={{ padding: 40, fontFamily: 'system-ui' }}>
@@ -99,6 +102,17 @@ function AppRoutes() {
       <Route path="/connectors"     element={<PrivateRoute><Connectors /></PrivateRoute>} />
       <Route path="/team"           element={<PrivateRoute><Team /></PrivateRoute>} />
       <Route path="/settings"       element={<PrivateRoute><Stub name="AI provider settings" /></PrivateRoute>} />
+      <Route path="/office"         element={
+        <PrivateRoute>
+          <React.Suspense fallback={
+            <div style={{ padding: 40, fontFamily: 'system-ui', color: '#888', fontSize: 13 }}>
+              Loading Virtual Office...
+            </div>
+          }>
+            <VirtualOffice />
+          </React.Suspense>
+        </PrivateRoute>
+      } />
       <Route path="*"               element={<Navigate to="/" replace />} />
     </Routes>
   )
@@ -117,4 +131,3 @@ export default function App() {
     </ErrorBoundary>
   )
 }
-

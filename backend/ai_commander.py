@@ -17,7 +17,7 @@ SLM_ROUTES = {
     "general":  "mistral:latest",
 }
 
-SCORE_THRESHOLD = 70
+SCORE_THRESHOLD = 85
 
 
 def ask_slm(task_type: str, prompt: str, system: str = "") -> dict:
@@ -87,6 +87,13 @@ def route_with_commander(task_type: str, prompt: str, system: str = "",
         return {"response": "", "source": "error", "score": 0}
 
     score = score_response(prompt, slm_response)
+
+    # For SQL tasks, validate the response is actual SQL
+    if task_type == "sql":
+        resp_stripped = slm_response.strip()
+        is_valid_sql = any(resp_stripped.upper().startswith(kw) for kw in ["SELECT","WITH","INSERT","UPDATE","DELETE"])
+        if not is_valid_sql:
+            score = 0  # force cloud fallback
 
     if score >= SCORE_THRESHOLD:
         return {"response": slm_response,

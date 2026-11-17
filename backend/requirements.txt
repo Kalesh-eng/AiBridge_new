@@ -326,3 +326,11 @@ zict==2.0.0
 zipp @ file:///tmp/build/80754af9/zipp_1633618647012/work
 zope.event==4.5.0
 zope.interface @ file:///opt/concourse/worker/volumes/live/8c2d4bd1-6406-47f0-45ce-890992bafbf6/volume/zope.interface_1625036159007/work
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+psycopg2-binary>=2.9.9
+anthropic>=0.28.0
+python-telegram-bot>=21.0
+apscheduler>=3.10.4
+python-dotenv>=1.0.1
+pydantic>=2.7.0

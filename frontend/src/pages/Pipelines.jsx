@@ -32,7 +32,7 @@ function LiveExecutionPanel({ runId, onFinished }) {
 
   useEffect(() => {
     if (!runId) return
-    const base = api.defaults?.baseURL || ''
+    const base = api.defaults?.baseURL || import.meta.env.VITE_API_URL || 'http://localhost:8888'
     const es = new EventSource(`${base}/pipeline/execute-async/${runId}/stream`, { withCredentials: true })
 
     // Batch updates every 500ms to prevent flickering

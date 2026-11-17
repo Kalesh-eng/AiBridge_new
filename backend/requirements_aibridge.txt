@@ -1,0 +1,24 @@
+# AIBridge Backend — Python requirements
+# pip install -r requirements_aibridge.txt --break-system-packages
+
+# Web framework
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# Database
+psycopg2-binary>=2.9.9
+
+# AI
+anthropic>=0.28.0
+
+# Telegram
+python-telegram-bot>=21.0
+
+# Scheduler (morning brief + pipeline monitor)
+apscheduler>=3.10.4
+
+# Config
+python-dotenv>=1.0.1
+
+# Utilities
+pydantic>=2.7.0
